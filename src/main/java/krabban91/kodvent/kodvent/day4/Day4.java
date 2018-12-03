@@ -16,10 +16,10 @@ public class Day4 {
 
         System.out.println("::: Starting Day 4:::");
         int part1 = getPart1();
-        System.out.println("::: answer to part 1:::");
+        System.out.println(": answer to part 1 :");
         System.out.println(part1);
         int part2 = getPart2();
-        System.out.println("::: answer to part 2:::");
+        System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
 

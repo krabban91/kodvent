@@ -19,13 +19,12 @@ public class InventoryManager {
     private List<List<Integer>> words = new LinkedList<>();
 
     public InventoryManager() {
-        System.out.println("::: Starting Day 2:::");
-        long part1 = 0;
-        part1 = getPart1();
-        System.out.println("::: answer to part 1:::");
+        System.out.println("::: Starting Day 2 :::");
+        long part1 = getPart1();
+        System.out.println(": answer to part 1 :");
         System.out.println(part1);
         String part2 = getPart2();
-        System.out.println("::: answer to part 2:::");
+        System.out.println(": answer to part 2 :");
         System.out.println(part2);
 
     }
@@ -33,7 +32,6 @@ public class InventoryManager {
     private String getPart2() {
         return words.stream().filter(this::matchesIdWithOneOther).findAny().get().stream().collect(StringBuilder::new,
                 StringBuilder::appendCodePoint, StringBuilder::append).toString();
-
     }
 
 

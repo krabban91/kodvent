@@ -16,26 +16,23 @@ public class FrequencyHandler {
 
     private List<Integer> frequencies = new LinkedList<>();
     private Integer firstTwice = null;
-    private int iterations = 0;
 
     public  FrequencyHandler() {
-        System.out.println("::: Starting Day 1:::");
+        System.out.println("::: Starting Day 1 :::");
         int part1 = 0;
         part1 = getPart1(part1);
-        System.out.println("::: answer to part 1:::");
+        System.out.println(": answer to part 1 :");
         System.out.println(part1);
         while (firstTwice == null) {
             part1 = getPart1(part1);
         }
-        System.out.println("::: answer to part 2:::");
+        System.out.println(": answer to part 2 :");
         Integer part2 = firstTwice;
         System.out.println(part2);
     }
 
     private int getPart1(int part1) {
-        iterations++;
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            System.out.println("::: iteration: "+iterations+". filestream. starting at "+part1+":::");
             part1 = stream.mapToInt(Integer::parseInt).reduce(part1,this::sum);
         } catch (IOException e) {
             e.printStackTrace();
@@ -47,7 +44,6 @@ public class FrequencyHandler {
         int frequency = l + r;
         if(frequencies.contains(frequency)){
             if(firstTwice == null){
-                System.out.println("Frequency is "+frequency);
                 firstTwice = frequency;
             }
         }

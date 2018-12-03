@@ -1,7 +1,13 @@
 package krabban91.kodvent.kodvent.day3;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+
 public class Claim {
 
+    private static Pattern pattern = Pattern.compile("[( @ )(#)(,)(: )(x)]");
     private int id;
     private int x;
     private int y;
@@ -9,15 +15,13 @@ public class Claim {
     private int height;
 
     public Claim(String claim){
-        String[] split = claim.split(" @ ");
-        this.id = Integer.parseInt(split[0].replace("#",""));
-        split = split[1].split(",");
-        this.x = Integer.parseInt(split[0]);
-        split = split[1].split(": ");
-        this.y = Integer.parseInt(split[0]);
-        split = split[1].split("x");
-        this.width = Integer.parseInt(split[0]);
-        this.height = Integer.parseInt(split[1]);
+        List<String> strings = new ArrayList<>(Arrays.asList(pattern.split(claim)));
+        strings.removeIf(s->s.equals(""));
+        this.id = Integer.parseInt(strings.get(0));
+        this.x = Integer.parseInt(strings.get(1));
+        this.y = Integer.parseInt(strings.get(2));
+        this.width = Integer.parseInt(strings.get(3));
+        this.height = Integer.parseInt(strings.get(4));
     }
 
     public int getId() {

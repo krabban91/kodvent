@@ -19,18 +19,27 @@ public class FabricSlicer {
     private List<Integer>[][] fabricOverlap = new LinkedList[1000][1000];
     private Set<Integer> triedCandidate = new HashSet<>();
     private List<Integer> santasClaimCandidate = new LinkedList<>();
-    public FabricSlicer() {
 
+    public FabricSlicer() {
         System.out.println("::: Starting Day 3:::");
         long part1 = getPart1();
-        System.out.println("::: answer to part 1:::");
+        System.out.println(": answer to part 1 :");
         System.out.println(part1);
         int part2 = getPart2();
-        System.out.println("::: answer to part 2:::");
+        System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
 
-    private void mapClaim(String claim){
+    private long getPart1() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            stream.forEach(this::mapClaim);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return calculateOverlap();
+    }
+
+    private void mapClaim(String claim) {
         Claim c = new Claim(claim);
         for (int x = c.getX(); x < c.getX() + c.getWidth(); x++) {
             for (int y = c.getY(); y < c.getY() + c.getHeight(); y++) {
@@ -42,44 +51,30 @@ public class FabricSlicer {
         }
     }
 
-    private int calculateOverlap(){
-        int overlap = 0;
-        for (List<Integer>[] col : fabricOverlap) {
-            for (List<Integer> list : col) {
-                if (list != null && list.size() > 1) {
-                    overlap++;
-                }
-            }
-        }
-        return overlap;
+    private long calculateOverlap() {
+        return Stream.of(fabricOverlap)
+                .map(col -> Stream.of(col)
+                        .filter(list -> list != null && list.size() > 1)
+                        .count())
+                .reduce(0l, Long::sum);
     }
 
     private int getPart2() {
-        for (List<Integer>[] col : fabricOverlap) {
-            for (List<Integer> list : col) {
-                if(list != null && list.size() == 1) {
-                    if (!santasClaimCandidate.contains(list.get(0)) && !triedCandidate.contains(list.get(0))){
-                        santasClaimCandidate.add(list.get(0));
-                        triedCandidate.add(list.get(0));
+        Stream.of(fabricOverlap).forEach(col -> Stream.of(col)
+                .filter(list -> list != null)
+                .forEach(list -> {
+                    if (list.size() == 1) {
+                        if (!santasClaimCandidate.contains(list.get(0)) && !triedCandidate.contains(list.get(0))) {
+                            santasClaimCandidate.add(list.get(0));
+                            triedCandidate.add(list.get(0));
+                        }
+                    } else {
+                        list.forEach(i -> {
+                            santasClaimCandidate.remove(i);
+                            triedCandidate.add(i);
+                        });
                     }
-                }
-                else if(list != null && list.size() > 1) {
-                    list.forEach(i -> santasClaimCandidate.remove(i));
-                    list.forEach(i -> triedCandidate.add(i));
-                }
-            }
-        }
-
+                }));
         return santasClaimCandidate.get(0);
-
-    }
-
-    private long getPart1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            stream.forEach(this::mapClaim);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return calculateOverlap();
     }
 }
