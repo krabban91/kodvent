@@ -6,8 +6,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Component
@@ -15,14 +17,15 @@ public class FabricSlicer {
 
     private static String inputPath = "day3.txt";
     private List<Integer>[][] fabricOverlap = new LinkedList[1000][1000];
-
+    private Set<Integer> triedCandidate = new HashSet<>();
+    private List<Integer> santasClaimCandidate = new LinkedList<>();
     public FabricSlicer() {
 
         System.out.println("::: Starting Day 3:::");
         long part1 = getPart1();
         System.out.println("::: answer to part 1:::");
         System.out.println(part1);
-        String part2 = getPart2();
+        int part2 = getPart2();
         System.out.println("::: answer to part 2:::");
         System.out.println(part2);
     }
@@ -51,8 +54,23 @@ public class FabricSlicer {
         return overlap;
     }
 
-    private String getPart2() {
-        return "<no answer>";
+    private int getPart2() {
+        for (List<Integer>[] col : fabricOverlap) {
+            for (List<Integer> list : col) {
+                if(list != null && list.size() == 1) {
+                    if (!santasClaimCandidate.contains(list.get(0)) && !triedCandidate.contains(list.get(0))){
+                        santasClaimCandidate.add(list.get(0));
+                        triedCandidate.add(list.get(0));
+                    }
+                }
+                else if(list != null && list.size() > 1) {
+                    list.forEach(i -> santasClaimCandidate.remove(i));
+                    list.forEach(i -> triedCandidate.add(i));
+                }
+            }
+        }
+
+        return santasClaimCandidate.get(0);
 
     }
 
