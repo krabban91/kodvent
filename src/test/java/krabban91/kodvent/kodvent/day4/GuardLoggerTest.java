@@ -27,7 +27,8 @@ public class GuardLoggerTest {
     @Test
     public void getPart1() {
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            int part1 = guardLogger.getPart1(stream);
+            guardLogger.logGuardEntries(stream);
+            int part1 = guardLogger.getPart1();
             assertThat(part1).isEqualTo(240);
         } catch (IOException e) {
             e.printStackTrace();
@@ -37,7 +38,7 @@ public class GuardLoggerTest {
     @Test
     public void getPart2() {
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            int part1 = guardLogger.getPart1(stream);
+            guardLogger.logGuardEntries(stream);
             int part2 = guardLogger.getPart2();
             assertThat(part2).isEqualTo(4455);
         } catch (IOException e) {
