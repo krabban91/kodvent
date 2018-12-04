@@ -14,9 +14,9 @@ public class Claim {
     private int width;
     private int height;
 
-    public Claim(String claim){
+    public Claim(String claim) {
         List<String> strings = new ArrayList<>(Arrays.asList(pattern.split(claim)));
-        strings.removeIf(s->s.equals(""));
+        strings.removeIf(s -> s.equals(""));
         this.id = Integer.parseInt(strings.get(0));
         this.x = Integer.parseInt(strings.get(1));
         this.y = Integer.parseInt(strings.get(2));
@@ -28,19 +28,19 @@ public class Claim {
         return id;
     }
 
-    public int getX() {
+    public int getX0() {
         return x;
     }
 
-    public int getY() {
+    public int getY0() {
         return y;
     }
 
-    public int getWidth() {
-        return width;
+    public int getX1() {
+        return x + width;
     }
 
-    public int getHeight() {
-        return height;
+    public int getY1() {
+        return y + height;
     }
 }
