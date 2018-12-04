@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.day4;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +13,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class GuardLogger {
 
     private static String inputPath = "day4.txt";
