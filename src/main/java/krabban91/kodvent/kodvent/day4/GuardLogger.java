@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.day4;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,22 +25,15 @@ public class GuardLogger {
         System.out.println("::: Starting Day 4:::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             logGuardEntries(stream);
-            int part1 = getPart1();
-            System.out.println(": answer to part 1 :");
-            System.out.println(part1);
-            int part2 = getPart2();
-            System.out.println(": answer to part 2 :");
-            System.out.println(part2);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void logGuardEntries(Stream<String> stream) {
-        stream
-                .sorted(String::compareTo)
-                .map(TimeEntry::new)
-                .forEach(this::logEntry);
+        int part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        int part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 
     public int getPart1() {
@@ -48,6 +42,13 @@ public class GuardLogger {
 
     public int getPart2() {
         return getResultBasedOnStrategy(this::guardSleepsMostAtACertainMinute);
+    }
+
+    private void logGuardEntries(Stream<String> stream) {
+        stream
+                .sorted(String::compareTo)
+                .map(TimeEntry::new)
+                .forEach(this::logEntry);
     }
 
     private void logEntry(TimeEntry timeEntry) {

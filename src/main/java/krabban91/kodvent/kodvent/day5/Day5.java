@@ -17,19 +17,15 @@ public class Day5 {
         System.out.println("::: Starting Day 5:::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             readInput(stream);
-            int part1 = getPart1();
-            System.out.println(": answer to part 1 :");
-            System.out.println(part1);
-            int part2 = getPart2();
-            System.out.println(": answer to part 2 :");
-            System.out.println(part2);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void readInput(Stream<String> stream) {
-
+        int part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        int part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 
     public int getPart1() {
@@ -38,5 +34,9 @@ public class Day5 {
 
     public int getPart2() {
         return -1;
+    }
+
+    private void readInput(Stream<String> stream) {
+
     }
 }

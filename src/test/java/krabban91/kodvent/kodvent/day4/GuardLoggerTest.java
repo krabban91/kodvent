@@ -19,31 +19,18 @@ import static org.assertj.core.api.Assertions.fail;
 @SpringBootTest
 public class GuardLoggerTest {
 
-    private static String inputPath = "day4.txt";
-
     @Autowired
     GuardLogger guardLogger;
 
     @Test
     public void getPart1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            guardLogger.logGuardEntries(stream);
-            int part1 = guardLogger.getPart1();
-            assertThat(part1).isEqualTo(240);
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("exception on io.");
-        }
+        int part1 = guardLogger.getPart1();
+        assertThat(part1).isEqualTo(240);
     }
+
     @Test
     public void getPart2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            guardLogger.logGuardEntries(stream);
-            int part2 = guardLogger.getPart2();
-            assertThat(part2).isEqualTo(4455);
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("exception on io.");
-        }
+        int part2 = guardLogger.getPart2();
+        assertThat(part2).isEqualTo(4455);
     }
 }
