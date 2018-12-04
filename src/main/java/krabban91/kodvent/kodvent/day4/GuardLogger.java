@@ -45,10 +45,34 @@ public class GuardLogger {
         return guard * minute;
     }
 
-    private Map.Entry<Integer,List<String>> getMinuteEntryWithMostOverlaps(Map.Entry<Integer, Map<Integer, List<String>>> max) {
+    public int getPart2() {
+        Map.Entry<Integer, Map<Integer, List<String>>> max = getGuardThatSleepsMostAtACertainMinute();
+        int guard = max.getKey();
+        Map.Entry<Integer, List<String>> bestMinute = getMinuteEntryWithMostOverlaps(max);
+        int minute = bestMinute.getKey();
+        return guard * minute;
+    }
+
+    private Map.Entry<Integer, List<String>> getMinuteEntryWithMostOverlaps(Map.Entry<Integer, Map<Integer, List<String>>> max) {
         return max.getValue().entrySet()
                 .stream()
                 .max(Comparator.comparingInt(e -> e.getValue().size())).get();
+    }
+
+    private Map.Entry<Integer, Map<Integer, List<String>>> getGuardThatSleepsMostAtACertainMinute() {
+        return guardEntries
+                .entrySet()
+                .stream()
+                .max(Comparator.comparingInt(this::getcompareValue))
+                .get();
+    }
+
+    private int getcompareValue(Map.Entry<Integer, Map<Integer, List<String>>> e) {
+        return e.getValue()
+                .entrySet()
+                .stream()
+                .max(Comparator.comparingInt(val -> val.getValue().size()))
+                .get().getValue().size();
     }
 
     private Map.Entry<Integer, Map<Integer, List<String>>> getGuardThatSleepsTheMostMinutes() {
@@ -68,11 +92,11 @@ public class GuardLogger {
         if (timeEntry.getTypeOfEntry() == 0) {
             currentGuard = timeEntry.getGuardId();
             currentDay = timeEntry.getDay();
+        }
+        if (timeEntry.getTypeOfEntry() == 1) {
             if (!guardEntries.containsKey(currentGuard)) {
                 guardEntries.put(currentGuard, new HashMap<>());
             }
-        }
-        if (timeEntry.getTypeOfEntry() == 1) {
             momentOfFallingAsleep = timeEntry.getMinute();
         }
         if (timeEntry.getTypeOfEntry() == 2) {
@@ -85,9 +109,5 @@ public class GuardLogger {
                 guardEntries.get(currentGuard).get(i).add(currentDay);
             }
         }
-    }
-
-    private int getPart2() {
-        return -1;
     }
 }
