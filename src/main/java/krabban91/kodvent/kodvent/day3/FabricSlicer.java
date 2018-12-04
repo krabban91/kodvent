@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-@Component
 public class FabricSlicer {
 
     private static String inputPath = "day3.txt";
