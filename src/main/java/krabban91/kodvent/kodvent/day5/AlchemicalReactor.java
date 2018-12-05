@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.day5;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,28 +11,12 @@ import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class AlchemicalReactor {
 
     private static String inputPath = "day5.txt";
     private String inputPolymer;
     private static String alphabet = "abcdefghijklmnopqrstuvwxyz";
     private Map<String, Integer> score = new HashMap<>();
-
-    public AlchemicalReactor() {
-        System.out.println("::: Starting Day 5:::");
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
-        int part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
-    }
 
     public int getPart1() {
         return this.applyReactionFully(inputPolymer).length();
@@ -47,6 +30,10 @@ public class AlchemicalReactor {
                 .get().getValue();
     }
 
+    private void readInput(Stream<String> stream) {
+        this.inputPolymer = stream.findFirst().get();
+    }
+
     private void retrieveResultForUnit(int i) {
         String character = alphabet.substring(i, i + 1);
         score.put(character, applyReactionFully(inputPolymer
@@ -56,11 +43,12 @@ public class AlchemicalReactor {
 
     private String applyReactionFully(String polymer) {
         int length = Integer.MAX_VALUE;
+        String result = polymer;
         while (length != polymer.length()) {
             length = polymer.length();
-            polymer = this.performReaction(polymer);
+            result = this.performReaction(polymer);
         }
-        return polymer;
+        return result;
     }
 
     private String performReaction(String polymer) {
@@ -83,7 +71,18 @@ public class AlchemicalReactor {
         return !l.equals(r) && (l.equals(Character.toLowerCase(r)) || l.equals(Character.toUpperCase(r)));
     }
 
-    private void readInput(Stream<String> stream) {
-        this.inputPolymer = stream.findFirst().get();
+    public AlchemicalReactor() {
+        System.out.println("::: Starting Day 5:::");
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        int part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 }

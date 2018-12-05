@@ -18,19 +18,17 @@ public class InventoryManager {
     private List<Map<Integer, Integer>> inventory = new LinkedList<>();
     private List<List<Integer>> words = new LinkedList<>();
 
-    public InventoryManager() {
-        System.out.println("::: Starting Day 2 :::");
-        long part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
-        String part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
+    private long getPart1() {
+        return this.inventoryCheck();
     }
 
     private String getPart2() {
         return words.stream().filter(this::matchesIdWithOneOther).findAny().get().stream().collect(StringBuilder::new,
                 StringBuilder::appendCodePoint, StringBuilder::append).toString();
+    }
+
+    private void readInventoryList(Stream<String> stream) {
+        stream.forEach(this::inventoryRoundup);
     }
 
     private boolean matchesIdWithOneOther(List<Integer> curr) {
@@ -43,7 +41,7 @@ public class InventoryManager {
     private boolean almostMatch(List<Integer> item, List<Integer> other) {
         boolean differByOne = false;
         for (int i = 0; i < item.size(); i++) {
-            if (item.get(i) != other.get(i)) {
+            if (!item.get(i).equals(other.get(i))) {
                 if (differByOne) {
                     return false;
                 }
@@ -51,15 +49,6 @@ public class InventoryManager {
             }
         }
         return differByOne;
-    }
-
-    private long getPart1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            stream.forEach(this::inventoryRoundup);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return this.inventoryCheck();
     }
 
     private long inventoryCheck() {
@@ -83,5 +72,20 @@ public class InventoryManager {
         this.words.add(string);
         this.inventory.add(values);
         return s;
+    }
+
+    public InventoryManager() {
+        System.out.println("::: Starting Day 2 :::");
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            readInventoryList(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        long part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        String part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 }

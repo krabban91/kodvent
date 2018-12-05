@@ -20,21 +20,6 @@ public class GuardLogger {
     private Integer currentGuard = null;
     private int startedSleepingAt;
 
-    public GuardLogger() {
-        System.out.println("::: Starting Day 4:::");
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            logGuardEntries(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
-        int part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
-    }
-
     public int getPart1() {
         return getResultBasedOnStrategy(this::guardSleepsTheMostMinutes);
     }
@@ -44,8 +29,7 @@ public class GuardLogger {
     }
 
     private void logGuardEntries(Stream<String> stream) {
-        stream
-                .sorted(String::compareTo)
+        stream.sorted(String::compareTo)
                 .map(TimeEntry::new)
                 .forEach(this::logEntry);
     }
@@ -119,5 +103,20 @@ public class GuardLogger {
                 .stream()
                 .max(Comparator.comparingInt(minute -> minute.getValue().get()))
                 .get().getValue().get();
+    }
+
+    public GuardLogger() {
+        System.out.println("::: Starting Day 4:::");
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            logGuardEntries(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        int part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 }
