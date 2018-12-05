@@ -9,8 +9,6 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -42,43 +40,48 @@ public class AlchemicalReactor {
     }
 
     public int getPart2() {
-        IntStream.range(0,alphabet.length()).forEach(this::retrieveResultForUnit);
+        IntStream.range(0, alphabet.length()).forEach(this::retrieveResultForUnit);
         return score.entrySet()
                 .stream()
-                .min(Comparator.comparingInt(e-> e.getValue()))
+                .min(Comparator.comparingInt(e -> e.getValue()))
                 .get().getValue();
     }
 
     private void retrieveResultForUnit(int i) {
         String character = alphabet.substring(i, i + 1);
-        score.put(character, applyReactionFully(inputPolymer.replaceAll(character,"").replaceAll(character.toUpperCase(),"")).length());
+        score.put(character, applyReactionFully(inputPolymer
+                .replaceAll(String.format("[(%s)(%s)]", character, character.toUpperCase()), ""))
+                .length());
     }
 
-
-
-    private String applyReactionFully(String s){
-        int length= Integer.MAX_VALUE;
-        while (length != s.length()){
-            length = s.length();
-            s = this.performReaction(s);
+    private String applyReactionFully(String polymer) {
+        int length = Integer.MAX_VALUE;
+        while (length != polymer.length()) {
+            length = polymer.length();
+            polymer = this.performReaction(polymer);
         }
-        return s;
+        return polymer;
     }
 
-    private String performReaction(String s){
-        for(int i = 0; i<s.length()-1; i++){
-            if(isMatchingUnit(s.charAt(i),s.charAt(i+1))){
-                return s.substring(0,i)+s.substring(i+2);
+    private String performReaction(String polymer) {
+        return polymer.chars()
+                .mapToObj(i -> (char) i)
+                .reduce("", this::react, String::concat);
+    }
+
+    private String react(String polymer, Character unit) {
+        if (polymer.length() != 0) {
+            int lastIndex = polymer.length() - 1;
+            if (isMatchingUnit(polymer.charAt(lastIndex), unit)) {
+                return polymer.substring(0, lastIndex);
             }
         }
-        return s;
+        return polymer + unit;
     }
 
-    private boolean isMatchingUnit(Character l, Character r){
+    private boolean isMatchingUnit(Character l, Character r) {
         return !l.equals(r) && (l.equals(Character.toLowerCase(r)) || l.equals(Character.toUpperCase(r)));
     }
-
-
 
     private void readInput(Stream<String> stream) {
         this.inputPolymer = stream.findFirst().get();
