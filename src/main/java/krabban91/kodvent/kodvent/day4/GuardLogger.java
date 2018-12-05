@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.day4;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;

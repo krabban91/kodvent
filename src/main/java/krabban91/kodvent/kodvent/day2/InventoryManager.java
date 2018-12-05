@@ -1,14 +1,14 @@
 package krabban91.kodvent.kodvent.day2;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.jar.Manifest;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class InventoryManager {
@@ -26,14 +26,12 @@ public class InventoryManager {
         String part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
-
     }
 
     private String getPart2() {
         return words.stream().filter(this::matchesIdWithOneOther).findAny().get().stream().collect(StringBuilder::new,
                 StringBuilder::appendCodePoint, StringBuilder::append).toString();
     }
-
 
     private boolean matchesIdWithOneOther(List<Integer> curr) {
         return words
@@ -44,17 +42,16 @@ public class InventoryManager {
 
     private boolean almostMatch(List<Integer> item, List<Integer> other) {
         boolean differByOne = false;
-        for(int i = 0; i < item.size(); i++){
-            if(item.get(i) != other.get(i)){
-                if(differByOne){
+        for (int i = 0; i < item.size(); i++) {
+            if (item.get(i) != other.get(i)) {
+                if (differByOne) {
                     return false;
                 }
                 differByOne = true;
             }
         }
         return differByOne;
-        }
-
+    }
 
     private long getPart1() {
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
@@ -66,22 +63,20 @@ public class InventoryManager {
     }
 
     private long inventoryCheck() {
-        int doubles= inventory.stream().mapToInt(m -> m.values().contains(2)? 1: 0).sum();
-        int triples= inventory.stream().mapToInt(m -> m.values().contains(3)? 1: 0).sum();
-        System.out.println("doubles:"+doubles+ ", triples: "+triples);
-        return doubles*triples;
-
+        int doubles = inventory.stream().mapToInt(m -> m.values().contains(2) ? 1 : 0).sum();
+        int triples = inventory.stream().mapToInt(m -> m.values().contains(3) ? 1 : 0).sum();
+        System.out.println("doubles:" + doubles + ", triples: " + triples);
+        return doubles * triples;
     }
 
-
     private String inventoryRoundup(String s) {
-        Map<Integer,Integer> values = new HashMap<>();
+        Map<Integer, Integer> values = new HashMap<>();
         List<Integer> string = new LinkedList<>();
         s.chars().forEach(letter -> {
             string.add(letter);
-            if(values.containsKey(letter)){
-                values.put(letter, values.get(letter)+1);
-            }else {
+            if (values.containsKey(letter)) {
+                values.put(letter, values.get(letter) + 1);
+            } else {
                 values.put(letter, 1);
             }
         });
@@ -89,5 +84,4 @@ public class InventoryManager {
         this.inventory.add(values);
         return s;
     }
-
 }
