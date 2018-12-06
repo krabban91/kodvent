@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 public class GridContainer {
     private HashMap<Point, Integer>[][] grid;
+    private HashMap<Point, Integer>[][] gridAll;
     private int dx;
     private int dy;
 
@@ -20,6 +21,7 @@ public class GridContainer {
         dx = minX;
         dy = minY;
         grid = new HashMap[maxX - minX + 1][maxY - minY + 1];
+        gridAll = new HashMap[maxX - minX + 1][maxY - minY + 1];
     }
 
     public void measureDistancesToCoordinates(List<Point> coordinates) {
@@ -30,8 +32,18 @@ public class GridContainer {
         IntStream.range(0, getWidth()).forEach(x -> IntStream.range(0, getHeight()).forEach(y -> {
             if (grid[x][y] == null) {
                 grid[x][y] = new HashMap<>();
+                gridAll[x][y] = new HashMap<>();
             }
-            grid[x][y].put(point, CoordinatePicker.manhattanDistance(point, new Point(x + dx, y + dy)));
+            Point thisPoint = new Point(x + dx, y + dy);
+            int distance = CoordinatePicker.manhattanDistance(point, thisPoint);
+            HashMap<Point, Integer> patch = grid[x][y];
+            if (!patch.entrySet().stream().anyMatch(e -> e.getValue() < distance)) {
+                if (patch.entrySet().stream().anyMatch(e -> e.getValue() > distance)) {
+                    patch.clear();
+                }
+                patch.put(point, distance);
+            }
+            gridAll[x][y].put(point, distance);
         }));
     }
 
@@ -47,17 +59,14 @@ public class GridContainer {
         return Stream.of(grid)
                 .map(col -> Stream.of(col)
                         .filter(m -> m.containsKey(point))
-                        .filter(m -> m.entrySet()
-                                .stream()
-                                .min(Comparator.comparingInt(d -> d.getValue()))
-                                .get().getKey().equals(point))
+                        .filter(m -> m.size() == 1)
                         .count())
                 .reduce(0l, Long::sum)
                 .intValue();
     }
 
     public int getAreaOfNearRegion(int limit) {
-        return Stream.of(grid)
+        return Stream.of(gridAll)
                 .map(col -> Stream.of(col)
                         .map(GridContainer::sumOfDistances)
                         .filter(val -> val < limit)
