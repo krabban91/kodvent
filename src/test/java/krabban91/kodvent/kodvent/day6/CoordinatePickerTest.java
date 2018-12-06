@@ -32,7 +32,7 @@ public class CoordinatePickerTest {
     @Before
     public void setUp(){
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            readInput(stream);
+            locations = coordinatePicker.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -68,9 +68,7 @@ public class CoordinatePickerTest {
 
     @Test
     public void setUpGrid() {
-       GridContainer hashMaps = coordinatePicker.setUpGrid(locations.stream()
-                .filter(coordinatePicker::hasInfinateArea)
-                .collect(Collectors.toList()));
+       GridContainer hashMaps = coordinatePicker.setUpGrid();
         assertThat(hashMaps.getWidth()).isEqualTo(8);
         assertThat(hashMaps.getHeight()).isEqualTo(9);
     }
@@ -84,10 +82,7 @@ public class CoordinatePickerTest {
         points.put(locations.get(3),2);
         points.put(locations.get(4),3);
         points.put(locations.get(5),10);
-        assertThat(CoordinatePicker.sumOfDistances(points)).isEqualTo(30);
+        assertThat(GridContainer.sumOfDistances(points)).isEqualTo(30);
     }
 
-    private void readInput(Stream<String> stream) {
-        locations = stream.map(coordinatePicker::mapToPoint).collect(Collectors.toList());
-    }
 }

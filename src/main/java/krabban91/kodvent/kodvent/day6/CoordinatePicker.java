@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,51 +17,27 @@ public class CoordinatePicker {
     private static String inputPath = "day6.txt";
 
     private List<Point> locations;
-
-    public CoordinatePicker() {
-        System.out.println("::: Starting Day 5:::");
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
-        int part2 = getPart2(10000);
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
-    }
-
+    private GridContainer grid;
 
     public int getPart1() {
-        List<Point> cornerPoints = locations.stream()
-                .filter(this::hasInfinateArea)
-                .collect(Collectors.toList());
-        GridContainer grid = setUpGrid(cornerPoints);
-        locations.stream().forEach(grid::assignAvailablePatches);
-        return grid.getManhattanArea(locations.stream()
+        return locations.stream()
                 .filter(this::hasFiniteArea)
-                .max(Comparator.comparingInt(grid::getManhattanArea))
-                .get());
+                .map(grid::getManhattanArea)
+                .max(Comparator.comparingInt(e -> e.intValue())).get();
     }
 
-    public GridContainer setUpGrid(List<Point> corners) {
-        return new GridContainer(corners, 0);
+    public int getPart2(int distanceLimit) {
+        return grid.getAreaOfNearRegion(distanceLimit);
     }
 
-    public int getPart2(int maxDistance) {
-        GridContainer grid = prepare2();
-        return grid.getAreaOfNearRegion(maxDistance);
+    public GridContainer setUpGrid() {
+        GridContainer gridContainer = new GridContainer(getCornerCoordinates());
+        gridContainer.measureDistancesToCoordinates(locations);
+        return gridContainer;
     }
 
-    private GridContainer prepare2() {
-        List<Point> cornerPoints = locations.stream()
-                .filter(this::hasInfinateArea)
-                .collect(Collectors.toList());
-        GridContainer grid = setUpGrid(cornerPoints);
-        locations.stream().forEach(grid::mapDistances);
-        return grid;
+    public static int manhattanDistance(Point point, Point other) {
+        return (int) (Math.abs(point.getX() - other.getX()) + Math.abs(point.getY() - other.getY()));
     }
 
     public boolean hasFiniteArea(Point point) {
@@ -82,29 +57,21 @@ public class CoordinatePicker {
                 isAnyCloserThan(point, bottomRight, manhattanDistance(point, bottomRight)));
     }
 
-    private boolean isAnyCloserThan(Point point, Point topLeft, int topLeftDistance) {
-        List<Point> collect = locations.stream()
-                .filter(p -> !p.equals(point)).collect(Collectors.toList());
-        return collect.stream().anyMatch(p -> isCloserToThan(p, topLeft, topLeftDistance));
-    }
-
     public static boolean isCloserToThan(Point point, Point other, int distance) {
         int distance1 = manhattanDistance(point, other);
         return distance1 <= distance;
     }
 
-    public static int manhattanDistance(Point point, Point other) {
-        return (int) (Math.abs(point.getX() - other.getX()) + Math.abs(point.getY() - other.getY()));
+    private List<Point> getCornerCoordinates() {
+        return locations.stream()
+                .filter(this::hasInfinateArea)
+                .collect(Collectors.toList());
     }
 
-    private void readInput(Stream<String> stream) {
-        locations = stream.map(this::mapToPoint).collect(Collectors.toList());
-    }
-
-    public static int sumOfDistances(HashMap<Point,Integer> map){
-        return map.entrySet().stream()
-                .map(e -> e.getValue())
-                .reduce(0, Integer::sum);
+    private boolean isAnyCloserThan(Point point, Point other, int distance) {
+        return locations.stream()
+                .filter(p -> !p.equals(point))
+                .anyMatch(p -> isCloserToThan(p, other, distance));
     }
 
     public Point mapToPoint(String row) {
@@ -112,5 +79,25 @@ public class CoordinatePicker {
         int x = Integer.parseInt(strings[0]);
         int y = Integer.parseInt(strings[1]);
         return new Point(x, y);
+    }
+
+    public List<Point> readInput(Stream<String> stream) {
+        return stream.map(this::mapToPoint).collect(Collectors.toList());
+    }
+
+    public CoordinatePicker() {
+        System.out.println("::: Starting Day 6 :::");
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            locations = readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        grid = this.setUpGrid();
+        int part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        int part2 = getPart2(10000);
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
     }
 }
