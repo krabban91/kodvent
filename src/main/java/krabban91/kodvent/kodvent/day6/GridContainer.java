@@ -4,7 +4,6 @@ import java.awt.*;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -12,6 +11,7 @@ public class GridContainer {
     private HashMap<Point, Integer>[][] grid;
     private int dx;
     private int dy;
+    private HashMap<Point, Integer>[][] distanceMapping;
 
     public GridContainer(List<Point> cornerPoints, int extraPadding) {
         int minX = cornerPoints.stream().min(Comparator.comparingInt(p -> p.x)).get().x;
@@ -21,6 +21,7 @@ public class GridContainer {
         dx = minX;
         dy = minY;
         grid = new HashMap[maxX - minX + 1][maxY - minY + 1];
+        distanceMapping = new HashMap[maxX - minX + 1][maxY - minY + 1];
     }
 
     public int getWidth() {
@@ -47,12 +48,31 @@ public class GridContainer {
         }));
     }
 
+    public void mapDistances(Point point) {
+        IntStream.range(0, getWidth()).forEach(x -> IntStream.range(0, getHeight()).forEach(y -> {
+            if (distanceMapping[x][y] == null) {
+                distanceMapping[x][y] = new HashMap<>();
+            }
+            distanceMapping[x][y].put(point, CoordinatePicker.manhattanDistance(point, new Point(x + dx, y + dy)));
+        }));
+    }
+
+    public int getAreaOfNearRegion(int distance) {
+        return Stream.of(distanceMapping)
+                .map(col -> Stream.of(col)
+                        .map(CoordinatePicker::sumOfDistances)
+                        .filter(val -> val < distance)
+                        .reduce(0, (l, r) -> l + 1))
+                .reduce(0, Integer::sum)
+                .intValue();
+    }
+
     public int getManhattanArea(Point point) {
         return Stream.of(grid)
                 .map(col -> Stream.of(col)
                         .filter(m -> m.size() == 1)
                         .filter(m -> m.entrySet().stream()
-                                .anyMatch(e-> e.getKey().equals(point)))
+                                .anyMatch(e -> e.getKey().equals(point)))
                         .count())
                 .reduce(0l, Long::sum)
                 .intValue();

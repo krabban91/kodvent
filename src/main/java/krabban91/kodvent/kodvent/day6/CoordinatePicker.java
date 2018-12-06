@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,10 +29,11 @@ public class CoordinatePicker {
         int part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        int part2 = getPart2();
+        int part2 = getPart2(10000);
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
+
 
     public int getPart1() {
         List<Point> cornerPoints = locations.stream()
@@ -49,16 +51,18 @@ public class CoordinatePicker {
         return new GridContainer(corners, 0);
     }
 
-    public int getGridWidth(List<Point> corners) {
-        return -1;
+    public int getPart2(int maxDistance) {
+        GridContainer grid = prepare2();
+        return grid.getAreaOfNearRegion(maxDistance);
     }
 
-    public int getGridHeight(List<Point> corners) {
-        return -1;
-    }
-
-    public int getPart2() {
-        return -1;
+    private GridContainer prepare2() {
+        List<Point> cornerPoints = locations.stream()
+                .filter(this::hasInfinateArea)
+                .collect(Collectors.toList());
+        GridContainer grid = setUpGrid(cornerPoints);
+        locations.stream().forEach(grid::mapDistances);
+        return grid;
     }
 
     public boolean hasFiniteArea(Point point) {
@@ -95,6 +99,12 @@ public class CoordinatePicker {
 
     private void readInput(Stream<String> stream) {
         locations = stream.map(this::mapToPoint).collect(Collectors.toList());
+    }
+
+    public static int sumOfDistances(HashMap<Point,Integer> map){
+        return map.entrySet().stream()
+                .map(e -> e.getValue())
+                .reduce(0, Integer::sum);
     }
 
     public Point mapToPoint(String row) {

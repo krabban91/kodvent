@@ -46,8 +46,8 @@ public class CoordinatePickerTest {
 
     @Test
     public void getPart2() {
-        int part2 = coordinatePicker.getPart2();
-        assertThat(part2).isEqualTo(-1);
+        int part2 = coordinatePicker.getPart2(32);
+        assertThat(part2).isEqualTo(16);
     }
 
     @Test
@@ -73,6 +73,18 @@ public class CoordinatePickerTest {
                 .collect(Collectors.toList()));
         assertThat(hashMaps.getWidth()).isEqualTo(8);
         assertThat(hashMaps.getHeight()).isEqualTo(9);
+    }
+
+    @Test
+    public void sumOfDistances() {
+        HashMap<Point, Integer> points = new HashMap<>();
+        points.put(locations.get(0),5);
+        points.put(locations.get(1),6);
+        points.put(locations.get(2),4);
+        points.put(locations.get(3),2);
+        points.put(locations.get(4),3);
+        points.put(locations.get(5),10);
+        assertThat(CoordinatePicker.sumOfDistances(points)).isEqualTo(30);
     }
 
     private void readInput(Stream<String> stream) {
