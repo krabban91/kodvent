@@ -22,7 +22,7 @@ public class Day7Test {
 
     private static String inputPath = "day7.txt";
 
-    private List<Integer> rows;
+    private List<Order> rows;
 
     @Autowired
     private Day7 day7;
@@ -38,8 +38,8 @@ public class Day7Test {
 
     @Test
     public void getPart1() {
-        int part1 = day7.getPart1();
-        assertThat(part1).isEqualTo(-1);
+        String part1 = day7.getPart1();
+        assertThat(part1).isEqualTo("CABDFE");
     }
 
     @Test
