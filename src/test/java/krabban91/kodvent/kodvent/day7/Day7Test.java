@@ -44,7 +44,20 @@ public class Day7Test {
 
     @Test
     public void getPart2() {
-        int part2 = day7.getPart2();
-        assertThat(part2).isEqualTo(-1);
+        int part2 = day7.getPart2(2,0);
+        assertThat(part2).isEqualTo(15);
+    }
+
+
+    @Test
+    public void getCostForJob() {
+        int cost = day7.getCostForJob('A',0);
+        assertThat(cost).isEqualTo(1);
+
+        cost = day7.getCostForJob('A',60);
+        assertThat(cost).isEqualTo(61);
+
+        cost = day7.getCostForJob('Z',60);
+        assertThat(cost).isEqualTo(86);
     }
 }

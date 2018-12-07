@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Component
@@ -19,50 +20,112 @@ public class Day7 {
     StringBuilder performed = new StringBuilder();
 
     public String getPart1() {
+        resetValues();
         while (!avaliableMoves.isEmpty()) {
             Character poll = avaliableMoves.poll();
-            List<Character> remove = blockingMoves.remove(poll);
-            if (remove != null) {
-                remove.stream()
-                        .filter(order -> !blockingMoves.values()
-                                .stream()
-                                .anyMatch(l -> l.contains(order)))
-                        .forEach(order -> {
-                            if (!avaliableMoves.contains(order)) {
-                                avaliableMoves.add(order);
-                            }
-                        });
-            }
-            performed.append(poll);
-
+            completeJob(poll);
         }
         return performed.toString();
     }
 
-
-    public int getPart2() {
-        return -1;
+    public int getPart2(int numberOfWorkers, int extraTimePerJob) {
+        resetValues();
+        int timeTaken = 0;
+        List<Worker> workers = IntStream.range(0, numberOfWorkers)
+                .mapToObj(i -> new Worker())
+                .collect(Collectors.toList());
+        this.reportStatusHeader(workers.size());
+        while (thereIsWorkToBeDone(workers)) {
+            work(workers);
+            getMoreWork(extraTimePerJob, workers);
+            reportStatus(timeTaken, workers);
+            timeTaken++;
+        }
+        return --timeTaken;
     }
 
-    public Order parseRow(String row) {
-        return new Order(row);
+    private boolean thereIsWorkToBeDone(List<Worker> workers) {
+        return !blockingMoves.isEmpty() || !avaliableMoves.isEmpty() || workers.stream().filter(Worker::isWorking).count()>0;
+    }
+
+    private void work(List<Worker> workers) {
+        workers.stream()
+                .filter(Worker::isWorking)
+                .map(Worker::doWork)
+                .filter(Objects::nonNull)
+                .forEach(this::completeJob);
+    }
+
+    private void getMoreWork(int extraTimePerJob, List<Worker> workers) {
+        workers.stream()
+                .filter(Worker::isAvailable)
+                .forEach(w -> this.getAJob(w, extraTimePerJob));
+    }
+
+    private void reportStatus(int timeTaken, List<Worker> workers) {
+        StringBuilder second = new StringBuilder().append(timeTaken).append('\t').append('\t');
+        workers.forEach(i-> second.append(i.getWorkingOn()).append('\t').append('\t').append('\t'));
+        second.append(performed.toString());
+        System.out.println(second.toString());
+
+    }
+
+    private void reportStatusHeader(int workerCount) {
+        StringBuilder second = new StringBuilder().append("Second").append('\t');
+        IntStream.range(0,workerCount).forEach(i-> second.append("Worker "+i).append('\t'));
+        second.append("Done");
+        System.out.println(second.toString());
+    }
+
+    private void completeJob(Character poll) {
+        List<Character> remove = blockingMoves.remove(poll);
+        if (remove != null) {
+            remove.stream()
+                    .filter(order -> !blockingMoves.values()
+                            .stream()
+                            .anyMatch(l -> l.contains(order)))
+                    .forEach(order -> {
+                        if (!avaliableMoves.contains(order)) {
+                            avaliableMoves.add(order);
+                        }
+                    });
+        }
+        performed.append(poll);
+    }
+
+    private void getAJob(Worker worker, int extraCost) {
+        if (!avaliableMoves.isEmpty()) {
+            Character job = avaliableMoves.poll();
+            worker.assignWork(job, getCostForJob(job, extraCost));
+        }
+    }
+
+    public int getCostForJob(char order, int extraCost) {
+        return extraCost + ((int) order - (int) 'A') + 1;
     }
 
     public List<Order> readInput(Stream<String> stream) {
         return stream.map(this::parseRow).collect(Collectors.toList());
     }
 
-    private void addToAvailable(Order order){
+    public Order parseRow(String row) {
+        return new Order(row);
+    }
+
+    private void resetValues() {
+        performed = new StringBuilder();
+        orderList.forEach(this::addToAvailable);
+        orderList.forEach(this::addToBlocking);
+    }
+
+    private void addToAvailable(Order order) {
         if (!avaliableMoves.contains(order.getOther())) {
             avaliableMoves.add(order.getOther());
         }
     }
 
     private void addToBlocking(Order order) {
-
-        if (avaliableMoves.contains(order.getSelf())) {
-            avaliableMoves.remove(order.getSelf());
-        }
+        avaliableMoves.remove(order.getSelf());
         if (!blockingMoves.containsKey(order.getOther())) {
             blockingMoves.put(order.getOther(), new LinkedList<>());
         }
@@ -79,12 +142,10 @@ public class Day7 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        orderList.forEach(this::addToAvailable);
-        orderList.forEach(this::addToBlocking);
         String part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        int part2 = getPart2();
+        int part2 = getPart2(5, 60);
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
