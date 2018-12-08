@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day7 {
     private static String inputPath = "day7.txt";
     List<Order> orderList;

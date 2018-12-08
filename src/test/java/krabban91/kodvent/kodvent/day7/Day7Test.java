@@ -40,6 +40,7 @@ public class Day7Test {
     public void getPart1() {
         String part1 = day7.getPart1();
         assertThat(part1).isEqualTo("CABDFE");
+        assertThat(part1).isEqualTo("CABDFE");
     }
 
     @Test
