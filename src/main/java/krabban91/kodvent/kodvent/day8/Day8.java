@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day8 {
     private static String inputPath = "day8.txt";
     LicenseTreeNode licenseTree;
@@ -38,7 +37,7 @@ public class Day8 {
     }
 
     public Day8() {
-        System.out.println("::: Starting Day 7 :::");
+        System.out.println("::: Starting Day 8 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             licenseTree = readInput(stream);
         } catch (IOException e) {
