@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.day10;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day10 {
     private static String inputPath = "day10.txt";
     List<Star> stars;
@@ -77,7 +75,7 @@ public class Day10 {
     }
 
     public Day10() {
-        System.out.println("::: Starting Day 9 :::");
+        System.out.println("::: Starting Day 10 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             stars = readInput(stream);
         } catch (IOException e) {
