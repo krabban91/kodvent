@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.day11;
 
 import javafx.geometry.Point3D;
 
-import java.awt.*;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,53 +10,72 @@ import java.util.stream.IntStream;
 
 public class FuelCellGrid {
 
-    private Map<Point, Integer> grid;
-    private int serialNumber;
+    private Integer[][] grid;
+
 
     public FuelCellGrid(String serialNumber) {
         this(Integer.parseInt(serialNumber));
     }
 
     public FuelCellGrid(int serialNumber) {
-        this.serialNumber = serialNumber;
         grid = getInitialGrid(serialNumber);
     }
 
-    public Map.Entry<Point, Integer> gethighestValueFuelCell() {
-        Map<Point, Integer> scoreGrid = new HashMap<>();
-        IntStream.range(1, 299).forEach(x -> IntStream.range(1, 299).forEach(y -> scoreGrid.put(new Point(x, y), getFuelCellScore(x, y, 3))));
-        return scoreGrid.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get();
-    }
+    public Map.Entry<Point3D, Integer> getHighestValueFuelCellWithVariableWith(int maxWidth) {
+        Integer[][][] scoreGrid = new Integer[300][300][maxWidth + 1];
+        Map<Point3D, Integer> candidates = new HashMap<>();
+        AtomicInteger maxScore = new AtomicInteger(0);
 
-    public Map.Entry<Point3D, Integer> gethighestValueFuelCellWithVariableWith() {
-        Map<Point3D, Integer> scoreGrid = new HashMap<>();
-        IntStream.range(1, 301).forEach(z -> {
-            IntStream.range(1, 301 - z + 1).forEach(x ->
-                    IntStream.range(1, 301 - z + 1).forEach(y ->
-                            scoreGrid.put(new Point3D(x, y, z), getFuelCellScore(x, y, z))));
-            System.out.println(scoreGrid.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get());
+        IntStream.range(0, maxWidth + 1).forEach(z -> {
+            IntStream.range(0, 300 - z).forEach(x ->
+                    IntStream.range(0, 300 - z).forEach(y -> {
+                        int cellScore = getFuelCellScore(x, y, z, scoreGrid);
+                        scoreGrid[x][y][z] = cellScore;
+                        if (cellScore > maxScore.get()) {
+                            maxScore.set(cellScore);
+                            candidates.put(new Point3D(x + 1, y + 1, z), cellScore);
+                        }
+                    }));
         });
-        return scoreGrid.entrySet().stream().max(Comparator.comparingInt(Map.Entry::getValue)).get();
+        return candidates.entrySet().stream().filter(e -> e.getValue() != null).max(Comparator.comparingInt(Map.Entry::getValue)).get();
     }
 
-    private int getFuelCellScore(int x, int y, int size) {
-        AtomicInteger sum = new AtomicInteger(0);
-        IntStream.range(x, x + size).forEach(cx -> IntStream.range(y, y + size).forEach(cy -> sum.addAndGet(grid.get(new Point(cx, cy)))));
+    private int getFuelCellScore(int x, int y, int size, Integer[][][] scoreGrid) {
+        ensureNullSafety(x, y, scoreGrid);
+        if (size == 0) {
+            return 0;
+        }
+        AtomicInteger sum = new AtomicInteger(scoreGrid[x][y][size - 1]);
+        IntStream.range(x, x + size).forEach(cx -> sum.addAndGet(grid[cx][y + size - 1]));
+        IntStream.range(y, y + size - 1).forEach(cy -> sum.addAndGet(grid[x + size - 1][cy]));
         return sum.get();
     }
 
-    private static Map<Point, Integer> getInitialGrid(int serialNumber) {
-        HashMap<Point, Integer> grid = new HashMap<>();
-        IntStream.range(1, 301).forEach(x -> IntStream.range(1, 301).forEach(y -> {
-            Point point = new Point(x, y);
-            Integer rackId = x + 10;
-            grid.put(point, getGridValue(point, serialNumber));
-        }));
+    private void ensureNullSafety(int x, int y, Integer[][][] scoreGrid) {
+        if (scoreGrid[x] == null) {
+            scoreGrid[x] = new Integer[300][300];
+            if (scoreGrid[x][y] == null) {
+                scoreGrid[x][y] = new Integer[300];
+            }
+        }
+    }
+
+    // static functions assumes that cell 1,1 is stored in grid[0][0]
+    private static Integer[][] getInitialGrid(int serialNumber) {
+        Integer[][] grid = new Integer[300][300];
+        IntStream.range(0, 300).forEach(x -> {
+            if (grid[x] == null) {
+                grid[x] = new Integer[300];
+            }
+            IntStream.range(0, 300).forEach(y -> {
+                grid[x][y] = getGridValue(x, y, serialNumber);
+            });
+        });
         return grid;
     }
 
-    private static int getRackId(Point point) {
-        return point.x + 10;
+    private static int getRackId(int x) {
+        return x + 1 + 10;
     }
 
     private static int addValue(int value, int extra) {
@@ -72,19 +90,17 @@ public class FuelCellGrid {
         return addValue(value, serialNumber);
     }
 
-    private static int multiplyByRackId(Point point, int value) {
-        return value * getRackId(point);
+    private static int multiplyByRackId(int x, int value) {
+        return value * getRackId(x);
     }
 
-    private static int getGridValue(Point point, int serialNumber) {
+    private static int getGridValue(int x, int y, int serialNumber) {
         return addValue(
                 hundredsValue(
                         multiplyByRackId(
-                                point,
+                                x,
                                 addSerialNumber(
-                                        multiplyByRackId(
-                                                point,
-                                                point.y),
+                                        multiplyByRackId(x, y + 1),
                                         serialNumber))),
                 -5);
 

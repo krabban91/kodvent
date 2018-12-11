@@ -2,9 +2,7 @@ package krabban91.kodvent.kodvent.day11;
 
 import javafx.geometry.Point3D;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,12 +12,12 @@ public class Day11 {
     private static String inputPath = "day11.txt";
     FuelCellGrid grid;
 
-    public Point getPart1() {
-        return grid.gethighestValueFuelCell().getKey();
+    public Point3D getPart1() {
+        return grid.getHighestValueFuelCellWithVariableWith(3).getKey();
     }
 
     public Point3D getPart2() {
-        return grid.gethighestValueFuelCellWithVariableWith().getKey();
+        return grid.getHighestValueFuelCellWithVariableWith(300).getKey();
     }
 
 
@@ -29,7 +27,7 @@ public class Day11 {
                 .findFirst().get();
     }
 
-    public void SetSerialNumber(int serialNumber){
+    public void SetSerialNumber(int serialNumber) {
         grid = new FuelCellGrid(serialNumber);
     }
 
@@ -40,11 +38,11 @@ public class Day11 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Point part1 = getPart1();
+        Point3D part1 = getPart1();
         System.out.println(": answer to part 1 :");
-        System.out.println(part1.x+","+part1.y);
+        System.out.println(part1.getX() + "," + part1.getY());
         Point3D part2 = getPart2();
         System.out.println(": answer to part 2 :");
-        System.out.println(part2.getX()+","+part2.getY()+""+part2.getZ());
+        System.out.println(part2.getX() + "," + part2.getY() + "," + part2.getZ());
     }
 }
