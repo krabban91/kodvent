@@ -4,35 +4,26 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.stream.IntStream;
 
-public class CircularList<E> extends ArrayList<E> {
+public class CircularList<E> extends LinkedList<E> {
 
     public int lastIndex = 0;
 
-    @Override
-    public void add(int index, E value) {
-        if (index == 0 || index == size()) {
-            lastIndex = size();
-            add(value);
-        } else if (index < 0) {
-            add(index + size(), value);
-        } else if (index > size()) {
-            add(index - size(), value);
+    public void rotate(int steps){
+        if (steps == 0){
+            return;
+        }
+        if (steps <0){
+            IntStream.range(0,-steps).forEach(this::rotateBackward);
         } else {
-            lastIndex = index;
-            super.add(index, value);
+            IntStream.range(0,steps).forEach(this::rotateForward);
         }
     }
 
-    @Override
-    public E remove(int index) {
-        if (index < 0) {
-            return remove(index + size());
-        }
-        if (index >= size()) {
-            return remove(index - size());
-        }
-        lastIndex = index;
-        return super.remove(index);
+    private void rotateForward(int ignored) {
+        this.addLast(this.removeFirst());
+    }
+    private void rotateBackward(int ignored) {
+        this.addFirst(this.removeLast());
     }
 
     public String toString() {

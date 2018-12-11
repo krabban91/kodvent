@@ -12,48 +12,33 @@ public class CircularListTest {
     @Before
     public void before() {
         list = new CircularList();
-        list.add(0);
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.add(4);
+        list.addFirst(0);
+        list.addFirst(1);
+        list.addFirst(2);
+        list.addFirst(3);
+        list.addFirst(4);
     }
 
     @Test
-    public void addUnder() {
-        list.add(-10, 5);
-        assertThat(list.indexOf(5)).isEqualTo(5);
+    public void rotate0() {
+        list.rotate(0);
+        assertThat(list.removeFirst()).isEqualTo(4);
     }
 
     @Test
-    public void addOver() {
-        list.add(10, 5);
-        assertThat(list.indexOf(5)).isEqualTo(5);
+    public void rotate2() {
+        list.rotate(2);
+        assertThat(list.removeFirst()).isEqualTo(2);
+    }
+    @Test
+    public void rotate1() {
+        list.rotate(1);
+        assertThat(list.removeFirst()).isEqualTo(3);
     }
 
     @Test
-    public void add() {
-        list.add(2, 5);
-        assertThat(list.indexOf(5)).isEqualTo(2);
-    }
-
-    @Test
-    public void removeUnder() {
-        assertThat(list.remove(-10)).isEqualTo(0);
-    }
-
-    @Test
-    public void removeOver() {
-        assertThat(list.remove(10)).isEqualTo(0);
-    }
-
-    @Test
-    public void remove() {
-        assertThat(list.remove(2)).isEqualTo(2);
-    }
-
-    @Test
-    public void removeFirst() {
-        assertThat(list.remove(0)).isEqualTo(0);
+    public void rotateMinus7() {
+        list.rotate(7);
+        assertThat(list.removeFirst()).isEqualTo(2);
     }
 }

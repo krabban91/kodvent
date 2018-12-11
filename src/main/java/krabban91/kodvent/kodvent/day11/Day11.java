@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-@Component
 public class Day11 {
     private static String inputPath = "day11.txt";
     FuelCellGrid grid;
