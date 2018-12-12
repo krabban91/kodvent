@@ -1,36 +1,43 @@
-package krabban91.kodvent.kodvent.day12;
+package krabban91.kodvent.kodvent.day13;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day12 {
-    private static String inputPath = "day12.txt";
-    PlantGenerations in;
+@Component
+public class Day13 {
+    private static String inputPath = "day13.txt";
+    RailRoad in;
 
-    public long getPart1() {
-        return in.getGenerationScore(20);
+    public Point getPart1() {
+        return in.runUntilCollision();
     }
 
     public long getPart2() {
-        return in.getGenerationScore(50000000000L);
+        return -1;
     }
 
-    public PlantGenerations readInput(Stream<String> stream) {
-        return new PlantGenerations(stream);
+
+    public RailRoad readInput(Stream<String> stream) {
+        return new RailRoad(stream
+                .collect(Collectors.toList()));
     }
 
-    public Day12() {
-        System.out.println("::: Starting Day 12 :::");
+    public Day13() {
+        System.out.println("::: Starting Day 13 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        long part1 = getPart1();
+        Point part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
         long part2 = getPart2();
