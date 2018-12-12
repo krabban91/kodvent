@@ -14,14 +14,11 @@ public class Day12 {
     PlantGenerations in;
 
     public long getPart1() {
-        in.ageUntilGeneration(20);
         return in.getGenerationScore(20);
     }
 
     public long getPart2() {
-        in.ageUntilGeneration(50000000000L);
-
-        return in.getGenerationScore(20);
+        return in.getGenerationScore(50000000000L);
     }
 
     public PlantGenerations readInput(Stream<String> stream) {

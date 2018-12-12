@@ -11,6 +11,8 @@ public class PlantGenerations {
     List<PlantPattern> patterns;
     Map<Long, Long> plantSumPerGeneration = new HashMap<>();
     long currentGeneration = 0;
+    Long convergingStepValue;
+    Long convergingGeneration;
 
     public PlantGenerations(Stream<String> input) {
         List<String> collect = input.collect(Collectors.toList());
@@ -27,19 +29,78 @@ public class PlantGenerations {
         patterns = collect.stream().filter(s -> s.contains("=>")).map(PlantPattern::new).collect(Collectors.toList());
     }
 
-    public void countPlantsThisGeneration() {
-        plantSumPerGeneration.put(
-                currentGeneration,
-                state.entrySet()
-                        .stream()
-                        .filter(e -> e.getValue())
-                        .reduce(0L, (l, r) -> l + r.getKey(), Long::sum));
+    public void ageOneGeneration() {
+        Map<Long, Boolean> newState = state.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> producesPlant(e.getKey())));
+        if (currentGeneration > 1 && areSamePotsWithOffset(state, newState)) {
+            convergingGeneration = currentGeneration;
+            convergingStepValue = getSumOfState(newState) - getSumOfState(state);
+        } else {
+            state = newState;
+            padStateWithEmpties();
+            currentGeneration++;
+        }
+        countPlantsThisGeneration();
     }
 
-    public void ageOneGeneration() {
-        state = state.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> producesPlant(e.getKey())));
-        padStateWithEmpties();
-        currentGeneration++;
+    public long getGenerationScore(long generation) {
+        if (!this.hasConverged()) {
+            if (!this.plantSumPerGeneration.containsKey(generation)) {
+                this.ageUntilGeneration(generation);
+            }
+        }
+        if (this.hasConverged() && convergingGeneration < generation) {
+            return (generation - convergingGeneration) * convergingStepValue + this.plantSumPerGeneration.get(convergingGeneration);
+        }
+        return this.plantSumPerGeneration.get(generation);
+    }
+
+    private void printGeneration() {
+        StringBuilder b = new StringBuilder();
+        b.append(currentGeneration);
+        b.append(": ");
+        state.entrySet()
+                .stream()
+                .sorted(Comparator.comparingLong(Map.Entry::getKey))
+                .forEachOrdered(e -> b.append(e.getValue() ? '#' : '.'));
+        System.out.println(b.toString());
+    }
+
+    private void countPlantsThisGeneration() {
+        plantSumPerGeneration.put(
+                currentGeneration,
+                getSumOfState(state));
+    }
+
+    private Long getSumOfState(Map<Long, Boolean> state) {
+        return state.entrySet()
+                .stream()
+                .filter(Map.Entry::getValue)
+                .reduce(0L, (l, r) -> l + r.getKey(), Long::sum);
+    }
+
+    private boolean areSamePotsWithOffset(Map<Long, Boolean> state, Map<Long, Boolean> newState) {
+        long minFirst = state.entrySet()
+                .stream()
+                .filter(Map.Entry::getValue)
+                .min(Comparator.comparingLong(e -> e.getKey()))
+                .get()
+                .getKey();
+        long minSecond = newState.entrySet()
+                .stream()
+                .filter(Map.Entry::getValue)
+                .min(Comparator.comparingLong(e -> e.getKey()))
+                .get()
+                .getKey();
+        long diff = minSecond - minFirst;
+        return state.entrySet()
+                .stream()
+                .filter(Map.Entry::getValue)
+                .allMatch(oldPot -> newState.entrySet()
+                        .stream()
+                        .filter(Map.Entry::getValue)
+                        .anyMatch(newPot -> Long.compare(
+                                newPot.getKey() - diff,
+                                oldPot.getKey()) == 0));
     }
 
     private boolean producesPlant(long key) {
@@ -54,51 +115,24 @@ public class PlantGenerations {
     }
 
     private void padStateWithEmpties() {
-        Long max = state.entrySet().stream().filter(e -> e.getValue()).max(Comparator.comparingLong(e -> e.getKey())).get().getKey();
-        Long min = state.entrySet().stream().filter(e -> e.getValue()).min(Comparator.comparingLong(e -> e.getKey())).get().getKey();
-        LongStream.rangeClosed(max + 1, max + 4).forEach(e -> state.put(e, false));
-        LongStream.rangeClosed(min - 4, min - 1).forEach(e -> state.put(e, false));
+        Long max = state.entrySet().stream().filter(Map.Entry::getValue).max(Comparator.comparingLong(Map.Entry::getKey)).get().getKey();
+        Long min = state.entrySet().stream().filter(Map.Entry::getValue).min(Comparator.comparingLong(Map.Entry::getKey)).get().getKey();
+        LongStream.rangeClosed(max + 1, max + 2).forEach(e -> state.put(e, false));
+        LongStream.rangeClosed(min - 2, min - 1).forEach(e -> state.put(e, false));
     }
 
-    public void printGeneration() {
-        StringBuilder b = new StringBuilder();
-        b.append(currentGeneration);
-        b.append(": ");
-        state.entrySet().stream().sorted(Comparator.comparingLong(e -> e.getKey())).forEachOrdered(e -> {
-            if (e.getValue()) {
-                b.append('#');
-            } else {
-                b.append('.');
-            }
-        });
-        System.out.println(b.toString());
 
-    }
-    public void printGenerationScore(){
-        StringBuilder b = new StringBuilder();
-        b.append(currentGeneration);
-        b.append(": score= ");
-        b.append(getGenerationScore(currentGeneration));
-        System.out.println(b.toString());
-    }
-
-    public long getGenerationScore(long generation) {
-        return this.plantSumPerGeneration.get(generation);
-    }
-
-    public void ageUntilGeneration(long generation) {
+    private void ageUntilGeneration(long generation) {
         countPlantsThisGeneration();
         printGeneration();
-        while (currentGeneration != generation) {
+        while (currentGeneration != generation && !this.hasConverged()) {
             ageOneGeneration();
             countPlantsThisGeneration();
-            printGenerationScore();
-            if (currentGeneration % 100000 == 0) {
-                printGeneration();
-
-            }
+            printGeneration();
         }
     }
 
-
+    private boolean hasConverged() {
+        return convergingGeneration != null;
+    }
 }
