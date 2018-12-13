@@ -7,7 +7,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,7 +23,6 @@ public class Day13 {
         return in.runUntilOnlyOneRemains();
     }
 
-
     public RailRoad readInput(Stream<String> stream) {
         return new RailRoad(stream
                 .collect(Collectors.toList()));
@@ -40,11 +38,6 @@ public class Day13 {
         Point part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         Point part2 = getPart2();
         System.out.println(": answer to part 2 :");

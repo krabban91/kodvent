@@ -9,8 +9,7 @@ import java.util.stream.IntStream;
 
 public class RailRoad {
     List<Cart> carts = new ArrayList();
-    int tick = 0;
-    boolean collisionOccured = false;
+    boolean collisionOccured;
     Point firstCollision;
 
     public RailRoad(List<String> rows) {
@@ -34,23 +33,16 @@ public class RailRoad {
             carts.stream()
                     .sorted(Cart::compare)
                     .forEach(this::moveCartAndRemoveIfCollisionOccurs);
-            tick++;
         }
-        carts.forEach(Cart::reportLocation);
-        return carts.get(0).getCoordinate();
+        return getPointOfLastRemainingCart();
     }
-
-
 
     public Point runUntilCollision() {
         while (!collisionOccured()) {
             carts.stream()
                     .sorted(Cart::compare)
                     .forEach(this::moveCartAndRemoveIfCollisionOccurs);
-            tick++;
         }
-        System.out.println(tick);
-        carts.forEach(Cart::reportLocation);
         return getPointOfFirstCollision();
     }
 
@@ -65,10 +57,13 @@ public class RailRoad {
     private void removeChrashedCarts() {
         carts.stream()
                 .filter(l -> carts.stream()
-                        .anyMatch(r -> l.equals(r))).forEach(Cart::crash);
+                        .anyMatch(r -> l.equals(r)))
+                .forEach(Cart::crash);
 
         if (!collisionOccured) {
-            Optional<Cart> any = carts.stream().filter(c -> c.isCrashed()).findAny();
+            Optional<Cart> any = carts.stream()
+                    .filter(c -> c.isCrashed())
+                    .findAny();
             if (any.isPresent()) {
                 collisionOccured = true;
                 Cart cart = any.get();
@@ -76,7 +71,12 @@ public class RailRoad {
             }
         }
         carts = carts.stream()
-                .filter(c -> !c.isCrashed()).collect(Collectors.toList());
+                .filter(c -> !c.isCrashed())
+                .collect(Collectors.toList());
+    }
+
+    private Point getPointOfLastRemainingCart() {
+        return carts.get(0).getCoordinate();
     }
 
     private Point getPointOfFirstCollision() {

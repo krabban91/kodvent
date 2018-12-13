@@ -52,61 +52,56 @@ public class Cart {
     }
 
     public void moveOneTick() {
-        if (currentDirection % 2 == 0) {
-
-            //y movement
-            this.y += currentDirection == 0 ? -1 : 1;
-        } else {
-            //x movement
-            this.x += currentDirection == 1 ? 1 : -1;
-        }
+        moveOneStep();
         char c = this.tracks.get(this.y).charAt(this.x);
+        rotateBasedOnTile(c);
+    }
+
+    private void moveOneStep() {
+        if (currentDirection % 2 == 0) {
+            // vertical movement
+            this.y += (currentDirection - 1);
+        } else {
+            // horizontal movement
+            this.x -= (currentDirection - 2);
+        }
+    }
+
+    private void rotateBasedOnTile(char c) {
         if (c == '+') {
-            this.currentDirection += this.nextIntersectionAction.getAndUpdate(this::nextDirection);
-            if (this.currentDirection < 0) {
-                this.currentDirection += 4;
-            }
-            if (this.currentDirection > 3) {
-                this.currentDirection -= 4;
-            }
+            this.currentDirection = addWithMod4(this.currentDirection, this.nextIntersectionAction.getAndUpdate(this::nextDirection));
         } else if (c == '/') {
             if (this.currentDirection % 2 == 0) {
-                // y
+                // was moving vertically
                 this.currentDirection += 1;
             } else {
-                // x
+                // was moving horizontally
                 this.currentDirection -= 1;
             }
         } else if (c == '\\') {
             if (this.currentDirection % 2 == 0) {
-                // y
-                this.currentDirection -= 1;
-                if (this.currentDirection < 0) {
-                    this.currentDirection += 4;
-                }
+                // was moving vertically
+                this.currentDirection = addWithMod4(this.currentDirection, -1);
             } else {
-                // x
-                this.currentDirection += 1;
-                if (this.currentDirection > 3) {
-                    this.currentDirection -= 4;
-                }
+                // was moving horizontally
+                this.currentDirection = addWithMod4(this.currentDirection, 1);
             }
         }
+    }
+
+    private int addWithMod4(int a, int b) {
+        return (a + b + 4) % 4;
     }
 
     private int nextDirection(int currentDirection) {
         return currentDirection == 1 ? -1 : currentDirection + 1;
     }
 
-    public static void reportLocation(Cart cart) {
-        System.out.println("x:" + cart.x + ",y:" + cart.y + ",dir:" + cart.currentDirection);
-    }
-
     public static int compare(Cart l, Cart r) {
-        return l.getY() == r.getY() ?
-                (l.getX() == r.getX() ?
-                        0 :
-                        l.getX() - r.getX()) :
-                l.getY() - r.getY();
+        int yCompare = Integer.compare(l.getY(), r.getY());
+        if(yCompare == 0){
+            return Integer.compare(l.getX(), r.getX());
+        }
+        return yCompare;
     }
 }
