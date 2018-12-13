@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.day13;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day13 {
     private static String inputPath = "day13.txt";
     RailRoad in;
@@ -37,10 +35,10 @@ public class Day13 {
         }
         Point part1 = getPart1();
         System.out.println(": answer to part 1 :");
-        System.out.println(part1);
+        System.out.println(part1.x + "," + part1.y);
 
         Point part2 = getPart2();
         System.out.println(": answer to part 2 :");
-        System.out.println(part2);
+        System.out.println(part2.x + "," + part2.y);
     }
 }
