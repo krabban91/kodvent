@@ -3,11 +3,16 @@ package krabban91.kodvent.kodvent.day13;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class RailRoad {
     List<Cart> carts = new ArrayList();
-int tick = 0;
+    int tick = 0;
+    boolean collisionOccured = false;
+    Point firstCollision;
+
     public RailRoad(List<String> rows) {
         IntStream.range(0, rows.size()).forEach(y -> IntStream.range(0, rows.get(y).length()).forEach(x -> {
             char c = rows.get(y).charAt(x);
@@ -23,25 +28,62 @@ int tick = 0;
         }));
     }
 
-    public Point runUntilCollision(){
-        while (!collisionOccured()){
-            System.out.println(tick);
-            carts.forEach(Cart::reportLocation);
-            carts.forEach(Cart::moveOneTick);
+    public Point runUntilOnlyOneRemains() {
+        this.removeChrashedCarts();
+        while (carts.size() > 1) {
+            carts.stream()
+                    .sorted(Cart::compare)
+                    .forEach(this::moveCartAndRemoveIfCollisionOccurs);
+            tick++;
+        }
+        carts.forEach(Cart::reportLocation);
+        return carts.get(0).getCoordinate();
+    }
+
+
+
+    public Point runUntilCollision() {
+        while (!collisionOccured()) {
+            carts.stream()
+                    .sorted(Cart::compare)
+                    .forEach(this::moveCartAndRemoveIfCollisionOccurs);
             tick++;
         }
         System.out.println(tick);
         carts.forEach(Cart::reportLocation);
-        return getPointOfCollision();
+        return getPointOfFirstCollision();
     }
 
-    private Point getPointOfCollision() {
-        return carts.stream()
+    private void moveCartAndRemoveIfCollisionOccurs(Cart cart) {
+        if (cart.isCrashed()) {
+            return;
+        }
+        cart.moveOneTick();
+        removeChrashedCarts();
+    }
+
+    private void removeChrashedCarts() {
+        carts.stream()
                 .filter(l -> carts.stream()
-                        .anyMatch(r -> l.equals(r))).findAny().get().getCoordinate();
+                        .anyMatch(r -> l.equals(r))).forEach(Cart::crash);
+
+        if (!collisionOccured) {
+            Optional<Cart> any = carts.stream().filter(c -> c.isCrashed()).findAny();
+            if (any.isPresent()) {
+                collisionOccured = true;
+                Cart cart = any.get();
+                firstCollision = new Point(cart.getX(), cart.getY());
+            }
+        }
+        carts = carts.stream()
+                .filter(c -> !c.isCrashed()).collect(Collectors.toList());
+    }
+
+    private Point getPointOfFirstCollision() {
+        return firstCollision;
     }
 
     private boolean collisionOccured() {
-        return carts.stream().anyMatch(l -> carts.stream().anyMatch(r -> l.equals(r)));
+        return collisionOccured;
     }
 }

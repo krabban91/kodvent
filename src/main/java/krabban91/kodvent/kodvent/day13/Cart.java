@@ -9,6 +9,7 @@ public class Cart {
     private final List<String> tracks;
     private int y;
     private int x;
+    private boolean crashed = false;
     //up = 0, left = 3, down = 2, right = 1
     private int currentDirection;
     //left = -1, straight = 0, right = 1
@@ -42,44 +43,52 @@ public class Cart {
         return false;
     }
 
+    public void crash() {
+        this.crashed = true;
+    }
+
+    public boolean isCrashed() {
+        return crashed;
+    }
+
     public void moveOneTick() {
         if (currentDirection % 2 == 0) {
 
             //y movement
-            this.y += currentDirection==0?-1:1;
+            this.y += currentDirection == 0 ? -1 : 1;
         } else {
             //x movement
-            this.x += currentDirection==1?1:-1;
+            this.x += currentDirection == 1 ? 1 : -1;
         }
         char c = this.tracks.get(this.y).charAt(this.x);
         if (c == '+') {
             this.currentDirection += this.nextIntersectionAction.getAndUpdate(this::nextDirection);
-            if(this.currentDirection < 0){
-                this.currentDirection +=4;
+            if (this.currentDirection < 0) {
+                this.currentDirection += 4;
             }
-            if (this.currentDirection >3){
-                this.currentDirection-=4;
+            if (this.currentDirection > 3) {
+                this.currentDirection -= 4;
             }
         } else if (c == '/') {
             if (this.currentDirection % 2 == 0) {
                 // y
-                this.currentDirection+=1;
+                this.currentDirection += 1;
             } else {
                 // x
-                this.currentDirection-=1;
+                this.currentDirection -= 1;
             }
         } else if (c == '\\') {
             if (this.currentDirection % 2 == 0) {
                 // y
-                this.currentDirection-=1;
-                if(this.currentDirection<0){
-                    this.currentDirection +=4;
+                this.currentDirection -= 1;
+                if (this.currentDirection < 0) {
+                    this.currentDirection += 4;
                 }
             } else {
                 // x
-                this.currentDirection+=1;
-                if(this.currentDirection>3){
-                    this.currentDirection -=4;
+                this.currentDirection += 1;
+                if (this.currentDirection > 3) {
+                    this.currentDirection -= 4;
                 }
             }
         }
@@ -87,10 +96,17 @@ public class Cart {
 
     private int nextDirection(int currentDirection) {
         return currentDirection == 1 ? -1 : currentDirection + 1;
-
     }
 
     public static void reportLocation(Cart cart) {
-        System.out.println("x:"+cart.x+",y:"+cart.y+",dir:"+cart.currentDirection);
+        System.out.println("x:" + cart.x + ",y:" + cart.y + ",dir:" + cart.currentDirection);
+    }
+
+    public static int compare(Cart l, Cart r) {
+        return l.getY() == r.getY() ?
+                (l.getX() == r.getX() ?
+                        0 :
+                        l.getX() - r.getX()) :
+                l.getY() - r.getY();
     }
 }

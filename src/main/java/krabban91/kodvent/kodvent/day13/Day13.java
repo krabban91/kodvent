@@ -20,8 +20,8 @@ public class Day13 {
         return in.runUntilCollision();
     }
 
-    public long getPart2() {
-        return -1;
+    public Point getPart2() {
+        return in.runUntilOnlyOneRemains();
     }
 
 
@@ -40,7 +40,13 @@ public class Day13 {
         Point part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            in = readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Point part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
