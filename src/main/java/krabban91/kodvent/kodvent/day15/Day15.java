@@ -1,39 +1,42 @@
-package krabban91.kodvent.kodvent.day14;
+package krabban91.kodvent.kodvent.day15;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day14 {
-    private static String inputPath = "day14.txt";
-    RecipeMaker in;
+@Component
+public class Day15 {
+    private static String inputPath = "day15.txt";
+    CaveBattle in;
 
-    public String getPart1() {
-        return in.generateRecipes();
+    public long getPart1() {
+        return in.battleUntilItIsOver();
     }
 
     public long getPart2() {
-        return in.generateUntilScoreMatcherAppears();
+        return -1;
     }
 
 
-    public RecipeMaker readInput(Stream<String> stream) {
-        return stream
-                .map(RecipeMaker::new)
-                .findAny().get();
+    public CaveBattle readInput(Stream<String> stream) {
+        return new CaveBattle(stream
+                .collect(Collectors.toList()));
     }
 
-    public Day14() {
-        System.out.println("::: Starting Day 14 :::");
+    public Day15() {
+        System.out.println("::: Starting Day 15 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String part1 = getPart1();
+        long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
         long part2 = getPart2();
