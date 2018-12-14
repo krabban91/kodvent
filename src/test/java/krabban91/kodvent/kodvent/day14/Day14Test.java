@@ -19,6 +19,7 @@ public class Day14Test {
     @Test
     public void getPart1Example1() {
         day14.in = new RecipeMaker("9");
+        day14.in.setDebug(true);
         assertThat(day14.getPart1()).isEqualTo("5158916779");
     }
     @Test
