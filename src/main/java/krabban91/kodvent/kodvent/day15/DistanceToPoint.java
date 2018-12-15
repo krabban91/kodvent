@@ -5,9 +5,13 @@ import java.awt.*;
 public class DistanceToPoint {
     Point point;
     int distance;
-    public DistanceToPoint(Point point, int distance){
+    Point target;
+    int heuristic;
+    public DistanceToPoint(Point point, int distance,Point target){
         this.point = point;
         this.distance = distance;
+        this.target = target;
+        this.heuristic = CaveBattle.manhattanDistance(point,target);
     }
 
     public Point getPoint() {
@@ -16,6 +20,10 @@ public class DistanceToPoint {
 
     public int getDistance() {
         return distance;
+    }
+
+    public int heuristic(){
+        return distance + heuristic;
     }
 
     public static int compare(DistanceToPoint l, DistanceToPoint r){
