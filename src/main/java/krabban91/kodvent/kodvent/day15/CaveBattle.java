@@ -30,9 +30,23 @@ public class CaveBattle {
 
     private void visualizeBattle() {
         System.out.println(": Round " + round + "! :");
+        StringBuilder yRow1 = new StringBuilder();
+        yRow1.append("   ");
+        IntStream.range(0, map.get(0).size()).forEach(i -> yRow1.append((i / 10) > 0 ? i / 10 : " "));
+        System.out.println(yRow1.toString());
+        StringBuilder yRow2 = new StringBuilder();
+        yRow2.append("   ");
+        IntStream.range(0, map.get(0).size()).forEach(i -> yRow2.append(i % 10));
+        System.out.println(yRow2.toString());
         IntStream.range(0, map.size()).forEach(y -> {
             StringBuilder builder = new StringBuilder();
-            IntStream.range(0, map.get(y).size()).forEach(x -> {
+            int rowSize = map.get(y).size();
+            if ((y / 10) == 0) {
+                builder.append(" ");
+            }
+            builder.append((y));
+            builder.append(" ");
+            IntStream.range(0, rowSize).forEach(x -> {
                 if (map.get(y).get(x)) {
                     Optional<BattleUnit> any = units.stream().filter(u -> u.location.x == x && u.location.y == y).findAny();
                     if (any.isPresent()) {
@@ -48,8 +62,9 @@ public class CaveBattle {
                     builder.append('#');
                 }
             });
+            builder.append(" ");
             units.stream()
-                    .filter(u ->u.location.y == y)
+                    .filter(u -> u.location.y == y)
                     .sorted(Comparator.comparingInt(u -> u.getLocation().x))
                     .forEach(u -> {
                         builder.append(u.toString());
@@ -110,9 +125,10 @@ public class CaveBattle {
         return this.battleIsOver;
     }
 
-    public void endBattle(){
+    public void endBattle() {
         this.battleIsOver = true;
     }
+
     public boolean removeFromBattle(BattleUnit battleUnit) {
         return this.units.remove(battleUnit);
     }
@@ -140,11 +156,11 @@ public class CaveBattle {
                         .anyMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
     }
 
-    private Map<Point,Map<Point, DistanceToPoint>> checkedMap = new HashMap<>();
+    private Map<Point, Map<Point, DistanceToPoint>> checkedMap = new HashMap<>();
 
 
     public DistanceToPoint distanceBetween(Point from, Point to) {
-        if(!checkedMap.containsKey(from)){
+        if (!checkedMap.containsKey(from)) {
             checkedMap.put(from, new HashMap<>());
         }
         Map<Point, DistanceToPoint> checked = checkedMap.get(from);
@@ -156,10 +172,10 @@ public class CaveBattle {
                 int x = poll.point.x;
                 int y = poll.point.y;
                 addPointToChecked(from, poll);
-                if(poll.point.equals(to)){
+                if (poll.point.equals(to)) {
                     break;
                 }
-                if (checkedMap.get(poll.point).containsKey(to)){
+                if (checkedMap.get(poll.point).containsKey(to)) {
                     DistanceToPoint fromPollToTo = checkedMap.get(poll.point).get(to);
                     if (fromPollToTo.distance >= 0) {
                         DistanceToPoint fromTo = new DistanceToPoint(to, poll.distance + fromPollToTo.distance, to);
@@ -183,7 +199,7 @@ public class CaveBattle {
                     unChecked.add(new DistanceToPoint(point1, poll.distance + 1, to));
                 }
             }
-            if(unChecked.isEmpty() && !checked.containsKey(to)){
+            if (unChecked.isEmpty() && !checked.containsKey(to)) {
                 List<Point> unreached = getAllPointsNotIn(checked).collect(Collectors.toList());
                 this.updateAsUnreachable(from, unreached, to);
 
@@ -193,7 +209,7 @@ public class CaveBattle {
     }
 
     private void updateAsUnreachable(Point point, List<Point> unreached, Point to) {
-        if(!checkedMap.containsKey(point)){
+        if (!checkedMap.containsKey(point)) {
             checkedMap.put(point, new HashMap<>());
         }
         unreached.forEach(p -> addPointToChecked(point, new DistanceToPoint(p, UNREACHABLE_DISTANCE, to)));

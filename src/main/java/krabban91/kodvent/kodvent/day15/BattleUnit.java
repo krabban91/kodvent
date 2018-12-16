@@ -48,13 +48,6 @@ public class BattleUnit {
                 .sorted(DistanceToPoint::compare);
         Optional<DistanceToPoint> chosen = nearest.findFirst();
         if (chosen.isPresent()) {
-            List<Point> destinations = new LinkedList<>();
-            int x = this.location.x;
-            int y = this.location.y;
-            destinations.add(new Point(x, y - 1));
-            destinations.add(new Point(x - 1, y));
-            destinations.add(new Point(x + 1, y));
-            destinations.add(new Point(x, y + 1));
             Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
                     .stream()
                     .map(e -> battle.distanceBetween(chosen.get().point, e))
@@ -129,10 +122,17 @@ public class BattleUnit {
         } else {
             builder.append("E");
         }
-        builder.append(" moves from ");
-        builder.append(oldLocation.x + "," + oldLocation.y);
-        builder.append(" to ");
-        builder.append(newLocation.x + "," + newLocation.y);
+        builder.append("[");
+        builder.append(oldLocation.x);
+        builder.append(",");
+        builder.append(oldLocation.y);
+        builder.append("]");
+        builder.append(" -> ");
+        builder.append("[");
+        builder.append(newLocation.x);
+        builder.append(",");
+        builder.append(newLocation.y);
+        builder.append("]");
         System.out.println(builder.toString());
     }
 
@@ -143,7 +143,6 @@ public class BattleUnit {
         } else {
             builder.append("E");
         }
-
         builder.append("[");
         builder.append(battleUnit.location.x);
         builder.append(",");
@@ -160,9 +159,11 @@ public class BattleUnit {
         builder.append(",");
         builder.append(unit.location.y);
         builder.append("]");
-        builder.append(" ");
+        builder.append(" (");
+        builder.append(unit.hitpoints + damage);
+        builder.append(")->(");
         builder.append(unit.hitpoints);
-        builder.append("(was " + (unit.hitpoints + damage) + ").");
+        builder.append(")");
         System.out.println(builder.toString());
 
     }
@@ -211,7 +212,7 @@ public class BattleUnit {
         }
         builder.append("(");
         builder.append(this.hitpoints);
-        builder.append("), ");
+        builder.append("),");
         return builder.toString();
     }
 }
