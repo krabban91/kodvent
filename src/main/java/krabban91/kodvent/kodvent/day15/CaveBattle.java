@@ -10,10 +10,12 @@ import java.util.stream.Stream;
 
 public class CaveBattle {
 
+    public static final int UNREACHABLE_DISTANCE = 10000;
     List<List<Boolean>> map;
     List<BattleUnit> units = new ArrayList();
     int round = 0;
     Map<Point, Map<Point, Integer>> distances = new HashMap<>();
+    private boolean battleIsOver = false;
 
     public CaveBattle(List<String> rows) {
         map = rows.stream().map(this::getMapRow).collect(Collectors.toList());
@@ -105,16 +107,19 @@ public class CaveBattle {
 
 
     public boolean battleIsOver() {
-        long goblins = units.stream().filter(u -> u.isGoblin()).count();
-        return goblins == units.size() || goblins == 0;
+        return this.battleIsOver;
     }
 
+    public void endBattle(){
+        this.battleIsOver = true;
+    }
     public boolean removeFromBattle(BattleUnit battleUnit) {
         return this.units.remove(battleUnit);
     }
 
     public boolean canReach(BattleUnit battleUnit, Point point) {
-        return distanceBetween(battleUnit.location, point).distance > 0;
+        DistanceToPoint distanceToPoint = distanceBetween(battleUnit.location, point);
+        return distanceToPoint != null && distanceToPoint.distance > 0 && distanceToPoint.distance < CaveBattle.UNREACHABLE_DISTANCE;
     }
 
     public List<Point> avaliableStrikingLocations(BattleUnit battleUnit) {
@@ -132,9 +137,7 @@ public class CaveBattle {
     private boolean tileIsEmpty(Point point) {
         return point.x >= 0 && point.y >= 0 && map.get(point.y).get(point.x) &&
                 !units.stream()
-                        .filter(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y)
-                        .findAny()
-                        .isPresent();
+                        .anyMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
     }
 
     private Map<Point,Map<Point, DistanceToPoint>> checkedMap = new HashMap<>();
@@ -152,16 +155,15 @@ public class CaveBattle {
                 DistanceToPoint poll = unChecked.poll();
                 int x = poll.point.x;
                 int y = poll.point.y;
-                addPointToChecked(from, poll, to);
-                if(poll.equals(to)){
+                addPointToChecked(from, poll);
+                if(poll.point.equals(to)){
                     break;
                 }
                 if (checkedMap.get(poll.point).containsKey(to)){
                     DistanceToPoint fromPollToTo = checkedMap.get(poll.point).get(to);
                     if (fromPollToTo.distance >= 0) {
                         DistanceToPoint fromTo = new DistanceToPoint(to, poll.distance + fromPollToTo.distance, to);
-                        addPointToChecked(from, fromTo, to);
-                        break;
+                        addPointToChecked(from, fromTo);
                     }
                 }
                 Point point1 = new Point(x, y - 1);
@@ -182,20 +184,19 @@ public class CaveBattle {
                 }
             }
             if(unChecked.isEmpty() && !checked.containsKey(to)){
-                List<Point> allPointsNotIn = getAllPointsNotIn(checked).collect(Collectors.toList());
-                allPointsNotIn.forEach(p -> checked.put(p, new DistanceToPoint(p, 10000, to)));
-                checked.keySet().forEach(p -> updateAsUnreachable(p, allPointsNotIn, to));
+                List<Point> unreached = getAllPointsNotIn(checked).collect(Collectors.toList());
+                this.updateAsUnreachable(from, unreached, to);
+
             }
         }
         return checked.get(to);
     }
 
-    private void updateAsUnreachable(Point point, List<Point> allPointsNotIn, Point to) {
+    private void updateAsUnreachable(Point point, List<Point> unreached, Point to) {
         if(!checkedMap.containsKey(point)){
             checkedMap.put(point, new HashMap<>());
         }
-        Map<Point, DistanceToPoint> checked = checkedMap.get(point);
-        allPointsNotIn.forEach(p -> checked.put(p, new DistanceToPoint(p, 10000, to)));
+        unreached.forEach(p -> addPointToChecked(point, new DistanceToPoint(p, UNREACHABLE_DISTANCE, to)));
     }
 
     private Stream<Point> getAllPointsNotIn(Map<Point, DistanceToPoint> checked) {
@@ -208,12 +209,12 @@ public class CaveBattle {
                 .flatMap(List::stream);
     }
 
-    private void addPointToChecked(Point from, DistanceToPoint poll, Point to) {
+    private void addPointToChecked(Point from, DistanceToPoint poll) {
         checkedMap.get(from).put(poll.point, poll);
         if (!checkedMap.containsKey(poll.point)) {
             checkedMap.put(poll.point, new HashMap<>());
         }
-        checkedMap.get(poll.point).put(from, new DistanceToPoint(from, poll.distance, to));
+        checkedMap.get(poll.point).put(from, new DistanceToPoint(from, poll.distance, poll.target));
     }
 
     public void resetDistanceTable() {

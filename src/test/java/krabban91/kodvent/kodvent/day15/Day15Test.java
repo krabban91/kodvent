@@ -31,6 +31,16 @@ public class Day15Test {
     }
 
     @Test
+    public void getPart1example6() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-6.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart1()).isEqualTo(27730);
+    }
+
+    @Test
     public void getPart1example1() {
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);

@@ -26,17 +26,25 @@ public class BattleUnit {
     }
 
     private void move() {
+        if(battle.battleIsOver()){
+            return;
+        }
         if (battle.targetsNextToPoint(!goblin, this.getLocation()).count() > 0) {
             return;
         }
+        if(battle.targets(!goblin).count() == 0){
+            battle.endBattle();
+            return;
+        }
         Stream<BattleUnit> targets = battle.targets(!goblin);
+
         Stream<Point> inRange = targets
                 .map(battle::avaliableStrikingLocations)
                 .flatMap(List::stream);
         Stream<Point> reachable = inRange
                 .filter(point -> battle.canReach(this, point));
         Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
-                .filter(p -> p != null && p.distance > 0)
+                .filter(p -> p != null && p.distance > 0 && p.distance < CaveBattle.UNREACHABLE_DISTANCE)
                 .sorted(DistanceToPoint::compare);
         Optional<DistanceToPoint> chosen = nearest.findFirst();
         if (chosen.isPresent()) {
@@ -47,13 +55,24 @@ public class BattleUnit {
             destinations.add(new Point(x - 1, y));
             destinations.add(new Point(x + 1, y));
             destinations.add(new Point(x, y + 1));
-            Optional<DistanceToPoint> moveLocation = destinations.stream().map(e -> battle.distanceBetween(chosen.get().point, e)).filter(p -> p != null).sorted(DistanceToPoint::compare).findFirst();
+            Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
+                    .stream()
+                    .map(e -> battle.distanceBetween(chosen.get().point, e))
+                    .filter(p -> p != null && p.distance < CaveBattle.UNREACHABLE_DISTANCE)
+                    .sorted(DistanceToPoint::compare)
+                    .findFirst();
             if (moveLocation.isPresent()) {
                 battle.resetDistanceTable();
                 reportMovement(isGoblin(), this.location, moveLocation.get().point);
                 this.location = moveLocation.get().point;
 
+            } else {
+                System.out.println("THIS SHOULDN'T HAPPEN!");
+                reportHalting(this);
+
             }
+        } else {
+            reportHalting(this);
         }
     }
 
@@ -82,6 +101,27 @@ public class BattleUnit {
         reportBeating(this, unit, attackPower);
     }
 
+    private static void reportHalting(BattleUnit unit) {
+        StringBuilder builder = new StringBuilder();
+
+        if (unit.isGoblin()) {
+            builder.append("G");
+        } else {
+            builder.append("E");
+        }
+        builder.append("[");
+        builder.append(unit.location.x);
+        builder.append(",");
+        builder.append(unit.location.y);
+        builder.append("]");
+        builder.append(" halted.");
+
+        System.out.println(builder.toString());
+
+
+    }
+
+
     private static void reportMovement(boolean isGoblin, Point oldLocation, Point newLocation) {
         StringBuilder builder = new StringBuilder();
         if (isGoblin) {
@@ -104,22 +144,22 @@ public class BattleUnit {
             builder.append("E");
         }
 
-        builder.append("(");
+        builder.append("[");
         builder.append(battleUnit.location.x);
         builder.append(",");
         builder.append(battleUnit.location.y);
-        builder.append(")");
+        builder.append("]");
         builder.append(" strikes ");
         if (unit.isGoblin()) {
             builder.append("G");
         } else {
             builder.append("E");
         }
-        builder.append("(");
+        builder.append("[");
         builder.append(unit.location.x);
         builder.append(",");
         builder.append(unit.location.y);
-        builder.append(")");
+        builder.append("]");
         builder.append(" ");
         builder.append(unit.hitpoints);
         builder.append("(was " + (unit.hitpoints + damage) + ").");
