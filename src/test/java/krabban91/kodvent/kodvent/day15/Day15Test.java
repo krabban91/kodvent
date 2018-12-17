@@ -97,7 +97,7 @@ public class Day15Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2()).isEqualTo(4988);
+        assertThat(day15.getPart2("day15-6.txt")).isEqualTo(4988);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class Day15Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2()).isEqualTo(31284);
+        assertThat(day15.getPart2("day15-2.txt")).isEqualTo(31284);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class Day15Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2()).isEqualTo(3478);
+        assertThat(day15.getPart2("day15-3.txt")).isEqualTo(3478);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class Day15Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2()).isEqualTo(6474);
+        assertThat(day15.getPart2("day15-4.txt")).isEqualTo(6474);
     }
 
     @Test
@@ -137,6 +137,6 @@ public class Day15Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2()).isEqualTo(1140);
+        assertThat(day15.getPart2("day15-5.txt")).isEqualTo(1140);
     }
 }

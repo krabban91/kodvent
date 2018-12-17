@@ -13,6 +13,7 @@ public class CaveBattle {
     public static final int UNREACHABLE_DISTANCE = 10000;
     List<List<Boolean>> map;
     List<BattleUnit> units = new ArrayList();
+    long initialElfCount;
     int round = 0;
     private boolean battleIsOver = false;
 
@@ -25,6 +26,15 @@ public class CaveBattle {
                         rows.get(y).charAt(x) == 'G',
                         200,
                         this))));
+        initialElfCount = countElfs();
+    }
+
+    public void setElfStrength(int strength){
+        units.stream().filter(u -> !u.isGoblin()).forEach(u -> u.setAttackPower(strength));
+    }
+
+    public long countElfs() {
+        return units.stream().filter(u -> !u.isGoblin()).count();
     }
 
     private void visualizeBattle() {
@@ -75,6 +85,21 @@ public class CaveBattle {
 
     List<Boolean> getMapRow(String row) {
         return row.chars().mapToObj(c -> (char) c == '.' || (char) c == 'E' || (char) c == 'G').collect(Collectors.toList());
+    }
+
+    public long battleUntilItIsOverOrAnElfDies() {
+        while (true) {
+            visualizeBattle();
+            units.stream()
+                    .sorted(this::order)
+                    .forEach(BattleUnit::movaAndAttack);
+            units = units.stream().filter(BattleUnit::isAlive).collect(Collectors.toList());
+            if (battleIsOver() || initialElfCount != countElfs()) {
+                visualizeBattle();
+                return getBattleScore();
+            }
+            round++;
+        }
     }
 
     public long battleUntilItIsOver() {

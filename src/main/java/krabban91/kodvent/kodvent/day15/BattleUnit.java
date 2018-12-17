@@ -214,4 +214,8 @@ public class BattleUnit {
         builder.append("),");
         return builder.toString();
     }
+
+    public void setAttackPower(int strength) {
+        this.attackPower = strength;
+    }
 }

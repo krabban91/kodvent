@@ -19,15 +19,22 @@ public class Day15 {
         return in.battleUntilItIsOver();
     }
 
-    public long getPart2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public long getPart2(String inputPath) {
+        long elfCount = in.initialElfCount;
+        int elfStrength = 4;
+        while (true){
+            try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+                in = readInput(stream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            in.setElfStrength(elfStrength);
+            long l = in.battleUntilItIsOverOrAnElfDies();
+            if(in.countElfs() == elfCount){
+                return l;
+            }
+            elfStrength++;
         }
-
-
-        return -1;
     }
 
 
@@ -46,7 +53,7 @@ public class Day15 {
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
+        long part2 = getPart2(inputPath);
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
