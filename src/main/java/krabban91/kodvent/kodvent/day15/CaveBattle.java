@@ -14,7 +14,6 @@ public class CaveBattle {
     List<List<Boolean>> map;
     List<BattleUnit> units = new ArrayList();
     int round = 0;
-    Map<Point, Map<Point, Integer>> distances = new HashMap<>();
     private boolean battleIsOver = false;
 
     public CaveBattle(List<String> rows) {
@@ -156,84 +155,52 @@ public class CaveBattle {
                         .anyMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
     }
 
-    private Map<Point, Map<Point, DistanceToPoint>> checkedMap = new HashMap<>();
-
 
     public DistanceToPoint distanceBetween(Point from, Point to) {
-        if (!checkedMap.containsKey(from)) {
-            checkedMap.put(from, new HashMap<>());
-        }
-        Map<Point, DistanceToPoint> checked = checkedMap.get(from);
+        Map<Point, DistanceToPoint> checked = new HashMap<>();
+        PriorityQueue<DistanceToPoint> unChecked = newQueue(from, to);
         if (!(checked.containsKey(to))) {
-            PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
-            unChecked.add(new DistanceToPoint(from, 0, to));
             while (!unChecked.isEmpty()) {
                 DistanceToPoint poll = unChecked.poll();
-                int x = poll.point.x;
-                int y = poll.point.y;
-                addPointToChecked(from, poll);
+                addPointToChecked(checked, unChecked, poll);
                 if (poll.point.equals(to)) {
-                    break;
+                    return poll;
                 }
-                if (checkedMap.get(poll.point).containsKey(to)) {
-                    DistanceToPoint fromPollToTo = checkedMap.get(poll.point).get(to);
-                    if (fromPollToTo.distance >= 0) {
-                        DistanceToPoint fromTo = new DistanceToPoint(to, poll.distance + fromPollToTo.distance, to);
-                        addPointToChecked(from, fromTo);
-                    }
-                }
-                Point point1 = new Point(x, y - 1);
-                if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
-                    unChecked.add(new DistanceToPoint(point1, poll.distance + 1, to));
-                }
-                point1 = new Point(x - 1, y);
-                if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
-                    unChecked.add(new DistanceToPoint(point1, poll.distance + 1, to));
-                }
-                point1 = new Point(x + 1, y);
-                if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
-                    unChecked.add(new DistanceToPoint(point1, poll.distance + 1, to));
-                }
-                point1 = new Point(x, y + 1);
-                if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
-                    unChecked.add(new DistanceToPoint(point1, poll.distance + 1, to));
-                }
-            }
-            if (unChecked.isEmpty() && !checked.containsKey(to)) {
-                List<Point> unreached = getAllPointsNotIn(checked).collect(Collectors.toList());
-                this.updateAsUnreachable(from, unreached, to);
-
             }
         }
         return checked.get(to);
     }
 
-    private void updateAsUnreachable(Point point, List<Point> unreached, Point to) {
-        if (!checkedMap.containsKey(point)) {
-            checkedMap.put(point, new HashMap<>());
+    private PriorityQueue<DistanceToPoint> newQueue(Point from, Point to) {
+        PriorityQueue<DistanceToPoint> queue = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
+        queue.add(new DistanceToPoint(from, 0, to));
+        return queue;
+    }
+
+    private void addPointToChecked(Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked, DistanceToPoint poll) {
+        checked.put(poll.point, poll);
+        addSuroundingPointsToUnchecked(poll, checked, unChecked);
+    }
+
+    private void addSuroundingPointsToUnchecked(DistanceToPoint poll, Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked) {
+        int x = poll.point.x;
+        int y = poll.point.y;
+        Point point1 = new Point(x, y - 1);
+        if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
+            unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
         }
-        unreached.forEach(p -> addPointToChecked(point, new DistanceToPoint(p, UNREACHABLE_DISTANCE, to)));
-    }
-
-    private Stream<Point> getAllPointsNotIn(Map<Point, DistanceToPoint> checked) {
-        return IntStream.range(0, map.size())
-                .mapToObj(y -> IntStream.range(0, map.get(y).size())
-                        .mapToObj(x -> new Point(x, y))
-                        .filter(this::tileIsEmpty)
-                        .filter(p -> !checked.containsKey(p))
-                        .collect(Collectors.toList()))
-                .flatMap(List::stream);
-    }
-
-    private void addPointToChecked(Point from, DistanceToPoint poll) {
-        checkedMap.get(from).put(poll.point, poll);
-        if (!checkedMap.containsKey(poll.point)) {
-            checkedMap.put(poll.point, new HashMap<>());
+        point1 = new Point(x - 1, y);
+        if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
+            unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
         }
-        checkedMap.get(poll.point).put(from, new DistanceToPoint(from, poll.distance, poll.target));
+        point1 = new Point(x + 1, y);
+        if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
+            unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
+        }
+        point1 = new Point(x, y + 1);
+        if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
+            unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
+        }
     }
 
-    public void resetDistanceTable() {
-        checkedMap.clear();
-    }
 }

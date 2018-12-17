@@ -44,18 +44,17 @@ public class BattleUnit {
         Stream<Point> reachable = inRange
                 .filter(point -> battle.canReach(this, point));
         Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
-                .filter(p -> p != null && p.distance > 0 && p.distance < CaveBattle.UNREACHABLE_DISTANCE)
+                .filter(p -> p != null)
                 .sorted(DistanceToPoint::compare);
         Optional<DistanceToPoint> chosen = nearest.findFirst();
         if (chosen.isPresent()) {
             Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
                     .stream()
                     .map(e -> battle.distanceBetween(chosen.get().point, e))
-                    .filter(p -> p != null && p.distance < CaveBattle.UNREACHABLE_DISTANCE)
+                    .filter(p -> p != null)
                     .sorted(DistanceToPoint::compare)
                     .findFirst();
             if (moveLocation.isPresent()) {
-                battle.resetDistanceTable();
                 reportMovement(isGoblin(), this.location, moveLocation.get().point);
                 this.location = moveLocation.get().point;
 

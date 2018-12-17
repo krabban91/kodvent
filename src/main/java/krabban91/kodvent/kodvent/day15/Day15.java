@@ -20,6 +20,13 @@ public class Day15 {
     }
 
     public long getPart2() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
+            in = readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         return -1;
     }
 

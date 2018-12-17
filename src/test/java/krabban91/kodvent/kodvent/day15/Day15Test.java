@@ -91,22 +91,52 @@ public class Day15Test {
     }
 
     @Test
-    public void getPart2() {
-        assertThat(day15.getPart2()).isEqualTo(-1);
+    public void getPart2example6() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-6.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart2()).isEqualTo(4988);
     }
-/*
+
     @Test
-    public void getPart2example2() {
-        day15.in = new RecipeMaker("01245");
-        assertThat(day15.getPart2()).isEqualTo(5);
-    }    @Test
-    public void getPart2example3() {
-        day15.in = new RecipeMaker("92510");
-        assertThat(day15.getPart2()).isEqualTo(18);
-    }    @Test
-    public void getPart2example4() {
-        day15.in = new RecipeMaker("59414");
-        assertThat(day15.getPart2()).isEqualTo(2018);
+    public void getPart2Example2() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-2.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart2()).isEqualTo(31284);
     }
-*/
+
+    @Test
+    public void getPart2Example3() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-3.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart2()).isEqualTo(3478);
+    }
+
+    @Test
+    public void getPart2Example4() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-4.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart2()).isEqualTo(6474);
+    }
+
+    @Test
+    public void getPart2Example5() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-5.txt").getFile().getPath()))) {
+            day15.in = day15.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day15.getPart2()).isEqualTo(1140);
+    }
 }
