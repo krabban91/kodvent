@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day15 {
     private static String inputPath = "day15.txt";
     CaveBattle in;
@@ -50,9 +49,9 @@ public class Day15 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        long part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
+        //long part1 = getPart1();
+        //System.out.println(": answer to part 1 :");
+        //System.out.println(part1);
         long part2 = getPart2(inputPath);
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
