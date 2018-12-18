@@ -12,6 +12,11 @@ public class SettlerTile {
         LUMBERMILL
     }
 
+    public SettlerTile(Type oldState, Type newState){
+        this.oldState = oldState;
+        this.newState = newState;
+    }
+
     public SettlerTile(int charValue){
         if(charValue == (int)'#'){
             this.oldState = Type.LUMBERMILL;
@@ -36,5 +41,19 @@ public class SettlerTile {
 
     public static void oldToNew(SettlerTile tile){
         tile.oldState = tile.newState;
+    }
+
+    @Override
+    public SettlerTile clone(){
+        return new SettlerTile(oldState, newState);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof SettlerTile){
+            SettlerTile other = (SettlerTile)obj;
+            return this.oldState == other.oldState;
+        }
+        return false;
     }
 }
