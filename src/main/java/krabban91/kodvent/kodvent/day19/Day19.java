@@ -1,7 +1,6 @@
-package krabban91.kodvent.kodvent.day16;
+package krabban91.kodvent.kodvent.day19;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,13 +9,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
-public class Day16 {
-    private static String inputPath = "day16.txt";
-    Processor in;
+//@Component
+public class Day19 {
+    private static String inputPath = "day19.txt";
+    List<String> in;
 
     public long getPart1() {
-        return in.numberOfSamplesMatchingMoreThanOrEqualTo(3);
+        return -1L;
     }
 
     public long getPart2() {
@@ -24,14 +23,14 @@ public class Day16 {
     }
 
 
-    public Processor readInput(Stream<String> stream) {
-        return new Processor(stream
+    public List<String> readInput(Stream<String> stream) {
+        return stream
                 .map(String::new)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
     }
 
-    public Day16() {
-        System.out.println("::: Starting Day 16 :::");
+    public Day19() {
+        System.out.println("::: Starting Day X :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
@@ -44,5 +43,4 @@ public class Day16 {
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
-
 }

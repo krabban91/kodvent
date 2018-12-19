@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day18 {
     private static String inputPath = "day18.txt";
     List<List<SettlerTile>> in;
