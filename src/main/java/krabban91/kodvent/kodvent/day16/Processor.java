@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.day16;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -8,7 +9,8 @@ import java.util.stream.IntStream;
 
 public class Processor {
 
-    List<OpCodeSample> collect;
+    List<OpCodeSample> samples;
+    Map<Integer, List<OpCodeSample>> samplesByCode;
 
     public Processor(List<String> inputRows) {
         AtomicBoolean previousWasEmpty = new AtomicBoolean(false);
@@ -30,14 +32,20 @@ public class Processor {
         });
         List<String> firstHalfOfSample = inputRows.subList(0, indexOfSplit.get());
         List<String> secondHalfOfSample = inputRows.subList(indexOfSplit.get(), inputRows.size());
-        collect = IntStream.range(0, firstHalfOfSample.size() / 4).mapToObj(i -> {
+        samples = IntStream.range(0, firstHalfOfSample.size() / 4).mapToObj(i -> {
             int index = i * 4;
             return new OpCodeSample(firstHalfOfSample.get(index), firstHalfOfSample.get(index + 1), firstHalfOfSample.get(index + 2));
         }).collect(Collectors.toList());
+        samplesByCode = samples.stream().collect(Collectors.groupingBy(s -> s.operation));
+
     }
 
-    public int numberOfSamplesMatchingMoreThanOrEqualTo(int count){
+    public int numberOfSamplesMatchingMoreThanOrEqualTo(int count) {
         OpCodesALU alu = new OpCodesALU();
-        return (int)collect.stream().map(sample -> OpCodeSample.matchesForNumberOfOpCodes(alu, sample)).filter(c -> c >= count).count();
+        return (int) samples.stream()
+                .map(OpCodeSample::getWorksForOperation)
+                .map(m -> m.values().stream().filter(e -> e).count())
+                .filter(c -> c >= count)
+                .count();
     }
 }
