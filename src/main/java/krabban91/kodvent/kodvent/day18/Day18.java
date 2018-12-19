@@ -11,26 +11,53 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@Component
 public class Day18 {
     private static String inputPath = "day18.txt";
     List<List<SettlerTile>> in;
     boolean hasBegunToCycle;
     Integer firstCycleStart;
 
-    Map<Integer, List<List<SettlerTile>>> oldStates = new HashMap<>();
-    Map<Integer, Long> scoreOfMiniute = new HashMap<>();
-    Map<Integer, Long> cycleScoreDeltas = new HashMap<>();
-    int minute = 0;
+    private Map<Integer, List<List<SettlerTile>>> oldStates = new HashMap<>();
+    private Map<Integer, Long> scoreOfMiniute = new HashMap<>();
+    private Map<Integer, Long> cycleScoreDeltas = new HashMap<>();
+    private int minute = 0;
+    private boolean debug;
 
     public long getPart1() {
         tickMinutes(10);
         return this.scoreOfMiniute.get(10);
     }
 
+    public long getPart2() {
+        tickMinutes(1000000000);
+        return this.scoreOfMiniute.get(1000000000);
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
     void tickMinutes(int minute) {
         while (this.minute < minute) {
-            visualizeLand();
+            if (debug) {
+                visualizeLand();
+            }
             tickOneMinute(minute);
+        }
+    }
+
+    void tickOneMinute(int targetMinute) {
+        if (!hasBegunToCycle || targetMinute < firstCycleStart) {
+            updateTilesOneMinute();
+            this.minute++;
+            checkIfCycleHasStarted();
+            this.oldStates.put(this.minute, clonedState());
+            this.scoreOfMiniute.put(this.minute, getScoreOfMinute());
+        } else {
+            calculateAndPutScoreForCyclicValue(targetMinute);
+            this.minute = targetMinute;
+            return;
         }
     }
 
@@ -42,138 +69,63 @@ public class Day18 {
             System.out.println(builder.toString());
         });
     }
+    
+    private List<List<SettlerTile>> clonedState() {
+        return in.stream()
+                .map(l -> l.stream()
+                        .map(SettlerTile::clone)
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+    }
 
-    void tickOneMinute(int targetMinute) {
-        if (!hasBegunToCycle) {
-
-            IntStream.range(0, in.size()).forEach(y -> IntStream.range(0, in.get(y).size()).forEach(x -> {
-                SettlerTile current = in.get(y).get(x);
-                if (current.oldState == SettlerTile.Type.OPEN) {
-                    int adjacentTrees = 0;
-                    if (x > 0 && y > 0) {
-                        adjacentTrees += in.get(y - 1).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y > 0) {
-                        adjacentTrees += in.get(y - 1).get(x).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y > 0 && x < in.get(y).size() - 1) {
-                        adjacentTrees += in.get(y - 1).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (x < in.get(y).size() - 1) {
-                        adjacentTrees += in.get(y).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x < in.get(y).size() - 1) {
-                        adjacentTrees += in.get(y + 1).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1) {
-                        adjacentTrees += in.get(y + 1).get(x).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x > 0) {
-                        adjacentTrees += in.get(y + 1).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (x > 0) {
-                        adjacentTrees += in.get(y).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (adjacentTrees >= 3) {
-                        current.newState = SettlerTile.Type.FOREST;
-                    }
-                } else if (current.oldState == SettlerTile.Type.FOREST) {
-                    int adjacentMills = 0;
-                    if (x > 0 && y > 0) {
-                        adjacentMills += in.get(y - 1).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (y > 0) {
-                        adjacentMills += in.get(y - 1).get(x).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (y > 0 && x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y - 1).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y + 1).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (y < in.size() - 1) {
-                        adjacentMills += in.get(y + 1).get(x).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x > 0) {
-                        adjacentMills += in.get(y + 1).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (x > 0) {
-                        adjacentMills += in.get(y).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                    }
-                    if (adjacentMills >= 3) {
-                        current.newState = SettlerTile.Type.LUMBERMILL;
-                    }
-                } else if (current.oldState == SettlerTile.Type.LUMBERMILL) {
-                    int adjacentMills = 0;
-                    int adjacentTrees = 0;
-                    if (x > 0 && y > 0) {
-                        adjacentMills += in.get(y - 1).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y - 1).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y > 0) {
-                        adjacentMills += in.get(y - 1).get(x).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y - 1).get(x).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y > 0 && x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y - 1).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y - 1).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x < in.get(y).size() - 1) {
-                        adjacentMills += in.get(y + 1).get(x + 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y + 1).get(x + 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1) {
-                        adjacentMills += in.get(y + 1).get(x).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y + 1).get(x).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (y < in.size() - 1 && x > 0) {
-                        adjacentMills += in.get(y + 1).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y + 1).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (x > 0) {
-                        adjacentMills += in.get(y).get(x - 1).oldState == SettlerTile.Type.LUMBERMILL ? 1 : 0;
-                        adjacentTrees += in.get(y).get(x - 1).oldState == SettlerTile.Type.FOREST ? 1 : 0;
-                    }
-                    if (adjacentMills >= 1 && adjacentTrees >= 1) {
-                        current.newState = SettlerTile.Type.LUMBERMILL;
-                    } else {
-                        current.newState = SettlerTile.Type.OPEN;
-                    }
-                }
-
-            }));
-            in.forEach(l -> l.forEach(SettlerTile::oldToNew));
-            this.minute++;
-            long scoreOfMinute = getScoreOfMinute();
-            if (this.scoreOfMiniute.values().contains(scoreOfMinute)) {
-                Map<Integer, Long> matchingScore = this.scoreOfMiniute.entrySet().stream().filter(e -> e.getValue() == scoreOfMinute).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-                Set<Integer> integers = matchingScore.keySet();
-                Optional<Integer> integerStream = integers.stream().filter(i -> IntStream.range(0, in.size()).allMatch(y -> IntStream.range(0, in.get(y).size()).allMatch(x -> this.oldStates.get(i).get(y).get(x).equals(in.get(y).get(x))))).findFirst();
-                if (integerStream.isPresent()) {
-                    this.firstCycleStart = integerStream.get();
-                    this.hasBegunToCycle = true;
-                    storeDeltasForCycle();
-                }
+    private void checkIfCycleHasStarted() {
+        long scoreOfMinute = getScoreOfMinute();
+        if (!hasBegunToCycle && this.scoreOfMiniute.values().contains(scoreOfMinute)) {
+            Set<Integer> matchingRounds = this.scoreOfMiniute.entrySet().stream().filter(e -> e.getValue() == scoreOfMinute).map(e -> e.getKey()).collect(Collectors.toSet());
+            Optional<Integer> firstCycle = matchingRounds.stream()
+                    .filter(i -> this.oldStates.get(i).equals(this.in)).findFirst();
+            if (firstCycle.isPresent()) {
+                this.firstCycleStart = firstCycle.get();
+                this.hasBegunToCycle = true;
+                storeDeltasForCycle();
             }
-            this.oldStates.put(this.minute, in.stream().map(l -> l.stream().map(SettlerTile::clone).collect(Collectors.toList())).collect(Collectors.toList()));
-            this.scoreOfMiniute.put(this.minute, scoreOfMinute);
-        } else {
-            int minutesLeft = targetMinute - this.minute;
-            int minuteDelta = this.minute - this.firstCycleStart;
-            int stepsOnLastCycle = minutesLeft % minuteDelta;
-            this.scoreOfMiniute.put(targetMinute, this.scoreOfMiniute.get(this.firstCycleStart + stepsOnLastCycle));
-            System.out.println(this.minute);
-            this.minute = targetMinute;
-            return;
         }
+    }
 
+    private void calculateAndPutScoreForCyclicValue(int targetMinute) {
+        int minutesLeft = targetMinute - this.minute;
+        int minuteDelta = this.minute - this.firstCycleStart;
+        int stepsOnLastCycle = minutesLeft % minuteDelta;
+        this.scoreOfMiniute.put(targetMinute, this.scoreOfMiniute.get(this.firstCycleStart + stepsOnLastCycle));
+    }
+
+    private void updateTilesOneMinute() {
+        IntStream.range(0, in.size()).forEach(y -> IntStream.range(0, in.get(y).size()).forEach(x -> {
+            SettlerTile current = in.get(y).get(x);
+            List<SettlerTile> adjacentTiles = getAdjacentTiles(in, x, y);
+            long adjacentForest = adjacentTiles.stream().filter(SettlerTile::isForest).count();
+            long adjacentMill = adjacentTiles.stream().filter(SettlerTile::isLumberMill).count();
+            if (current.isOpen() && adjacentForest >= 3) {
+                current.newState = SettlerTile.Type.FOREST;
+            } else if (current.isForest() && adjacentMill >= 3) {
+                current.newState = SettlerTile.Type.LUMBERMILL;
+            } else if (current.isLumberMill() && !(adjacentMill >= 1 && adjacentForest >= 1)) {
+                current.newState = SettlerTile.Type.OPEN;
+            }
+        }));
+        in.forEach(l -> l.forEach(SettlerTile::oldToNew));
+    }
+
+    private List<SettlerTile> getAdjacentTiles(List<List<SettlerTile>> in, int currX, int currY) {
+        return IntStream.range(0, in.size())
+                .filter(y -> Math.abs(y - currY) <= 1)
+                .mapToObj(y -> IntStream.range(0, in.get(y).size())
+                        .filter(x -> Math.abs(x - currX) <= 1)
+                        .filter(x -> !(x == currX && y == currY))
+                        .mapToObj(x -> in.get(y).get(x))
+                        .collect(Collectors.toList()))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private void storeDeltasForCycle() {
@@ -182,14 +134,9 @@ public class Day18 {
     }
 
     long getScoreOfMinute() {
-        Long lumberMills = in.stream().map(l -> l.stream().filter(t -> t.oldState == SettlerTile.Type.LUMBERMILL).count()).reduce(0L, Long::sum);
-        Long forests = in.stream().map(l -> l.stream().filter(t -> t.oldState == SettlerTile.Type.FOREST).count()).reduce(0L, Long::sum);
+        Long lumberMills = in.stream().map(l -> l.stream().filter(SettlerTile::isLumberMill).count()).reduce(0L, Long::sum);
+        Long forests = in.stream().map(l -> l.stream().filter(SettlerTile::isForest).count()).reduce(0L, Long::sum);
         return lumberMills * forests;
-    }
-
-    public long getPart2() {
-        tickMinutes(1000000000);
-        return this.scoreOfMiniute.get(1000000000);
     }
 
 

@@ -43,6 +43,19 @@ public class SettlerTile {
         tile.oldState = tile.newState;
     }
 
+    public boolean isOpen(){
+        return this.oldState == Type.OPEN;
+    }
+
+
+    public boolean isForest(){
+        return this.oldState == Type.FOREST;
+    }
+
+    public boolean isLumberMill(){
+        return this.oldState == Type.LUMBERMILL;
+    }
+
     @Override
     public SettlerTile clone(){
         return new SettlerTile(oldState, newState);
