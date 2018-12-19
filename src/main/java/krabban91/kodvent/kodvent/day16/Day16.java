@@ -19,7 +19,7 @@ public class Day16 {
     }
 
     public long getPart2() {
-        return -1;
+        return in.valueAtRegisterAfterOperations(0);
     }
 
 
