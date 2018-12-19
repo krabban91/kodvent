@@ -45,6 +45,28 @@ public class OpCodesALU implements OpCodes {
         return null;
     }
 
+    public static long[] executeOp(OpCodesALU processor, long[] before, String operation, int a, int b, int c){
+        switch (operation){
+            case "addr": return processor.addr(before,a,b,c);
+            case "addi": return processor.addi(before,a,b,c);
+            case "mulr": return processor.mulr(before,a,b,c);
+            case "muli": return processor.muli(before,a,b,c);
+            case "banr": return processor.banr(before,a,b,c);
+            case "bani": return processor.bani(before,a,b,c);
+            case "borr": return processor.borr(before,a,b,c);
+            case "bori": return processor.bori(before,a,b,c);
+            case "setr": return processor.setr(before,a,b,c);
+            case "seti": return processor.seti(before,a,b,c);
+            case "gtir": return processor.gtir(before,a,b,c);
+            case "gtri": return processor.gtri(before,a,b,c);
+            case "gtrr": return processor.gtrr(before,a,b,c);
+            case "eqir": return processor.eqir(before,a,b,c);
+            case "eqri": return processor.eqri(before,a,b,c);
+            case "eqrr": return processor.eqrr(before,a,b,c);
+        }
+        return null;
+    }
+
     public static Map<Integer, Boolean> sampler(OpCodesALU alu, OpCodeSample sample) {
         Map<Integer, Boolean> matches = new HashMap<>();
         matches.put(ADDI, Arrays.equals(alu.addi(sample.registerBefore, sample.operation.a, sample.operation.b, sample.operation.c), sample.registerAfter));

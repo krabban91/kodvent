@@ -1,6 +1,8 @@
 package krabban91.kodvent.kodvent.day19;
 
+import krabban91.kodvent.kodvent.day16.OpCodesALU;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,28 +11,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//@Component
 public class Day19 {
     private static String inputPath = "day19.txt";
-    List<String> in;
+    GpuUnit in;
 
     public long getPart1() {
-        return -1L;
+        return in.valueAtRegisterAfterOperations(0);
     }
 
     public long getPart2() {
-        return -1;
+        return in.valueAtRegisterAfterOperationsPart2(0);
     }
 
 
-    public List<String> readInput(Stream<String> stream) {
-        return stream
-                .map(String::new)
-                .collect(Collectors.toList());
+    public GpuUnit readInput(Stream<String> stream) {
+        return new GpuUnit(stream
+                .collect(Collectors.toList()));
     }
+
+
 
     public Day19() {
-        System.out.println("::: Starting Day X :::");
+        System.out.println("::: Starting Day 19 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
