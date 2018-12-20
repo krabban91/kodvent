@@ -23,7 +23,7 @@ public class OpCodesALU implements OpCodes {
     public static final int EQRI = 14;
     public static final int EQRR = 15;
 
-    public static long[] executeOp(OpCodesALU processor, long[] before, int operation, int a, int b, int c){
+    public static int[] executeOp(OpCodesALU processor, int[] before, int operation, int a, int b, int c){
         switch (operation){
             case ADDR: return processor.addr(before,a,b,c);
             case ADDI: return processor.addi(before,a,b,c);
@@ -45,7 +45,7 @@ public class OpCodesALU implements OpCodes {
         return null;
     }
 
-    public static long[] executeOp(OpCodesALU processor, long[] before, String operation, int a, int b, int c){
+    public static int[] executeOp(OpCodesALU processor, int[] before, String operation, int a, int b, int c){
         switch (operation){
             case "addr": return processor.addr(before,a,b,c);
             case "addi": return processor.addi(before,a,b,c);
@@ -89,114 +89,114 @@ public class OpCodesALU implements OpCodes {
     }
 
     @Override
-    public long[] addr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] addr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] + register[b];
         return newRegister;
     }
 
     @Override
-    public long[] addi(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] addi(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] + b;
         return newRegister;
     }
 
     @Override
-    public long[] mulr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] mulr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] * register[b];
         return newRegister;
     }
 
     @Override
-    public long[] muli(long[] register, int a, int b, int c) {
+    public int[] muli(int[] register, int a, int b, int c) {
 
-        long[] newRegister = register.clone();
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] * b;
         return newRegister;
     }
 
     @Override
-    public long[] banr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] banr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] & register[b];
         return newRegister;
     }
 
     @Override
-    public long[] bani(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] bani(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] & b;
         return newRegister;
     }
 
     @Override
-    public long[] borr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] borr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] | register[b];
         return newRegister;
     }
 
     @Override
-    public long[] bori(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] bori(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] | b;
         return newRegister;
     }
 
     @Override
-    public long[] setr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] setr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a];
         return newRegister;
     }
 
     @Override
-    public long[] seti(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] seti(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = a;
         return newRegister;
     }
 
     @Override
-    public long[] gtir(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] gtir(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = a > register[b] ? 1 : 0;
         return newRegister;
     }
 
     @Override
-    public long[] gtri(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] gtri(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] > b ? 1 : 0;
         return newRegister;
     }
 
     @Override
-    public long[] gtrr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] gtrr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] > register[b] ? 1 : 0;
         return newRegister;
     }
 
     @Override
-    public long[] eqir(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] eqir(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = a == register[b] ? 1 : 0;
         return newRegister;
     }
 
     @Override
-    public long[] eqri(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] eqri(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] == b ? 1 : 0;
         return newRegister;
     }
 
     @Override
-    public long[] eqrr(long[] register, int a, int b, int c) {
-        long[] newRegister = register.clone();
+    public int[] eqrr(int[] register, int a, int b, int c) {
+        int[] newRegister = register.clone();
         newRegister[c] = register[a] == register[b] ? 1 : 0;
         return newRegister;
     }

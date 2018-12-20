@@ -1,33 +1,36 @@
-package krabban91.kodvent.kodvent.day20;
+package krabban91.kodvent.kodvent.day21;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day20 {
-    private static String inputPath = "day20.txt";
-    Maze in;
+@Component
+public class Day21 {
+    private static String inputPath = "day21.txt";
+    ActivationProcess in;
 
     public long getPart1() {
-        return in.getDistanceToFurthestRoom();
+        return in.haltWithAsLowStartingValueAsPossible();
     }
 
     public long getPart2() {
-        return in.getCountOfRoomsWithDistanceAtleast(1000);
+        return -1;
     }
 
 
-    public Maze readInput(Stream<String> stream) {
-        return stream
-                .map(Maze::new)
-                .findAny().get();
+    public ActivationProcess readInput(Stream<String> stream) {
+        return new ActivationProcess(stream
+                .collect(Collectors.toList()));
     }
 
-    public Day20() {
-        System.out.println("::: Starting Day 20 :::");
+    public Day21() {
+        System.out.println("::: Starting Day 21 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

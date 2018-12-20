@@ -90,7 +90,7 @@ public class Processor {
     }
 
     public long valueAtRegisterAfterOperations(int i) {
-        return operations.stream().reduce(new long[]{0L, 0L, 0L, 0L}, (l, r) -> OpCodesALU.executeOp(alu, l, codeTransitions.get(r.operation), r.a, r.b, r.c),
+        return operations.stream().reduce(new int[]{0, 0, 0, 0}, (l, r) -> OpCodesALU.executeOp(alu, l, codeTransitions.get(r.operation), r.a, r.b, r.c),
                 (l, r) -> l)[i];
     }
 }

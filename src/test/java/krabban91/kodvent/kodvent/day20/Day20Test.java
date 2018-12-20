@@ -68,4 +68,10 @@ public class Day20Test {
         assertThat(day20.getPart1()).isEqualTo(10);
     }
 
+    @Test
+    public void getPart2example1() {
+        assertThat(day20.getPart2()).isEqualTo(0);
+    }
+
+
 }

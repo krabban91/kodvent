@@ -19,7 +19,7 @@ public class GpuUnit {
 
 
     public long valueAtRegisterAfterOperations(int i) {
-        long[] register = {0L, 0L, 0L, 0L, 0L, 0L};
+        int[] register = {0, 0, 0, 0, 0, 0};
         while (register[ip] < operations.size()) {
             GpuOperation r = operations.get((int) register[ip]);
             register = runOpAndIncInstruction(alu, register, r.getOperation(), r.getA(), r.getB(), r.getC());
@@ -27,15 +27,15 @@ public class GpuUnit {
         return register[i];
     }
 
-    private long[] runOpAndIncInstruction(OpCodesALU processor, long[] before, String operation, int a, int b, int c) {
-        long[] longs = OpCodesALU.executeOp(alu, before, operation, a, b, c);
+    private int[] runOpAndIncInstruction(OpCodesALU processor, int[] before, String operation, int a, int b, int c) {
+        int[] longs = OpCodesALU.executeOp(alu, before, operation, a, b, c);
         longs[ip]++;
         return longs;
     }
 
-    public long valueAtRegisterAfterOperationsPart2(int i) {
+    public int valueAtRegisterAfterOperationsPart2(int i) {
         // this action takes 2*5*5*41*5147 iterations to finish.
-        long[] register = {1L, 0L, 0L, 0L, 0L, 0L};
+        int[] register = {1, 0, 0, 0, 0, 0};
         while (register[ip] < operations.size()) {
             GpuOperation r = operations.get((int) register[ip]);
             register = runOpAndIncInstruction(alu, register, r.getOperation(), r.getA(), r.getB(), r.getC());

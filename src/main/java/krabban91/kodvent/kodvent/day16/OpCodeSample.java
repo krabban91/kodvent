@@ -7,8 +7,8 @@ import java.util.stream.IntStream;
 public class OpCodeSample {
 
     Map<Integer, Boolean> worksForOperation = new HashMap();
-    long[] registerBefore = new long[4];
-    long[] registerAfter = new long[4];
+    int[] registerBefore = new int[4];
+    int[] registerAfter = new int[4];
     Operation operation;
 
     public OpCodeSample(String before, String operation, String after) {
