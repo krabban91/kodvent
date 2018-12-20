@@ -28,50 +28,105 @@ public class Room {
         this.point = point;
         this.maze = maze;
         this.maze.AddRoomToExploration(this);
-        if (map.length() == 0) {
-            return;
-        }
-        explore(map);
     }
 
-    private void explore(String map) {
-        switch (map.charAt(0)) {
-            case '(': {
-                //branch
-                int end = indexOfEnclosingParenthesis(map);
-                String substring = map.substring(0, end);
-                // do branching.
-                List<String> strings = splitOnlyOnSameParenthesisLevel(substring);
-                strings.stream().
-                        filter(s -> !s.isEmpty())
-                        .forEach(s -> explore(s));
+    public Room(Room cameFrom, Point point, Maze maze) {
+        if (cameFrom == null) {
+            this.isStart = true;
+        } else {
 
-                if (substring.charAt(substring.length() - 2) == '|') {
-                    // edge case, carry on from here
-                    if (map.length() > end + 1) {
-                        explore(map.substring(end));
+        }
+        this.point = point;
+        this.maze = maze;
+        this.maze.AddRoomToExploration(this);
+    }
+
+    public static void exploreMap(Room startingRoom, String map, Maze maze) {
+        String mapToHandle = map;
+        Room currentRoom = startingRoom;
+        while (!mapToHandle.isEmpty()) {
+            switch (mapToHandle.charAt(0)) {
+                case '(':
+                    //branch
+                    int end = indexOfEnclosingParenthesis(mapToHandle);
+                    String substring = mapToHandle.substring(0, end);
+                    // do branching.
+                    List<String> strings = splitOnlyOnSameParenthesisLevel(substring);
+                    for (String m : strings) {
+                        exploreMap(currentRoom, m, maze);
                     }
-                }
-                break;
-            }
-            case 'N': {
-                exploreNorth(map, maze);
-                break;
-            }
-            case 'W': {
-                exploreWest(map, maze);
-                break;
-            }
-            case 'S': {
-                exploreSouth(map, maze);
-                break;
-            }
-            case 'E': {
-                exploreEast(map, maze);
-                break;
+                    mapToHandle = mapToHandle.substring(end);
+
+                    break;
+                case 'N':
+                    mapToHandle = mapToHandle.substring(1);
+                    currentRoom = exploreNorth(currentRoom, maze);
+                    break;
+                case 'W':
+                    mapToHandle = mapToHandle.substring(1);
+                    currentRoom = exploreWest(currentRoom, maze);
+                    break;
+                case 'S':
+                    mapToHandle = mapToHandle.substring(1);
+                    currentRoom = exploreSouth(currentRoom, maze);
+                    break;
+                case 'E':
+                    mapToHandle = mapToHandle.substring(1);
+                    currentRoom = exploreEast(currentRoom, maze);
+                    break;
             }
         }
     }
+
+    private static Room exploreNorth(Room startingRoom, Maze maze) {
+        Point target = new Point(startingRoom.point.x, startingRoom.point.y - 1);
+        startingRoom.north = new Room(startingRoom, target, maze);
+        startingRoom.north.south = startingRoom;
+        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(startingRoom.north.point);
+        if (roomCopiesAtPoint.size() > 1) {
+            startingRoom.north = joinDuplicateRooms(roomCopiesAtPoint);
+            //handle duplicates
+        }
+        return startingRoom.north;
+    }
+
+    private static Room exploreWest(Room startingRoom, Maze maze) {
+        Point target = new Point(startingRoom.point.x - 1, startingRoom.point.y);
+        startingRoom.west = new Room(startingRoom, target, maze);
+        startingRoom.west.east = startingRoom;
+        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(startingRoom.west.point);
+        if (roomCopiesAtPoint.size() > 1) {
+            startingRoom.west = joinDuplicateRooms(roomCopiesAtPoint);
+            //handle duplicates
+        }
+        return startingRoom.west;
+    }
+
+    private static Room exploreSouth(Room startingRoom, Maze maze) {
+        Point target = new Point(startingRoom.point.x, startingRoom.point.y + 1);
+        startingRoom.south = new Room(startingRoom, target, maze);
+        startingRoom.south.north = startingRoom;
+        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(startingRoom.south.point);
+        if (roomCopiesAtPoint.size() > 1) {
+            startingRoom.south = joinDuplicateRooms(roomCopiesAtPoint);
+            //handle duplicates
+        }
+        return startingRoom.south;
+    }
+
+    private static Room exploreEast(Room startingRoom, Maze maze) {
+        Point target = new Point(startingRoom.point.x + 1, startingRoom.point.y);
+        startingRoom.east = new Room(startingRoom, target, maze);
+        startingRoom.east.west = startingRoom;
+
+        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(startingRoom.east.point);
+        if (roomCopiesAtPoint.size() > 1) {
+            startingRoom.east = joinDuplicateRooms(roomCopiesAtPoint);
+            //handle duplicates
+        }
+        return startingRoom.east;
+    }
+
 
     private static List<String> splitOnlyOnSameParenthesisLevel(String map) {
         Stack<Character> parenthesises = new Stack<>();
@@ -88,7 +143,7 @@ public class Room {
                 }
                 if (parenthesises.empty()) {
                     isDone.set(true);
-                    if(!indexes.contains(i-1)){
+                    if (!indexes.contains(i - 1)) {
                         indexes.add(i);
                     }
                 }
@@ -120,50 +175,6 @@ public class Room {
             }
         });
         return index.get();
-    }
-
-    private void exploreEast(String map, Maze maze) {
-        Point target = new Point(this.point.x + 1, this.point.y);
-        east = new Room(this, map.substring(1), target, maze);
-        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(east.point);
-        if (roomCopiesAtPoint.size() > 1) {
-            east = joinDuplicateRooms(roomCopiesAtPoint);
-            //handle duplicates
-        }
-        maze.updateMap(east);
-    }
-
-    private void exploreSouth(String map, Maze maze) {
-        Point target = new Point(this.point.x, this.point.y + 1);
-        south = new Room(this, map.substring(1), target, maze);
-        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(south.point);
-        if (roomCopiesAtPoint.size() > 1) {
-            south = joinDuplicateRooms(roomCopiesAtPoint);
-            //handle duplicates
-        }
-        maze.updateMap(south);
-    }
-
-    private void exploreWest(String map, Maze maze) {
-        Point target = new Point(this.point.x - 1, this.point.y);
-        west = new Room(this, map.substring(1), target, maze);
-        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(west.point);
-        if (roomCopiesAtPoint.size() > 1) {
-            west = joinDuplicateRooms(roomCopiesAtPoint);
-            //handle duplicates
-        }
-        maze.updateMap(west);
-    }
-
-    private void exploreNorth(String map, Maze maze) {
-        Point target = new Point(this.point.x, this.point.y - 1);
-        north = new Room(this, map.substring(1), target, maze);
-        List<Room> roomCopiesAtPoint = maze.getRoomCopiesAtPoint(north.point);
-        if (roomCopiesAtPoint.size() > 1) {
-            north = joinDuplicateRooms(roomCopiesAtPoint);
-            //handle duplicates
-        }
-        maze.updateMap(north);
     }
 
     public Point getPoint() {

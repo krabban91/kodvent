@@ -10,14 +10,12 @@ public class Maze {
 
     private Map<Point, List<Room>> roomCopies = new HashMap<>();
 
-    private Map<Point, Room> map = new HashMap<>();
-
     private Map<Point, DistanceToRoom> distances = new HashMap<>();
 
     public Maze(String regex) {
         String map = regex.substring(regex.indexOf("^") + 1, regex.lastIndexOf("$"));
         startingPoint = new Room(null, map, new Point(0, 0), this);
-        this.map.put(startingPoint.getPoint(), startingPoint);
+        Room.exploreMap(startingPoint,map, this);
     }
 
     public List<Room> getRoomCopiesAtPoint(Point point) {
@@ -30,10 +28,6 @@ public class Maze {
             roomCopies.put(point, new ArrayList<>());
         }
         roomCopies.get(point).add(room);
-    }
-
-    public void updateMap(Room room) {
-        this.map.put(room.getPoint(), room);
     }
 
     private void performBFS(){
@@ -61,6 +55,11 @@ public class Maze {
     public int getDistanceToFurthestRoom(){
         this.performBFS();
         return distances.entrySet().stream().max(Comparator.comparingInt(e-> e.getValue().getDistance())).get().getValue().getDistance();
+    }
+
+    public long getCountOfRoomsWithDistanceAtleast(int distance){
+        this.performBFS();
+        return distances.entrySet().stream().filter(e-> e.getValue().getDistance()>=distance).count();
     }
 
 }

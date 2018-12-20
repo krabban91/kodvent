@@ -18,7 +18,7 @@ public class Day20 {
     }
 
     public long getPart2() {
-        return -1;
+        return in.getCountOfRoomsWithDistanceAtleast(1000);
     }
 
 
