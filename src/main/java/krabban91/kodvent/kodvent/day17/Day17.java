@@ -1,4 +1,4 @@
-package krabban91.kodvent.kodvent.day21;
+package krabban91.kodvent.kodvent.day17;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -10,26 +10,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day21 {
-    private static String inputPath = "day21.txt";
-    ActivationProcess in;
+
+@Component
+public class Day17 {
+    private static String inputPath = "day17.txt";
+    Reservoir in;
 
     public long getPart1() {
-        return in.haltWithAsLowStartingValueAsPossible();
+        return in.countFilledSquareMeters();
     }
 
     public long getPart2() {
-        return -1;
+        return in.countRetainedSquareMeters();
     }
 
 
-    public ActivationProcess readInput(Stream<String> stream) {
-        return new ActivationProcess(stream
-                .collect(Collectors.toList()));
+    public Reservoir readInput(Stream<String> stream) {
+        return new Reservoir(stream
+                .map(ClayVein::new));
     }
 
-    public Day21() {
-        System.out.println("::: Starting Day 21 :::");
+    public Day17() {
+        System.out.println("::: Starting Day 17 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
