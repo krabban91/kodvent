@@ -18,4 +18,12 @@ public class Region {
     public Point getPoint() {
         return point;
     }
+
+    public boolean canBeReachedWithTool(Tool tool){
+        switch (this.type){
+            case ROCKY: return tool.equals(Tool.CLIMBING) || tool.equals(Tool.TORCH);
+            case WET: return tool.equals(Tool.CLIMBING) || tool.equals(Tool.NEITHER);
+            default: return tool.equals(Tool.TORCH) || tool.equals(Tool.NEITHER);
+        }
+    }
 }

@@ -1,9 +1,8 @@
 package krabban91.kodvent.kodvent.day22;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -71,6 +70,99 @@ public class ModeMaze {
     }
 
     public long fewestMinutesToReachTarget() {
-        return 0;
+        Map<Point, Set<Tool>> triedtools = new HashMap<>();
+        Tool initiallyEquippedTool = Tool.TORCH;
+        Region targetRegion = this.regionMap.get(target);
+
+        Map<Point, List<TimeToRegion>> checked = new HashMap<>();
+        PriorityQueue<TimeToRegion> unchecked = new PriorityQueue<>(Comparator.comparingInt(TimeToRegion::getHeuristic));
+        unchecked.add(new TimeToRegion(this.regionMap.get(entrance), 0, initiallyEquippedTool, targetRegion));
+        while (!unchecked.isEmpty()) {
+            TimeToRegion poll = unchecked.poll();
+            Point current = poll.getRegionToReach().point;
+            Tool equippedTool = poll.getEquippedTool();
+            System.out.println(current + ", tool:" + equippedTool);
+            if (!checked.containsKey(current)) {
+                checked.put(current, new ArrayList<>());
+            }
+            if (!triedtools.containsKey(current)) {
+                triedtools.put(current, new HashSet<>());
+            }
+            Set<Tool> tried = triedtools.get(current);
+            tried.add(equippedTool);
+            List<TimeToRegion> timeToRegions = checked.get(current);
+            timeToRegions.add(poll);
+            if (poll.isTarget()) {
+                break;
+            }
+            // time to add paths.
+            Point n = new Point(current.x, current.y - 1);
+            Point w = new Point(current.x - 1, current.y);
+            Point s = new Point(current.x, current.y + 1);
+            Point e = new Point(current.x + 1, current.y);
+            List<Point> explore = new ArrayList<>();
+            Collections.addAll(explore, n, w, s, e);
+            explore.forEach(point -> {
+                Region region = regionMap.get(point);
+                if (region != null) {
+                    int costToGoThere = 1;
+                    if (!triedtools.containsKey(region.point)) {
+                        triedtools.put(region.point, new HashSet<>());
+                    }
+                    if (region.canBeReachedWithTool(equippedTool) && !triedtools.get(region.point).contains(equippedTool)) {
+                        if (region.getPoint().equals(target) && !equippedTool.equals(Tool.TORCH)) {
+                            costToGoThere = 8;
+                        }
+                        unchecked.add(new TimeToRegion(
+                                region,
+                                poll.getElapsedTime() + costToGoThere,
+                                equippedTool,
+                                targetRegion));
+                    } else {
+
+                        Tool leftTool = rotateTool(equippedTool, -1);
+                        if (poll.getRegionToReach().canBeReachedWithTool(leftTool) && region.canBeReachedWithTool(leftTool) && !triedtools.get(region.point).contains(leftTool)) {
+                            if (region.getPoint().equals(target) && !leftTool.equals(Tool.TORCH)) {
+                                costToGoThere = 8;
+                            }
+                            unchecked.add(new TimeToRegion(
+                                    region,
+                                    poll.getElapsedTime() + costToGoThere + 7,
+                                    leftTool,
+                                    targetRegion));
+                        }
+                        Tool rightTool = rotateTool(equippedTool, +1);
+                        if (poll.getRegionToReach().canBeReachedWithTool(rightTool) && region.canBeReachedWithTool(rightTool) && !triedtools.get(region.point).contains(rightTool)) {
+                            if (region.getPoint().equals(target) && !rightTool.equals(Tool.TORCH)) {
+                                costToGoThere = 8;
+                            }
+                            unchecked.add(new TimeToRegion(
+                                    region,
+                                    poll.getElapsedTime() + costToGoThere + 7,
+                                    rightTool,
+                                    targetRegion));
+                        }
+                    }
+                }
+            });
+        }
+        List<TimeToRegion> timeToRegions = checked.get(target);
+        return timeToRegions.stream().min(Comparator.comparingInt(t -> t.getElapsedTime())).get().getElapsedTime();
+    }
+
+    private static Tool rotateTool(Tool tool, int i) {
+        if (i == 0) {
+            return tool;
+        } else if (i < 0) {
+            return rotateTool(tool.equals(Tool.CLIMBING) ?
+                    Tool.NEITHER :
+                    (tool.equals(Tool.NEITHER) ?
+                            Tool.TORCH : Tool.CLIMBING), i + 1);
+        } else {
+            return rotateTool(tool.equals(Tool.CLIMBING) ?
+                    Tool.TORCH :
+                    (tool.equals(Tool.NEITHER) ?
+                            Tool.CLIMBING : Tool.NEITHER), i - 1);
+        }
     }
 }
