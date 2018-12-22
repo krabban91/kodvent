@@ -1,31 +1,35 @@
-package krabban91.kodvent.kodvent.day17;
+package krabban91.kodvent.kodvent.day22;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Day17 {
-    private static String inputPath = "day17.txt";
-    Reservoir in;
+@Component
+public class Day22 {
+    private static String inputPath = "day22.txt";
+    ModeMaze in;
 
     public long getPart1() {
-        return in.countFilledSquareMeters();
+        return in.estimateDangerLevel();
     }
 
     public long getPart2() {
-        return in.countRetainedSquareMeters();
+        return in.fewestMinutesToReachTarget();
     }
 
-    public Reservoir readInput(Stream<String> stream) {
-        return new Reservoir(stream
-                .map(ClayVein::new));
+    public ModeMaze readInput(Stream<String> stream) {
+        return new ModeMaze(stream
+                .map(String::new)
+                .collect(Collectors.toList()));
     }
 
-    public Day17() {
-        System.out.println("::: Starting Day 17 :::");
+    public Day22() {
+        System.out.println("::: Starting Day 22 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
