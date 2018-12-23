@@ -44,15 +44,31 @@ public class NanoBot {
                             }).flatMap(Set::stream).collect(Collectors.toSet());
                 }).flatMap(Set::stream).collect(Collectors.toSet());
     }
+    public Set<Point3D> getLocationsWithinReachWithinLimits(int minX, int maxX, int minY, int maxY, int minZ, int maxZ){
+        return IntStream.rangeClosed(Math.max(minZ, getZ()-signalRadius), Math.min(maxZ,getZ()+signalRadius))
+                .mapToObj(z -> {
+                    int yLimits = signalRadius-Math.abs(z - getZ());
+                    return IntStream.rangeClosed(Math.max(minY, getY()-yLimits),Math.min(maxY,getY()+yLimits))
+                            .mapToObj(y -> {
+                                int xLimits = yLimits-Math.abs(y - getY());
+                                return IntStream.rangeClosed(Math.max(minX,getX()-xLimits), Math.min(maxX,getX()+xLimits))
+                                        .mapToObj(x -> new Point3D(x,y,z)).collect(Collectors.toSet());
+                            }).flatMap(Set::stream).collect(Collectors.toSet());
+                }).flatMap(Set::stream).collect(Collectors.toSet());
+    }
 
-    private int getX(){
+    public Point3D getCoordinate() {
+        return coordinate;
+    }
+
+    public int getX(){
         return (int)coordinate.getX();
     }
 
-    private int getY(){
+    public int getY(){
         return (int)coordinate.getY();
     }
-    private int getZ(){
+    public int getZ(){
         return (int)coordinate.getZ();
     }
 }
