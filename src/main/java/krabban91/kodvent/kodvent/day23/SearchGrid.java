@@ -55,17 +55,69 @@ public class SearchGrid {
 
     public boolean isReachedByNanoBot(NanoBot bot) {
 
+        // bot in grid
+        // or
+        // closest corner in bot radius
+        // or
+        // closest corner in bounding box
+        // and
+        // grid radius limits inside grid.
+
+
         //       Either the circle's centre lies inside the rectangle, or
         //       One of the edges of the rectangle has a point in the circle.
-        return isBotInsideGrid(bot) || isGridInsideRadiusOf(bot);
+        return isBotInsideGrid(bot) ||
+                isClosestCornerIsInsideRadius(bot) ||
+                (isClosestCornerInsideBotBoundingCube(bot) &&
+                        gridPartiallyWrapsBotRadius(bot) &&
+                        bot.getLocationsOnManhattanDistanceLimits().stream()
+                                .anyMatch(this::isInsideGrid));
+    }
+
+    public boolean isInsideGrid(Point3D p) {
+        return getX(p) >= getMinX() && getX(p) <= getMaxX() &&
+                getY(p) >= getMinY() && getY(p) <= getMaxY() &&
+                getZ(p) >= getMinY() && getZ(p) <= getMaxZ();
+    }
+
+    private boolean gridPartiallyWrapsBotRadius(NanoBot bot) {
+        int wrappingAxises = 0;
+        if (getMinX() <= bot.getX() && bot.getX() <= getMaxX()) {
+            wrappingAxises++;
+        }
+        if (getMinY() <= bot.getY() && bot.getY() <= getMaxY()) {
+            wrappingAxises++;
+        }
+        if (getMinZ() <= bot.getZ() && bot.getZ() <= getMaxZ()) {
+            wrappingAxises++;
+        }
+
+        return wrappingAxises >= 1;
     }
 
     public boolean isBotInsideGrid(NanoBot bot) {
-        //       Either the circle's centre lies inside the rectangle, or
+        return isInsideGrid(bot.getCoordinate());//       Either the circle's centre lies inside the rectangle, or
+    }
 
-        return (bot.getX() >= this.getMinX() && bot.getX() <= this.getMaxX()) &&
-                (bot.getY() >= this.getMinY() && bot.getY() <= this.getMaxY()) &&
-                (bot.getZ() >= this.getMinZ() && bot.getZ() <= this.getMaxZ());
+    public boolean isContainedInRadiusOf(NanoBot bot) {
+        if (!isfullyContainedInBoundingCubeOf(bot)) {
+            return false;
+        }
+        // check if singleCorner
+        return isfullyContainedInBoundingCubeOf(bot) && isClosestCornerIsInsideRadius(bot);
+    }
+
+    private boolean isfullyContainedInBoundingCubeOf(NanoBot bot) {
+        int botMinX = bot.getX() - bot.getSignalRadius();
+        int botMaxX = bot.getX() + bot.getSignalRadius();
+        boolean isInsideX = botMinX <= getMinX() && botMaxX >= getMaxX();
+        int botMinY = bot.getY() - bot.getSignalRadius();
+        int botMaxY = bot.getY() + bot.getSignalRadius();
+        boolean isInsideY = botMinY <= getMinY() && botMaxY >= getMaxY();
+        int botMinZ = bot.getZ() - bot.getSignalRadius();
+        int botMaxZ = bot.getZ() + bot.getSignalRadius();
+        boolean isInsideZ = botMinZ <= getMinZ() && botMaxZ >= getMaxZ();
+        return isInsideX && isInsideY && isInsideZ;
     }
 
     public boolean isGridInsideRadiusOf(NanoBot bot) {
@@ -80,7 +132,7 @@ public class SearchGrid {
         }
         SearchGrid grid = boundingCubeIntersectsWithGrid(bot);
 
-        return grid != null && (scale >= 1000 || grid.anyGridEdgeIsInRadius(bot));
+        return grid != null && (scale >= 100000 || grid.anyGridEdgeIsInRadius(bot));
     }
 
     private SearchGrid boundingCubeIntersectsWithGrid(NanoBot bot) {
@@ -237,25 +289,42 @@ public class SearchGrid {
                 .collect(Collectors.toSet());
     }
 
-    private static int getX(Point3D p) {
+    public static int getX(Point3D p) {
         return (int) p.getX();
     }
 
-    private static int getY(Point3D p) {
+    public static int getY(Point3D p) {
         return (int) p.getY();
     }
 
-    private static int getZ(Point3D p) {
+    public static int getZ(Point3D p) {
         return (int) p.getZ();
     }
 
+    private boolean isClosestCornerInsideBotBoundingCube(NanoBot bot) {
+        Point3D closest = closestCornerToBot(bot);
+        int botMinX = bot.getX() - bot.getSignalRadius();
+        int botMaxX = bot.getX() + bot.getSignalRadius();
+        boolean isInsideX = botMinX <= getX(closest) && botMaxX >= getX(closest);
+        int botMinY = bot.getY() - bot.getSignalRadius();
+        int botMaxY = bot.getY() + bot.getSignalRadius();
+        boolean isInsideY = botMinY <= getY(closest) && botMaxY >= getY(closest);
+        int botMinZ = bot.getZ() - bot.getSignalRadius();
+        int botMaxZ = bot.getZ() + bot.getSignalRadius();
+        boolean isInsideZ = botMinZ <= getZ(closest) && botMaxZ >= getZ(closest);
+        return isInsideX && isInsideY && isInsideZ;
+    }
+
     private boolean isClosestCornerIsInsideRadius(NanoBot bot) {
+        Point3D point3D = closestCornerToBot(bot);
+        return bot.isWithinRange(point3D);
+    }
+
+    private Point3D closestCornerToBot(NanoBot bot) {
         int closestX = Math.abs(bot.getX() - getMinX()) < Math.abs(bot.getX() - getMaxX()) ? getMinX() : getMaxX();
         int closestY = Math.abs(bot.getY() - getMinY()) < Math.abs(bot.getY() - getMaxY()) ? getMinY() : getMaxY();
         int closestZ = Math.abs(bot.getZ() - getMinZ()) < Math.abs(bot.getZ() - getMaxZ()) ? getMinZ() : getMaxZ();
-        Point3D point3D = new Point3D(closestX, closestY, closestZ);
-
-        return manhattandistanceBetween(bot.getCoordinate(), point3D) <= bot.getSignalRadius();
+        return new Point3D(closestX, closestY, closestZ);
     }
 
     public int getMinX() {

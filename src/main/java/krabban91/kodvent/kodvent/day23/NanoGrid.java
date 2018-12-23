@@ -86,6 +86,6 @@ public class NanoGrid {
         while (input / limit > 0) {
             limit *= 2;
         }
-        return limit;
+        return input > 0 ? limit/2 : limit;
     }
 }

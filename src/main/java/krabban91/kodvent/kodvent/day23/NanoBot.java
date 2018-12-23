@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.day23;
 
 import javafx.geometry.Point3D;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,9 +22,13 @@ public class NanoBot {
         return manhattandistanceTo(other.coordinate);
     }
     public int manhattandistanceTo(Point3D other){
-        return (int)(Math.abs(other.getX() - this.coordinate.getX()) +
-                Math.abs(other.getY() - this.coordinate.getY()) +
-                Math.abs(other.getZ() - this.coordinate.getZ()));
+        return Math.abs(SearchGrid.getX(other) - this.getX()) +
+                Math.abs(SearchGrid.getY(other) - this.getY()) +
+                Math.abs(SearchGrid.getZ(other) - this.getZ());
+    }
+
+    public boolean isWithinRange(Point3D other) {
+        return this.manhattandistanceTo(other) >= this.getSignalRadius();
     }
 
     public int getSignalRadius() {
@@ -44,6 +47,22 @@ public class NanoBot {
                             }).flatMap(Set::stream).collect(Collectors.toSet());
                 }).flatMap(Set::stream).collect(Collectors.toSet());
     }
+
+    public Set<Point3D> getLocationsOnManhattanDistanceLimits(){
+        Set<Point3D> collect = IntStream.rangeClosed(getZ() - signalRadius, getZ() + signalRadius)
+                .mapToObj(z -> {
+                    int yLimits = signalRadius - Math.abs(z - getZ());
+                    return IntStream.rangeClosed(getY() - yLimits, getY() + yLimits)
+                            .mapToObj(y -> {
+                                int xLimits = yLimits - Math.abs(y - getY());
+                                return IntStream.of(getX() - xLimits, getX() + xLimits)
+                                        .mapToObj(x -> new Point3D(x, y, z)).collect(Collectors.toSet());
+                            }).flatMap(Set::stream).collect(Collectors.toSet());
+                }).flatMap(Set::stream).collect(Collectors.toSet());
+        return collect;
+    }
+
+
     public Set<Point3D> getLocationsWithinReachWithinLimits(int minX, int maxX, int minY, int maxY, int minZ, int maxZ){
         return IntStream.rangeClosed(Math.max(minZ, getZ()-signalRadius), Math.min(maxZ,getZ()+signalRadius))
                 .mapToObj(z -> {

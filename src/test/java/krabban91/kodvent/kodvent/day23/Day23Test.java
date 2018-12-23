@@ -23,11 +23,22 @@ public class Day23Test {
 
     @Test
     public void getPart1() {
+
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23.txt").getFile().getPath()))) {
+            day23.in = day23.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         assertThat(day23.getPart1()).isEqualTo(7);
     }
 
     @Test
     public void getPart2() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23.txt").getFile().getPath()))) {
+            day23.in = day23.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         assertThat(day23.getPart2()).isEqualTo(1);
     }
 
