@@ -48,6 +48,22 @@ public class NanoBot {
                 }).flatMap(Set::stream).collect(Collectors.toSet());
     }
 
+    public Set<Point3D> getLocationsOnManhattanDistanceLimitsAdjustedToScale(int scale, int ScaleStepSize){
+        Set<Point3D> collect = IntStream.rangeClosed(getZ() - signalRadius, getZ() + signalRadius)
+                .filter(z -> (z % (Math.max(4,scale/(ScaleStepSize^3))) == 0))
+                .mapToObj(z -> {
+                    int yLimits = signalRadius - Math.abs(z - getZ());
+                    return IntStream.rangeClosed(getY() - yLimits, getY() + yLimits)
+                            .filter(y -> (y % (Math.max(4,scale/(ScaleStepSize^3)))) == 0)
+                            .mapToObj(y -> {
+                                int xLimits = yLimits - Math.abs(y - getY());
+                                return IntStream.of(getX() - xLimits, getX() + xLimits)
+                                        .mapToObj(x -> new Point3D(x, y, z)).collect(Collectors.toSet());
+                            }).flatMap(Set::stream).collect(Collectors.toSet());
+                }).flatMap(Set::stream).collect(Collectors.toSet());
+        return collect;
+    }
+
     public Set<Point3D> getLocationsOnManhattanDistanceLimits(){
         Set<Point3D> collect = IntStream.rangeClosed(getZ() - signalRadius, getZ() + signalRadius)
                 .mapToObj(z -> {

@@ -14,32 +14,35 @@ public class SearchGrid {
     Point3D max;
 
     int scale;
+    int scaleStepSize;
 
-    public SearchGrid(Point3D min, Point3D max, int scale) {
+    public SearchGrid(Point3D min, Point3D max, int scale, int scaleStepSize) {
         this.min = min;
         this.max = max;
         this.scale = scale;
+        this.scaleStepSize = scaleStepSize;
     }
 
-    public SearchGrid(SearchGrid other, int scale) {
+    public SearchGrid(SearchGrid other, int scale, int scaleStepSize) {
         this.min = other.min;
         this.max = other.max;
         this.scale = scale;
+        this.scaleStepSize = scaleStepSize;
     }
 
     public Set<SearchGrid> createGridsWithLowerScale(int scaleFactor) {
         int newScale = this.scale / scaleFactor;
 
         if (newScale <= 1) {
-            return Collections.singleton(new SearchGrid(this, 1));
+            return Collections.singleton(new SearchGrid(this, 1, this.scaleStepSize));
         }
         Set<SearchGrid> newGrids = IntStream.range(0, scaleFactor).mapToObj(z ->
                 IntStream.range(0, scaleFactor).mapToObj(y ->
                         IntStream.range(0, scaleFactor)
                                 .mapToObj(x -> new SearchGrid(
                                         new Point3D(getMinX() + newScale * x, getMinY() + newScale * y, getMinZ() + newScale * z),
-                                        new Point3D(getMinX() + newScale * (x + 1), getMinX() + newScale * (y + 1), getMinX() + newScale * (z + 1)),
-                                        newScale
+                                        new Point3D(getMinX() + newScale * (x + 1), getMinY() + newScale * (y + 1), getMinY() + newScale * (z + 1)),
+                                        newScale, scaleFactor
                                 ))
                                 .collect(Collectors.toSet()))
                         .flatMap(Set::stream)
@@ -62,16 +65,26 @@ public class SearchGrid {
         // closest corner in bounding box
         // and
         // grid radius limits inside grid.
-
+        if (!isGridStrictlyOutsideOfRadius(bot) &&(isBotInsideGrid(bot) || isClosestCornerInsideRadius(bot))) {
+            return true;
+        }
 
         //       Either the circle's centre lies inside the rectangle, or
         //       One of the edges of the rectangle has a point in the circle.
-        return isBotInsideGrid(bot) ||
-                isClosestCornerIsInsideRadius(bot) ||
-                (isClosestCornerInsideBotBoundingCube(bot) &&
-                        gridPartiallyWrapsBotRadius(bot) &&
-                        bot.getLocationsOnManhattanDistanceLimits().stream()
-                                .anyMatch(this::isInsideGrid));
+        if (!isClosestCornerInsideBotBoundingCube(bot)) {
+            //return false;
+        }
+
+        boolean gridMightIntersect = gridPartiallyWrapsBotRadius(bot);
+
+        SearchGrid grid = boundingCubeIntersectsWithGrid(bot);
+        boolean gridInterSects = grid != null && grid.anyGridEdgeIsInRadius(bot);
+
+        return (//gridMightIntersect &&
+               // (scale > 10000000 || gridInterSects) &&
+               // (scale > 10000000 ||
+                        (bot.getLocationsOnManhattanDistanceLimitsAdjustedToScale(scale, scaleStepSize).stream()
+                        .anyMatch(this::isInsideGrid)));
     }
 
     public boolean isInsideGrid(Point3D p) {
@@ -104,7 +117,7 @@ public class SearchGrid {
             return false;
         }
         // check if singleCorner
-        return isfullyContainedInBoundingCubeOf(bot) && isClosestCornerIsInsideRadius(bot);
+        return isfullyContainedInBoundingCubeOf(bot) && isClosestCornerInsideRadius(bot);
     }
 
     private boolean isfullyContainedInBoundingCubeOf(NanoBot bot) {
@@ -124,7 +137,7 @@ public class SearchGrid {
         //       One of the edges of the rectangle has a point in the circle.
         //       3 dimensions -> 12 edges and the sphere.
         // edge case: A corner is inside:
-        if (isClosestCornerIsInsideRadius(bot)) {
+        if (isClosestCornerInsideRadius(bot)) {
             return true;
         }
         if(isGridStrictlyOutsideOfRadius(bot)){
@@ -143,7 +156,11 @@ public class SearchGrid {
         int minZ = Math.max(getCenterZ() - getDepthFromCenter(), bot.getZ() - bot.getSignalRadius());
         int maxZ = Math.min(getCenterZ() + getDepthFromCenter(), bot.getZ() + bot.getSignalRadius());
         if(minX <= maxX && minY <= maxY && minZ <= maxZ){
-            return new SearchGrid(new Point3D(minX, minY, minZ), new Point3D(maxX, maxY, maxZ), this.scale);
+            return new SearchGrid(
+                    new Point3D(minX, minY, minZ),
+                    new Point3D(maxX, maxY, maxZ),
+                    Math.min(maxZ - minZ, Math.min(maxX - minX, maxY - minY)),
+                    this.scaleStepSize);
         }
         return null;
         //2d calculation:
@@ -153,9 +170,6 @@ public class SearchGrid {
         // top = max(r1.top, r2.top)
     }
 
-    private Point3D getCenter() {
-        return new Point3D(getCenterX(), getCenterY(), getCenterZ());
-    }
 
     private int getWidthFromCenter() {
         return (getMaxX() - getMinX()) / 2;
@@ -209,16 +223,16 @@ public class SearchGrid {
     }
 
     private Set<Point3D> getPointsInSegmentAlongX() {
-        Set<Point3D> e1x = getPointsOnEdge(
+        Set<Point3D> e1x = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMinY(), getMinZ()),
                 new Point3D(getMaxX(), getMinY(), getMinZ()));
-        Set<Point3D> e2x = getPointsOnEdge(
+        Set<Point3D> e2x = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMaxY(), getMinZ()),
                 new Point3D(getMaxX(), getMaxY(), getMinZ()));
-        Set<Point3D> e3x = getPointsOnEdge(
+        Set<Point3D> e3x = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMinY(), getMaxZ()),
                 new Point3D(getMaxX(), getMinY(), getMaxZ()));
-        Set<Point3D> e4x = getPointsOnEdge(
+        Set<Point3D> e4x = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMaxY(), getMaxZ()),
                 new Point3D(getMaxX(), getMaxY(), getMaxZ()));
         e1x.addAll(e2x);
@@ -228,16 +242,16 @@ public class SearchGrid {
     }
 
     private Set<Point3D> getPointsInSegmentAlongY() {
-        Set<Point3D> e1y = getPointsOnEdge(
+        Set<Point3D> e1y = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMinY(), getMinZ()),
                 new Point3D(getMinX(), getMaxY(), getMinZ()));
-        Set<Point3D> e2y = getPointsOnEdge(
+        Set<Point3D> e2y = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMaxX(), getMinY(), getMinZ()),
                 new Point3D(getMaxX(), getMaxY(), getMinZ()));
-        Set<Point3D> e3y = getPointsOnEdge(
+        Set<Point3D> e3y = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMinY(), getMaxZ()),
                 new Point3D(getMinX(), getMaxY(), getMaxZ()));
-        Set<Point3D> e4y = getPointsOnEdge(
+        Set<Point3D> e4y = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMaxX(), getMinY(), getMaxZ()),
                 new Point3D(getMaxX(), getMaxY(), getMaxZ()));
         e1y.addAll(e2y);
@@ -247,16 +261,16 @@ public class SearchGrid {
     }
 
     private Set<Point3D> getPointsInSegmentAlongZ() {
-        Set<Point3D> e1z = getPointsOnEdge(
+        Set<Point3D> e1z = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMinY(), getMinZ()),
                 new Point3D(getMinX(), getMinY(), getMaxZ()));
-        Set<Point3D> e2z = getPointsOnEdge(
+        Set<Point3D> e2z = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMaxX(), getMinY(), getMinZ()),
                 new Point3D(getMaxX(), getMinY(), getMaxZ()));
-        Set<Point3D> e3z = getPointsOnEdge(
+        Set<Point3D> e3z = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMinX(), getMaxY(), getMinZ()),
                 new Point3D(getMinX(), getMaxY(), getMaxZ()));
-        Set<Point3D> e4z = getPointsOnEdge(
+        Set<Point3D> e4z = getPointsOnEdgeWithRegardToScale(
                 new Point3D(getMaxX(), getMaxY(), getMinZ()),
                 new Point3D(getMaxX(), getMaxY(), getMaxZ()));
         e1z.addAll(e2z);
@@ -265,10 +279,13 @@ public class SearchGrid {
         return e1z;
     }
 
-    private Set<Point3D> getPointsOnEdge(Point3D p1, Point3D p2) {
+    private Set<Point3D> getPointsOnEdgeWithRegardToScale(Point3D p1, Point3D p2) {
         return IntStream.rangeClosed(getZ(p1), getZ(p2))
+                .filter(z -> z % (Math.max(4, scale / 16)) == 0)
                 .mapToObj(z -> IntStream.rangeClosed(getY(p1), getY(p2))
+                        .filter(y -> y % (Math.max(4, scale / 16)) == 0)
                         .mapToObj(y -> IntStream.rangeClosed(getX(p1), getX(p2))
+                                .filter(x -> x % (Math.max(4, scale / 16)) == 0)
                                 .mapToObj(x -> new Point3D(x, y, z))
                                 .collect(Collectors.toSet()))
                         .flatMap(Set::stream)
@@ -315,7 +332,7 @@ public class SearchGrid {
         return isInsideX && isInsideY && isInsideZ;
     }
 
-    private boolean isClosestCornerIsInsideRadius(NanoBot bot) {
+    private boolean isClosestCornerInsideRadius(NanoBot bot) {
         Point3D point3D = closestCornerToBot(bot);
         return bot.isWithinRange(point3D);
     }

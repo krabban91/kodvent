@@ -37,7 +37,7 @@ public class NanoGrid {
         int maxZ = getLimitValue(nanoBots.stream().map(NanoBot::getZ).max(Comparator.comparingInt(b -> b)).orElse(1));
         Point3D maxPoint = new Point3D(maxX, maxY, maxZ);
         AtomicInteger currentScale = new AtomicInteger((maxX - minX));
-        Set<SearchGrid> searchGrid = new SearchGrid(minPoint, maxPoint, currentScale.get()).createGridsWithLowerScale(2);
+        Set<SearchGrid> searchGrid = new SearchGrid(minPoint, maxPoint, currentScale.get(), 2).createGridsWithLowerScale(2);
         currentScale.set(currentScale.get()/2);
         AtomicLong l1 = new AtomicLong(0);
         Set<SearchGrid> afterSearch;

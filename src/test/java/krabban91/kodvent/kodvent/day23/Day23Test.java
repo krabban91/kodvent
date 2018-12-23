@@ -39,7 +39,7 @@ public class Day23Test {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day23.getPart2()).isEqualTo(1);
+        assertThat(day23.getPart2()).isEqualTo(3);
     }
 
 
