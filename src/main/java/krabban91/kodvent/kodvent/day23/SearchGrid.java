@@ -71,18 +71,16 @@ public class SearchGrid {
 
         //       Either the circle's centre lies inside the rectangle, or
         //       One of the edges of the rectangle has a point in the circle.
-        if (!isClosestCornerInsideBotBoundingCube(bot)) {
+        //if (!isClosestCornerInsideBotBoundingCube(bot)) {
             //return false;
-        }
+        //}
 
         boolean gridMightIntersect = gridPartiallyWrapsBotRadius(bot);
-
-        SearchGrid grid = boundingCubeIntersectsWithGrid(bot);
-        boolean gridInterSects = grid != null && grid.anyGridEdgeIsInRadius(bot);
-
-        return (//gridMightIntersect &&
-               // (scale > 10000000 || gridInterSects) &&
-               // (scale > 10000000 ||
+        if(gridPartiallyWrapsBotRadius(bot)){
+            SearchGrid grid = boundingCubeIntersectsWithGrid(bot);
+            return grid != null && grid.anyGridEdgeIsInRadius(bot);
+        }
+        return (scale > 10000000 ||
                         (bot.getLocationsOnManhattanDistanceLimitsAdjustedToScale(scale, scaleStepSize).stream()
                         .anyMatch(this::isInsideGrid)));
     }
