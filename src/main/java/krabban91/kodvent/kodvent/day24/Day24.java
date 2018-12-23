@@ -1,4 +1,4 @@
-package krabban91.kodvent.kodvent.day23;
+package krabban91.kodvent.kodvent.day24;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -10,26 +10,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//@Component
-public class Day23 {
-    private static String inputPath = "day23.txt";
-    NanoGrid in;
+@Component
+public class Day24 {
+    private static String inputPath = "day24.txt";
+    List<String> in;
 
     public long getPart1() {
-        return in.numberOfNanobotsInRangeOfStrongest();
+        return -1L;
     }
 
     public long getPart2() {
-        return in.distanceToBestLocationToStand();
+        return -1;
     }
 
 
-    public NanoGrid readInput(Stream<String> stream) {
-        return new NanoGrid(stream);
+    public List<String> readInput(Stream<String> stream) {
+        return stream
+                .map(String::new)
+                .collect(Collectors.toList());
     }
 
-    public Day23() {
-        System.out.println("::: Starting Day 23 :::");
+    public Day24() {
+        System.out.println("::: Starting Day 24 :::");
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
