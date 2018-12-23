@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.day23;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//@Component
+@Component
 public class Day23 {
     private static String inputPath = "day23.txt";
     NanoGrid in;
@@ -19,7 +20,7 @@ public class Day23 {
     }
 
     public long getPart2() {
-        return -1;
+        return in.distanceToBestLocationToStand();
     }
 
 

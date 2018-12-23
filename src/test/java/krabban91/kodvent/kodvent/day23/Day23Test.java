@@ -4,7 +4,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +28,18 @@ public class Day23Test {
 
     @Test
     public void getPart2() {
-        assertThat(day23.getPart2()).isEqualTo(-1);
+        assertThat(day23.getPart2()).isEqualTo(36);
+    }
+
+
+    @Test
+    public void getPart2Example2() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23-2.txt").getFile().getPath()))) {
+            day23.in = day23.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertThat(day23.getPart2()).isEqualTo(36);
     }
 
 }
