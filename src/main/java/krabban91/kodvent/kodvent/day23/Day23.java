@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
+//@Component
 public class Day23 {
     private static String inputPath = "day23.txt";
     NanoGrid in;

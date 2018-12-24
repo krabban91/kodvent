@@ -36,24 +36,24 @@ public class NanoBot {
     }
 
     public Set<Point3D> getLocationsWithinReach(){
-        return IntStream.rangeClosed(getZ()-signalRadius, getZ()+signalRadius)
+        return IntStream.rangeClosed(getZ()-signalRadius, getZ()+signalRadius).parallel()
                 .mapToObj(z -> {
                     int yLimits = signalRadius-Math.abs(z - getZ());
-                    return IntStream.rangeClosed(getY()-yLimits, getY()+yLimits)
+                    return IntStream.rangeClosed(getY()-yLimits, getY()+yLimits).parallel()
                             .mapToObj(y -> {
                                 int xLimits = yLimits-Math.abs(y - getY());
-                                return IntStream.rangeClosed(getX()-xLimits, getX()+xLimits)
+                                return IntStream.rangeClosed(getX()-xLimits, getX()+xLimits).parallel()
                                         .mapToObj(x -> new Point3D(x,y,z)).collect(Collectors.toSet());
                             }).flatMap(Set::stream).collect(Collectors.toSet());
                 }).flatMap(Set::stream).collect(Collectors.toSet());
     }
 
     public Set<Point3D> getLocationsOnManhattanDistanceLimitsAdjustedToScale(int scale, int ScaleStepSize){
-        Set<Point3D> collect = IntStream.rangeClosed(getZ() - signalRadius, getZ() + signalRadius)
+        Set<Point3D> collect = IntStream.rangeClosed(getZ() - signalRadius, getZ() + signalRadius).parallel()
                 .filter(z -> (z % (Math.max(4,scale/(ScaleStepSize^3))) == 0))
                 .mapToObj(z -> {
                     int yLimits = signalRadius - Math.abs(z - getZ());
-                    return IntStream.rangeClosed(getY() - yLimits, getY() + yLimits)
+                    return IntStream.rangeClosed(getY() - yLimits, getY() + yLimits).parallel()
                             .filter(y -> (y % (Math.max(4,scale/(ScaleStepSize^3)))) == 0)
                             .mapToObj(y -> {
                                 int xLimits = yLimits - Math.abs(y - getY());

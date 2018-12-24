@@ -32,16 +32,16 @@ public class SearchGrid {
 
     public Set<SearchGrid> createGridsWithLowerScale(int scaleFactor) {
         int newScale = this.scale / scaleFactor;
-
+        int rest = this.scale % scaleFactor;
         if (newScale <= 1) {
             return Collections.singleton(new SearchGrid(this, 1, this.scaleStepSize));
         }
-        Set<SearchGrid> newGrids = IntStream.range(0, scaleFactor).mapToObj(z ->
-                IntStream.range(0, scaleFactor).mapToObj(y ->
-                        IntStream.range(0, scaleFactor)
+        Set<SearchGrid> newGrids = IntStream.range(0, scaleFactor).parallel().mapToObj(z ->
+                IntStream.range(0, scaleFactor).parallel().mapToObj(y ->
+                        IntStream.range(0, scaleFactor).parallel()
                                 .mapToObj(x -> new SearchGrid(
                                         new Point3D(getMinX() + newScale * x, getMinY() + newScale * y, getMinZ() + newScale * z),
-                                        new Point3D(getMinX() + newScale * (x + 1), getMinY() + newScale * (y + 1), getMinY() + newScale * (z + 1)),
+                                        new Point3D(getMinX() + rest + newScale * (x + 1), getMinY() + rest + newScale * (y + 1), getMinZ() + rest + newScale * (z + 1)),
                                         newScale, scaleFactor
                                 ))
                                 .collect(Collectors.toSet()))
@@ -53,7 +53,7 @@ public class SearchGrid {
     }
 
     public long botsWithinRange(List<NanoBot> bots) {
-        return bots.stream().filter(this::isReachedByNanoBot).count();
+        return bots.stream().parallel().filter(this::isReachedByNanoBot).count();
     }
 
     public boolean isReachedByNanoBot(NanoBot bot) {
@@ -75,12 +75,14 @@ public class SearchGrid {
             //return false;
         //}
 
-        boolean gridMightIntersect = gridPartiallyWrapsBotRadius(bot);
         if(gridPartiallyWrapsBotRadius(bot)){
             SearchGrid grid = boundingCubeIntersectsWithGrid(bot);
-            return grid != null && grid.anyGridEdgeIsInRadius(bot);
+            if(grid != null){
+                return grid.anyGridEdgeIsInRadius(bot);
+            }
+            return false;
         }
-        return (scale > 10000000 ||
+        return (//scale > 10000000 ||
                         (bot.getLocationsOnManhattanDistanceLimitsAdjustedToScale(scale, scaleStepSize).stream()
                         .anyMatch(this::isInsideGrid)));
     }
@@ -103,7 +105,7 @@ public class SearchGrid {
             wrappingAxises++;
         }
 
-        return wrappingAxises >= 1;
+        return wrappingAxises >= 2;
     }
 
     public boolean isBotInsideGrid(NanoBot bot) {
@@ -147,12 +149,24 @@ public class SearchGrid {
     }
 
     private SearchGrid boundingCubeIntersectsWithGrid(NanoBot bot) {
-        int minX = Math.max(getCenterX() - getWidthFromCenter(), bot.getX() - bot.getSignalRadius());
-        int maxX = Math.min(getCenterX() + getWidthFromCenter(), bot.getX() + bot.getSignalRadius());
-        int minY = Math.max(getCenterY() - getHeightFromCenter(), bot.getY() - bot.getSignalRadius());
-        int maxY = Math.min(getCenterY() + getHeightFromCenter(), bot.getY() + bot.getSignalRadius());
-        int minZ = Math.max(getCenterZ() - getDepthFromCenter(), bot.getZ() - bot.getSignalRadius());
-        int maxZ = Math.min(getCenterZ() + getDepthFromCenter(), bot.getZ() + bot.getSignalRadius());
+        int gminX = getCenterX() - getWidthFromCenter();
+        int cminX =  bot.getX() - bot.getSignalRadius();
+        int gmaxX = getCenterX() + getWidthFromCenter();
+        int cmaxx =  bot.getX() + bot.getSignalRadius();
+        int minX = Math.max(gminX,cminX);
+        int maxX = Math.min(gmaxX, cmaxx);
+        int gminY = getCenterY() - getHeightFromCenter();
+        int cminY =  bot.getY() - bot.getSignalRadius();
+        int gmaxY= getCenterY()+  getHeightFromCenter();
+        int cmaxY =  bot.getY() + bot.getSignalRadius();
+        int minY = Math.max(gminY, cminY);
+        int maxY = Math.min(gmaxY, cmaxY);
+        int gminZ = getCenterZ() - getDepthFromCenter();
+        int cminZ =  bot.getZ() - bot.getSignalRadius();
+        int gmaxZ= getCenterZ()+  getDepthFromCenter();
+        int cmaxZ =  bot.getZ() + bot.getSignalRadius();
+        int minZ = Math.max(gminZ,cminZ);
+        int maxZ = Math.min(gmaxZ, cmaxZ);
         if(minX <= maxX && minY <= maxY && minZ <= maxZ){
             return new SearchGrid(
                     new Point3D(minX, minY, minZ),

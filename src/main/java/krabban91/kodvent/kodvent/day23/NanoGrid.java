@@ -21,20 +21,20 @@ public class NanoGrid {
     }
 
     public long numberOfNanobotsInRangeOfStrongest() {
-        Optional<NanoBot> max = nanoBots.stream().max(Comparator.comparingInt(b -> b.getSignalRadius()));
+        Optional<NanoBot> max = nanoBots.stream().parallel().max(Comparator.comparingInt(b -> b.getSignalRadius()));
         return max.map(nanoBot -> nanoBots.stream().filter(b -> b.manhattandistanceTo(nanoBot) <= nanoBot.getSignalRadius()).count()).orElse(0L);
     }
 
     public long distanceToBestLocationToStand() {
         //top5% reached byOthers;
-        int minX = getLimitValue(nanoBots.stream().map(NanoBot::getX).min(Comparator.comparingInt(b -> b)).orElse(1));
+        int minX = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getX).min(Comparator.comparingInt(b -> b)).orElse(1));
 
-        int minY = getLimitValue(nanoBots.stream().map(NanoBot::getY).min(Comparator.comparingInt(b -> b)).orElse(1));
-        int minZ = getLimitValue(nanoBots.stream().map(NanoBot::getZ).min(Comparator.comparingInt(b -> b)).orElse(1));
+        int minY = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getY).min(Comparator.comparingInt(b -> b)).orElse(1));
+        int minZ = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getZ).min(Comparator.comparingInt(b -> b)).orElse(1));
         Point3D minPoint = new Point3D(minX, minY, minZ);
-        int maxX = getLimitValue(nanoBots.stream().map(NanoBot::getX).max(Comparator.comparingInt(b -> b)).orElse(1));
-        int maxY = getLimitValue(nanoBots.stream().map(NanoBot::getY).max(Comparator.comparingInt(b -> b)).orElse(1));
-        int maxZ = getLimitValue(nanoBots.stream().map(NanoBot::getZ).max(Comparator.comparingInt(b -> b)).orElse(1));
+        int maxX = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getX).max(Comparator.comparingInt(b -> b)).orElse(1));
+        int maxY = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getY).max(Comparator.comparingInt(b -> b)).orElse(1));
+        int maxZ = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getZ).max(Comparator.comparingInt(b -> b)).orElse(1));
         Point3D maxPoint = new Point3D(maxX, maxY, maxZ);
         AtomicInteger currentScale = new AtomicInteger((maxX - minX));
         Set<SearchGrid> searchGrid = new SearchGrid(minPoint, maxPoint, currentScale.get(), 2).createGridsWithLowerScale(2);
@@ -42,8 +42,8 @@ public class NanoGrid {
         AtomicLong l1 = new AtomicLong(0);
         Set<SearchGrid> afterSearch;
         while (currentScale.get()> 1){
-            l1.set(searchGrid.stream().map(grid -> grid.botsWithinRange(nanoBots)).max(Comparator.comparingLong(l -> l)).orElse(0L));
-            afterSearch = searchGrid.stream()
+            l1.set(searchGrid.stream().parallel().map(grid -> grid.botsWithinRange(nanoBots)).max(Comparator.comparingLong(l -> l)).orElse(0L));
+            afterSearch = searchGrid.stream().parallel()
                     .filter(s -> s.botsWithinRange(nanoBots) >= l1.get())
                     .collect(Collectors.toSet());
             System.out.println("############");
@@ -51,7 +51,7 @@ public class NanoGrid {
             System.out.println("robots withinRange: "+l1.get());
             System.out.println("searchGrid.size : "+searchGrid.size());
             System.out.println("afterSearch.size : "+afterSearch.size());
-            searchGrid = afterSearch.stream()
+            searchGrid = afterSearch.stream().parallel()
                     .map(s -> s.createGridsWithLowerScale(2))
                     .flatMap(Set::stream)
                     .collect(Collectors.toSet());
