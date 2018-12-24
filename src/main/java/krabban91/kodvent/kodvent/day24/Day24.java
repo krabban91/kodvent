@@ -13,10 +13,10 @@ import java.util.stream.Stream;
 @Component
 public class Day24 {
     private static String inputPath = "day24.txt";
-    List<String> in;
+    Battle in;
 
     public long getPart1() {
-        return -1L;
+        return in.unitsLeftInWinningArmy();
     }
 
     public long getPart2() {
@@ -24,10 +24,9 @@ public class Day24 {
     }
 
 
-    public List<String> readInput(Stream<String> stream) {
-        return stream
-                .map(String::new)
-                .collect(Collectors.toList());
+    public Battle readInput(Stream<String> stream) {
+        return new Battle(stream
+                .collect(Collectors.toList()));
     }
 
     public Day24() {
