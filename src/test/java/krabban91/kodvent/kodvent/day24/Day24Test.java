@@ -17,12 +17,14 @@ public class Day24Test {
 
     @Test
     public void getPart1() {
+        day24.in.resetTeams(0);
+        day24.in.activateDebugging();
         assertThat(day24.getPart1()).isEqualTo(5216);
     }
 
     @Test
     public void getPart2() {
-        assertThat(day24.getPart2()).isEqualTo(-1);
+        assertThat(day24.getPart2()).isEqualTo(51);
     }
 
 }

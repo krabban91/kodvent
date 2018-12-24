@@ -7,16 +7,24 @@ import java.util.stream.Collectors;
 
 public class Battle {
 
-    List<BattleGroup> immuneSystem;
-    List<BattleGroup> infection;
-    List<String> input;
+    private List<BattleGroup> immuneSystem;
+    private List<BattleGroup> infection;
+    private List<String> input;
+    private boolean debug;
 
     public Battle(List<String> input) {
         this.input = input;
         resetTeams(0);
     }
 
-    private void resetTeams(int boost) {
+    public void activateDebugging() {
+        this.debug = true;
+        this.immuneSystem.forEach(BattleGroup::activateDebugging);
+        this.infection.forEach(BattleGroup::activateDebugging);
+    }
+
+    public void resetTeams(int boost) {
+        debug = false;
         BattleGroup.counter = 1;
         List<String> immuneSystemStrings = input.subList(input.indexOf("Immune System:") + 1, input.indexOf(""));
         immuneSystem = immuneSystemStrings.stream().map(s -> new BattleGroup(s,"Immune System")).collect(Collectors.toList());
@@ -76,12 +84,13 @@ public class Battle {
     private void startBattle() {
         this.infection.stream().forEach(BattleGroup::startRound);
         this.immuneSystem.stream().forEach(BattleGroup::startRound);
-
-        //System.out.println("Immune System:");
-        this.immuneSystem.forEach(BattleGroup::reportHealth);
-        //System.out.println("Infection:");
-        this.infection.forEach(BattleGroup::reportHealth);
-        //System.out.println(" ");
+        if(debug){
+            System.out.println("Immune System:");
+            this.immuneSystem.forEach(BattleGroup::reportHealth);
+            System.out.println("Infection:");
+            this.infection.forEach(BattleGroup::reportHealth);
+            System.out.println();
+        }
 
 
     }
@@ -92,11 +101,6 @@ public class Battle {
     }
 
     private void targetPhase() {
-/*
-            Not doing it by the book.
-* each group attempts to choose one target. In decreasing order of effective power, groups choose their targets; in a tie, the group with the higher initiative chooses first.
-* */
-
         immuneSystem.stream()
                 .sorted(Comparator
                         .comparingInt(g -> ((BattleGroup) g).effectivePower())
@@ -109,7 +113,10 @@ public class Battle {
                         .thenComparingInt(g -> ((BattleGroup) g).getInitiative())
                         .reversed())
                 .forEach(group -> group.selectTarget(immuneSystem));
-        //System.out.println();
+
+        if(debug){
+            System.out.println();
+        }
     }
 
     private void attackPhase() {
@@ -122,6 +129,9 @@ public class Battle {
                         .comparingInt(BattleGroup::getInitiative)
                         .reversed())
                 .forEach(BattleGroup::attackTarget);
-        //System.out.println();
+
+        if(debug){
+            System.out.println();
+        }
     }
 }

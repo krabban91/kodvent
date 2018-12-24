@@ -10,9 +10,8 @@ public class BattleGroup {
 
     public static int counter = 1;
 
-
     String teamName;
-    int number = counter ++;
+    int number = counter++;
     List<Category> immunities = new ArrayList<>();
     List<Category> weaknesses = new ArrayList<>();
     Category attackType;
@@ -23,6 +22,7 @@ public class BattleGroup {
 
     BattleGroup selectedTarget;
     boolean targeted;
+    private boolean debug;
 
     public BattleGroup(String input, String teamName) {
         String[] split = input.split(" units each with ");
@@ -48,7 +48,6 @@ public class BattleGroup {
         String[] split3 = split2[1].split(" at initiative ");
         this.initiative = Integer.parseInt(split3[1]);
         this.teamName = teamName;
-        this.number = number;
     }
 
     public boolean isTargeted() {
@@ -67,8 +66,16 @@ public class BattleGroup {
                 this.selectedTarget = first.get();
                 this.selectedTarget.targeted = true;
             }
-            //System.out.println(String.format("%s group %s would deal defending group %s %s damage", teamName, number, first.get().number, first.get().potentialDamage(effectivePower(), attackType)));
+
+            if (debug) {
+                reportTargetSelection(first);
+            }
         }
+    }
+
+    private void reportTargetSelection(Optional<BattleGroup> first) {
+        System.out.println(String.format("%s group %s would deal defending group %s %s damage",
+                teamName, number, first.get().number, first.get().potentialDamage(effectivePower(), attackType)));
     }
 
     public void startRound(){
@@ -102,16 +109,27 @@ public class BattleGroup {
         if(isAlive()){
             int unitsLeft = this.selectedTarget.unitsLeft;
             this.selectedTarget.takeDamage(effectivePower(), attackType);
-            //System.out.println(String.format("%s group %s attacks defending group %s, killing %s units.",teamName, number, this.selectedTarget.number, unitsLeft-Math.max(0,this.selectedTarget.unitsLeft)));
+
+            if (debug) {
+                reportAttack(unitsLeft);
+            }
         }
     }
 
+    private void reportAttack(int unitsLeft) {
+        System.out.println(String.format("%s group %s attacks defending group %s, killing %s units.", teamName, number, this.selectedTarget.number, unitsLeft - Math.max(0, this.selectedTarget.unitsLeft)));
+    }
+
     public  void reportHealth() {
-        //System.out.println(String.format("Group %s contains %s units", number, unitsLeft));
+        System.out.println(String.format("Group %s contains %s units", number, unitsLeft));
     }
 
     public void boost(int boost) {
         this.attackPower+=boost;
+    }
+
+    public void activateDebugging() {
+        this.debug = true;
     }
 
     private void takeDamage(int attackPower, Category attackType) {
