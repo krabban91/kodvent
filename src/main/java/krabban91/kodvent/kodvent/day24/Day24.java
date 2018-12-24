@@ -20,7 +20,7 @@ public class Day24 {
     }
 
     public long getPart2() {
-        return -1;
+        return in.unitsLeftWhenGivingTheSmallestPossibleBoost();
     }
 
 

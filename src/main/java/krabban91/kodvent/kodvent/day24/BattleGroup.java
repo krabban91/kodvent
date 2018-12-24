@@ -67,7 +67,7 @@ public class BattleGroup {
                 this.selectedTarget = first.get();
                 this.selectedTarget.targeted = true;
             }
-            System.out.println(String.format("%s group %s would deal defending group %s %s damage", teamName, number, first.get().number, first.get().potentialDamage(effectivePower(), attackType)));
+            //System.out.println(String.format("%s group %s would deal defending group %s %s damage", teamName, number, first.get().number, first.get().potentialDamage(effectivePower(), attackType)));
         }
     }
 
@@ -102,12 +102,16 @@ public class BattleGroup {
         if(isAlive()){
             int unitsLeft = this.selectedTarget.unitsLeft;
             this.selectedTarget.takeDamage(effectivePower(), attackType);
-            System.out.println(String.format("%s group %s attacks defending group %s, killing %s units.",teamName, number, this.selectedTarget.number, unitsLeft-Math.max(0,this.selectedTarget.unitsLeft)));
+            //System.out.println(String.format("%s group %s attacks defending group %s, killing %s units.",teamName, number, this.selectedTarget.number, unitsLeft-Math.max(0,this.selectedTarget.unitsLeft)));
         }
     }
 
     public  void reportHealth() {
-        System.out.println(String.format("Group %s contains %s units", number, unitsLeft));
+        //System.out.println(String.format("Group %s contains %s units", number, unitsLeft));
+    }
+
+    public void boost(int boost) {
+        this.attackPower+=boost;
     }
 
     private void takeDamage(int attackPower, Category attackType) {
