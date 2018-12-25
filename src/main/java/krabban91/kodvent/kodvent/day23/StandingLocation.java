@@ -2,63 +2,45 @@ package krabban91.kodvent.kodvent.day23;
 
 import javafx.geometry.Point3D;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 public class StandingLocation {
 
-    Point3D coordinate;
-    long nanoBotsWithinReach;
-    Set<NanoBot> reaches;
-    public StandingLocation(Point3D coordinate, long nanoBotsWithinReach){
-        this.coordinate = coordinate;
-        this.nanoBotsWithinReach = nanoBotsWithinReach;
+    Point3D point;
+    Point3D target;
+
+    int distance;
+
+    public StandingLocation(Point3D point) {
+        this.point = point;
+        this.target = point;
+        this.distance = manhattandistanceTo(target);
     }
 
-    public StandingLocation(Point3D coordinate, Set<NanoBot> reaches){
-        this.coordinate = coordinate;
-        this.nanoBotsWithinReach = reaches.size();
-        this.reaches= reaches;
+    public int manhattandistanceTo(Point3D other) {
+        return (int) (Math.abs(other.getX() - this.point.getX()) +
+                Math.abs(other.getY() - this.point.getY()) +
+                Math.abs(other.getZ() - this.point.getZ()));
     }
 
-    public Point3D getCoordinate() {
-        return coordinate;
+    public Point3D getPoint() {
+        return point;
     }
 
-    public long getNanoBotsWithinReach() {
-        return nanoBotsWithinReach;
+    public void setPoint(Point3D point) {
+        this.point = point;
+        this.distance = manhattandistanceTo(target);
     }
 
-
-    public int manhattandistanceTo(Point3D other){
-        return (int)(Math.abs(other.getX() - this.coordinate.getX()) +
-                Math.abs(other.getY() - this.coordinate.getY()) +
-                Math.abs(other.getZ() - this.coordinate.getZ()));
+    public int getDistance() {
+        return distance;
     }
 
-    public Set<Point3D> getLocationsWithinDistance(int distance){
-        return IntStream.rangeClosed(getZ()-distance, getZ()+distance)
-                .mapToObj(z -> {
-                    int yLimits = distance-Math.abs(z - getZ());
-                    return IntStream.rangeClosed(getY()-yLimits, getY()+yLimits)
-                            .mapToObj(y -> {
-                                int xLimits = yLimits-Math.abs(y - getY());
-                                return IntStream.rangeClosed(getX()-xLimits, getX()+xLimits)
-                                        .mapToObj(x -> new Point3D(x,y,z)).collect(Collectors.toSet());
-                            }).flatMap(Set::stream).collect(Collectors.toSet());
-                }).flatMap(Set::stream).collect(Collectors.toSet());
-    }
-
-    public int getX(){
-        return (int)coordinate.getX();
-    }
-
-    public int getY(){
-        return (int)coordinate.getY();
-    }
-    public int getZ(){
-        return (int)coordinate.getZ();
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StandingLocation) {
+            StandingLocation other = (StandingLocation) obj;
+            return this.getPoint().equals(other.getPoint());
+        }
+        return false;
     }
 }
 

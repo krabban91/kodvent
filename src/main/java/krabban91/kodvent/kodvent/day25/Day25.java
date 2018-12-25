@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-@Component
 public class Day25 {
     private static String inputPath = "day25.txt";
     SpaceAndTime in;
