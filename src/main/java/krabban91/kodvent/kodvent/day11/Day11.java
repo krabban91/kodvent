@@ -1,6 +1,5 @@
 package krabban91.kodvent.kodvent.day11;
 
-import javafx.geometry.Point3D;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -13,11 +12,11 @@ public class Day11 {
     FuelCellGrid grid;
 
     public Point3D getPart1() {
-        return grid.getHighestValueFuelCellWithVariableWith(3).getKey();
+        return grid.getHighestValueFuelCellWithVariableWidth(3).getKey();
     }
 
     public Point3D getPart2() {
-        return grid.getHighestValueFuelCellWithVariableWith(300).getKey();
+        return grid.getHighestValueFuelCellWithVariableWidth(300).getKey();
     }
 
 
@@ -40,9 +39,9 @@ public class Day11 {
         }
         Point3D part1 = getPart1();
         System.out.println(": answer to part 1 :");
-        System.out.println(part1.getX() + "," + part1.getY());
+        System.out.println(part1);
         Point3D part2 = getPart2();
         System.out.println(": answer to part 2 :");
-        System.out.println(part2.getX() + "," + part2.getY() + "," + part2.getZ());
+        System.out.println(part2);
     }
 }

@@ -36,7 +36,7 @@ public class CoordinatePicker {
     }
 
     public static int manhattanDistance(Point point, Point other) {
-        return (int) (Math.abs(point.getX() - other.getX()) + Math.abs(point.getY() - other.getY()));
+        return Math.abs(point.x - other.x) + Math.abs(point.y - other.y);
     }
 
     public boolean hasFiniteArea(Point point) {

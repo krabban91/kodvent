@@ -37,14 +37,15 @@ public class FabricSlicer {
     }
 
     private void mapClaim(Claim claim) {
-        IntStream.range(claim.getX0(), claim.getX1()).forEach(x -> IntStream.range(claim.getY0(), claim.getY1())
-                .forEach(y -> {
-                    if (fabricOverlap[x][y] == null) {
-                        fabricOverlap[x][y] = new LinkedList<>();
-                    }
-                    fabricOverlap[x][y].add(claim.getId());
-                })
-        );
+        IntStream.range(claim.getX0(), claim.getX1())
+                .forEach(x -> IntStream.range(claim.getY0(), claim.getY1())
+                        .forEach(y -> {
+                            if (fabricOverlap[x][y] == null) {
+                                fabricOverlap[x][y] = new LinkedList<>();
+                            }
+                            fabricOverlap[x][y].add(claim.getId());
+                        })
+                );
     }
 
     private long calculateOverlap() {
@@ -52,7 +53,7 @@ public class FabricSlicer {
                 .map(col -> Stream.of(col)
                         .filter(list -> list != null && list.size() > 1)
                         .count())
-                .reduce(0l, Long::sum);
+                .reduce(0L, Long::sum);
     }
 
     private void findClaimCandidate(List<Integer> list) {

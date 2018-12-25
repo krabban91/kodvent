@@ -1,6 +1,6 @@
 package krabban91.kodvent.kodvent.day23;
 
-import javafx.geometry.Point3D;
+import krabban91.kodvent.kodvent.day11.Point3D;
 
 public class NanoBot {
 

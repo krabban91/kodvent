@@ -1,7 +1,5 @@
 package krabban91.kodvent.kodvent.day11;
 
-import javafx.geometry.Point3D;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class FuelCellGrid {
         grid = getInitialGrid(serialNumber);
     }
 
-    public Map.Entry<Point3D, Integer> getHighestValueFuelCellWithVariableWith(int maxWidth) {
+    public Map.Entry<Point3D, Integer> getHighestValueFuelCellWithVariableWidth(int maxWidth) {
         Integer[][][] scoreGrid = new Integer[300][300][maxWidth + 1];
         Map<Point3D, Integer> candidates = new HashMap<>();
         AtomicInteger maxScore = new AtomicInteger(0);

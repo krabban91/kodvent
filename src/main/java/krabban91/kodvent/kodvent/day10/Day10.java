@@ -47,10 +47,10 @@ public class Day10 {
     }
 
     private void visualizeStars() {
-        int minX = stars.stream().min((l, r) -> l.getX() - r.getX()).get().getX();
-        int maxX = stars.stream().max((l, r) -> l.getX() - r.getX()).get().getX();
+        int minX = stars.stream().min(Comparator.comparingInt(Star::getX)).get().getX();
+        int maxX = stars.stream().max(Comparator.comparingInt(Star::getX)).get().getX();
         Map<Integer, List<Star>> collect = stars.stream().collect(Collectors.groupingBy(Star::getY));
-        collect.entrySet().stream().sorted(Comparator.comparingInt(e -> e.getKey())).forEach(e -> visualizeRow(e, minX, maxX));
+        collect.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getKey)).forEach(e -> visualizeRow(e, minX, maxX));
     }
 
     private void visualizeRow(Map.Entry<Integer, List<Star>> integerListEntry, int min, int max) {

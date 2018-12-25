@@ -4,19 +4,19 @@ import java.awt.*;
 
 public class Star {
 
-    private int x;
-    private int y;
-    private int dx;
-    private int dy;
+    private Point position;
+    private Point velocity;
 
     public Star(String line){
         String[] split = line.split("<");
         String[] split1 = split[1].split(",");
-        x = Integer.parseInt(split1[0].replace(" ",""));
-        y = Integer.parseInt(split1[1].split(">")[0].replace(" ",""));
+        position = new Point(
+                Integer.parseInt(split1[0].replace(" ", "")),
+                Integer.parseInt(split1[1].split(">")[0].replace(" ", "")));
         String[] split2 = split[2].split(",");
-        dx = Integer.parseInt(split2[0].replace(" ",""));
-        dy = Integer.parseInt(split2[1].split(">")[0].replace(" ",""));
+        position = new Point(
+                Integer.parseInt(split2[0].replace(" ", "")),
+                Integer.parseInt(split2[1].split(">")[0].replace(" ", "")));
     }
 
     public boolean isWithinManhattanDistanceOf(Star other, int distance){
@@ -24,27 +24,19 @@ public class Star {
     }
 
     public boolean hasXValue(int value){
-        return x == value;
+        return position.x == value;
     }
 
     public void moveOneSecond(){
-        x +=dx;
-        y +=dy;
+        position.translate(velocity.x, velocity.y);
     }
 
     public int getX() {
-        return x;
+        return position.x;
     }
 
     public int getY() {
-        return y;
+        return position.y;
     }
 
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
-    }
 }

@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.day23;
 
-import javafx.geometry.Point3D;
+
+import krabban91.kodvent.kodvent.day11.Point3D;
 
 import java.util.Comparator;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
