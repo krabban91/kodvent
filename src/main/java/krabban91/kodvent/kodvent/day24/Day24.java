@@ -1,16 +1,13 @@
 package krabban91.kodvent.kodvent.day24;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day24 {
     private static String inputPath = "day24.txt";
     Battle in;

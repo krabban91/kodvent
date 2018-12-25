@@ -6,11 +6,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//@Component
+@Component
 public class Day23 {
     private static String inputPath = "day23.txt";
     NanoGrid in;

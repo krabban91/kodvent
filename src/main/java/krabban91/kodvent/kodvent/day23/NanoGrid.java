@@ -2,12 +2,10 @@ package krabban91.kodvent.kodvent.day23;
 
 import javafx.geometry.Point3D;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,31 +35,23 @@ public class NanoGrid {
         int maxZ = getLimitValue(nanoBots.stream().parallel().map(NanoBot::getZ).max(Comparator.comparingInt(b -> b)).orElse(1));
         Point3D maxPoint = new Point3D(maxX, maxY, maxZ);
         AtomicInteger currentScale = new AtomicInteger((maxX - minX));
-        Set<SearchGrid> searchGrid = new SearchGrid(minPoint, maxPoint, currentScale.get(), 2).createGridsWithLowerScale(2);
+        Stream<SearchGrid> searchGrid = new SearchGrid(minPoint, maxPoint, currentScale.get(), 2).createGridsWithLowerScale(2);
         currentScale.set(currentScale.get()/2);
-        AtomicLong l1 = new AtomicLong(0);
         Set<SearchGrid> afterSearch;
         while (currentScale.get()> 1){
-            l1.set(searchGrid.stream().parallel().map(grid -> grid.botsWithinRange(nanoBots)).max(Comparator.comparingLong(l -> l)).orElse(0L));
-            afterSearch = searchGrid.stream().parallel()
-                    .filter(s -> s.botsWithinRange(nanoBots) >= l1.get())
-                    .collect(Collectors.toSet());
+            afterSearch = searchGrid
+                    .collect(maxSet(Comparator.comparingLong(g -> g.botsWithinRange(nanoBots))));
+            currentScale.set(afterSearch.stream().findAny().get().getScale());
             System.out.println("############");
             System.out.println("current Scale: "+currentScale.get());
-            System.out.println("robots withinRange: "+l1.get());
-            System.out.println("searchGrid.size : "+searchGrid.size());
-            System.out.println("afterSearch.size : "+afterSearch.size());
-            searchGrid = afterSearch.stream().parallel()
+            System.out.println("search set size after  : "+afterSearch.size());
+            searchGrid = afterSearch.parallelStream()
                     .map(s -> s.createGridsWithLowerScale(2))
-                    .flatMap(Set::stream)
-                    .collect(Collectors.toSet());
-            currentScale.set(searchGrid.stream().findAny().get().getScale());
+                    .reduce(Stream::concat).orElseGet(Stream::empty);
         }
-        l1.set(searchGrid.stream().map(grid -> grid.botsWithinRange(nanoBots)).max(Comparator.comparingLong(l -> l)).orElse(0L));
-        afterSearch = searchGrid.stream()
-                .filter(s -> s.botsWithinRange(nanoBots) >= l1.get())
-                .collect(Collectors.toSet());
-        Set<StandingLocation> informedLocations = afterSearch.stream()
+        afterSearch = searchGrid
+                .collect(maxSet(Comparator.comparingLong(g -> g.botsWithinRange(nanoBots))));
+        Set<StandingLocation> informedLocations = afterSearch.parallelStream()
                 .map(SearchGrid::getPointsInGrid)
                 .flatMap(Set::stream)
                 .map(p -> new StandingLocation(p, nanoBots.stream()
@@ -87,5 +77,36 @@ public class NanoGrid {
             limit *= 2;
         }
         return input > 0 ? limit/2 : limit;
+    }
+
+    static <T> Collector<T,?,Set<T>> maxSet(Comparator<? super T> comp) {
+        return Collector.of(
+                HashSet::new,
+                (set, t) -> {
+                    int c;
+                    if (set.isEmpty() || (c = comp.compare(t, set.stream().findAny().get())) == 0) {
+                        set.add(t);
+                    } else if (c > 0) {
+                        set.clear();
+                        set.add(t);
+                    }
+                },
+                (set1, set2) -> {
+                    if (set1.isEmpty()) {
+                        return set2;
+                    }
+                    if (set2.isEmpty()) {
+                        return set1;
+                    }
+                    int r = comp.compare(set1.stream().findAny().get(), set2.stream().findAny().get());
+                    if (r < 0) {
+                        return set2;
+                    } else if (r > 0) {
+                        return set1;
+                    } else {
+                        set1.addAll(set2);
+                        return set1;
+                    }
+                });
     }
 }
