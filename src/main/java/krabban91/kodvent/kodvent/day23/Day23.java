@@ -1,14 +1,12 @@
 package krabban91.kodvent.kodvent.day23;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-@Component
 public class Day23 {
     private static String inputPath = "day23.txt";
     NanoGrid in;

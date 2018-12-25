@@ -6,20 +6,20 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Component
 public class Day21 {
     private static String inputPath = "day21.txt";
     ActivationProcess in;
 
     public long getPart1() {
-        return in.haltWithAsLowStartingValueAsPossible();
+        return in.firstHaltingValue();
     }
 
     public long getPart2() {
-        return -1;
+        return in.lastHaltingValue();
     }
 
 
