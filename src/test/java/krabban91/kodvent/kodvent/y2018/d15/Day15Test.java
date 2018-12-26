@@ -23,7 +23,7 @@ public class Day15Test {
 
     @Test
     public void getPart1Debug() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-debug.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -32,7 +32,7 @@ public class Day15Test {
 
     @Test
     public void getPart1example6() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-6.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra6.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -42,7 +42,7 @@ public class Day15Test {
 
     @Test
     public void getPart1example1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/input.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,7 +52,7 @@ public class Day15Test {
 
     @Test
     public void getPart1Example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-2.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra2.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -62,7 +62,7 @@ public class Day15Test {
 
     @Test
     public void getPart1Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-3.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra3.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class Day15Test {
 
     @Test
     public void getPart1Example4() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-4.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra4.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,7 +82,7 @@ public class Day15Test {
 
     @Test
     public void getPart1Example5() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-5.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra5.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,51 +92,51 @@ public class Day15Test {
 
     @Test
     public void getPart2example6() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-6.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra6.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2("day15-6.txt")).isEqualTo(4988);
+        assertThat(day15.getPart2("y2018/d15/extra6.txt")).isEqualTo(4988);
     }
 
     @Test
     public void getPart2Example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-2.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-2.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2("day15-2.txt")).isEqualTo(31284);
+        assertThat(day15.getPart2("y2018/d15/day15-2.txt")).isEqualTo(31284);
     }
 
     @Test
     public void getPart2Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-3.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-3.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2("day15-3.txt")).isEqualTo(3478);
+        assertThat(day15.getPart2("y2018/d15/day15-3.txt")).isEqualTo(3478);
     }
 
     @Test
     public void getPart2Example4() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-4.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-4.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2("day15-4.txt")).isEqualTo(6474);
+        assertThat(day15.getPart2("y2018/d15/day15-4.txt")).isEqualTo(6474);
     }
 
     @Test
     public void getPart2Example5() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day15-5.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-5.txt").getFile().getPath()))) {
             day15.in = day15.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        assertThat(day15.getPart2("day15-5.txt")).isEqualTo(1140);
+        assertThat(day15.getPart2("y2018/d15/day15-5.txt")).isEqualTo(1140);
     }
 }

@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day14 {
-    private static String inputPath = "day14.txt";
     RecipeMaker in;
 
     public String getPart1() {
@@ -28,6 +27,7 @@ public class Day14 {
 
     public Day14() {
         System.out.println("::: Starting Day 14 :::");
+        String inputPath = "y2018/d14/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

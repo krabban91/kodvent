@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 public class FabricSlicer {
 
-    private static String inputPath = "day3.txt";
     private List<Integer>[][] fabricOverlap = new LinkedList[1000][1000];
     private Set<Integer> triedCandidate = new HashSet<>();
     private List<Integer> santasClaimCandidate = new LinkedList<>();
@@ -72,6 +71,7 @@ public class FabricSlicer {
 
     public FabricSlicer() {
         System.out.println("::: Starting Day 3:::");
+        String inputPath = "y2018/d03/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             this.mapClaims(stream);
         } catch (IOException e) {

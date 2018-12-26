@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day12 {
-    private static String inputPath = "day12.txt";
     PlantGenerations in;
 
     public long getPart1() {
@@ -25,6 +24,7 @@ public class Day12 {
 
     public Day12() {
         System.out.println("::: Starting Day 12 :::");
+        String inputPath = "y2018/d12/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

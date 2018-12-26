@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
     
 public class Day11 {
-    private static String inputPath = "day11.txt";
     FuelCellGrid grid;
 
     public Point3D getPart1() {
@@ -32,6 +31,7 @@ public class Day11 {
 
     public Day11() {
         System.out.println("::: Starting Day 11 :::");
+        String inputPath = "y2018/d11/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             grid = readInput(stream);
         } catch (IOException e) {

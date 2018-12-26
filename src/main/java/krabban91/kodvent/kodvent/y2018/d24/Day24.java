@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day24 {
-    private static String inputPath = "day24.txt";
     Battle in;
 
     public long getPart1() {
@@ -28,6 +27,7 @@ public class Day24 {
 
     public Day24() {
         System.out.println("::: Starting Day 24 :::");
+        String inputPath = "y2018/d24/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

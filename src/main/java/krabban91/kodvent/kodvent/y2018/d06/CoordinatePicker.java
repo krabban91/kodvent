@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CoordinatePicker {
-    private static String inputPath = "day6.txt";
 
     private List<Point> locations;
     private GridContainer grid;
@@ -85,6 +84,7 @@ public class CoordinatePicker {
 
     public CoordinatePicker() {
         System.out.println("::: Starting Day 6 :::");
+        String inputPath = "y2018/d06/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             locations = readInput(stream);
         } catch (IOException e) {

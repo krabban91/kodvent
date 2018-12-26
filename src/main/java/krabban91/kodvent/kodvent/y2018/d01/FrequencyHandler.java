@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 public class FrequencyHandler {
 
-    private static String inputPath = "day1.txt";
     private List<Integer> frequencyDeltas;
     private List<Integer> frequencies = new LinkedList<>();
     private Integer firstTwice = null;
@@ -49,6 +48,7 @@ public class FrequencyHandler {
 
     public FrequencyHandler() {
         System.out.println("::: Starting Day 1 :::");
+        String inputPath = "y2018/d01/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             loadInput(stream);
         } catch (IOException e) {

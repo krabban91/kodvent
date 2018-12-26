@@ -13,8 +13,6 @@ import static org.assertj.core.api.Assertions.fail;
 @SpringBootTest
 public class FabricSlicerTest {
 
-    private static String inputPath = "day3.txt";
-
     @Autowired
     FabricSlicer fabricSlicer;
 

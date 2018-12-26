@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class Day8Test {
-    private static String inputPath = "day8.txt";
 
     @Autowired
     private Day8 day8;
@@ -34,6 +33,7 @@ public class Day8Test {
 
     @Test
     public void readInput() {
+        String inputPath = "y2018/d08/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             LicenseTreeNode rows = day8.readInput(stream);
             assertThat(rows.children.size()).isEqualTo(2);

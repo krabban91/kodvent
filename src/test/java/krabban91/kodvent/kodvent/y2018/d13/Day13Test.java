@@ -19,15 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 public class Day13Test {
 
-    private static String inputPath1 = "day13-1.txt";
-    private static String inputPath2 = "day13.txt";
-
     @Autowired
     private Day13 day13;
 
     @Test
     public void getPart1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath1).getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d13/extra.txt").getFile().getPath()))) {
             day13.in = day13.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -37,7 +34,7 @@ public class Day13Test {
 
     @Test
     public void getPart2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath2).getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d13/input.txt").getFile().getPath()))) {
             day13.in = day13.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();

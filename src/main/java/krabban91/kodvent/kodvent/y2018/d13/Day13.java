@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day13 {
-    private static String inputPath = "day13.txt";
     RailRoad in;
 
     public Point getPart1() {
@@ -28,6 +27,7 @@ public class Day13 {
 
     public Day13() {
         System.out.println("::: Starting Day 13 :::");
+        String inputPath = "y2018/d13/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

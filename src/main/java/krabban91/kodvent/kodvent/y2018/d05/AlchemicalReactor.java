@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 public class AlchemicalReactor {
 
-    private static String inputPath = "day5.txt";
     private String inputPolymer;
     private static String alphabet = "abcdefghijklmnopqrstuvwxyz";
     private Map<String, Integer> score = new HashMap<>();
@@ -73,6 +72,7 @@ public class AlchemicalReactor {
 
     public AlchemicalReactor() {
         System.out.println("::: Starting Day 5:::");
+        String inputPath = "y2018/d05/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             readInput(stream);
         } catch (IOException e) {

@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day19 {
-    private static String inputPath = "day19.txt";
     GpuUnit in;
 
     public long getPart1() {
@@ -30,6 +29,7 @@ public class Day19 {
 
     public Day19() {
         System.out.println("::: Starting Day 19 :::");
+        String inputPath = "y2018/d19/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

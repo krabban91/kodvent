@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day9 {
-    private static String inputPath = "day9.txt";
     MarbleRules rules;
     Marble game;
 
@@ -35,6 +34,7 @@ public class Day9 {
 
     public Day9() {
         System.out.println("::: Starting Day 9 :::");
+        String inputPath = "y2018/d09/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             rules = readInput(stream);
         } catch (IOException e) {

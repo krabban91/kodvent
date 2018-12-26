@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class Day14Test {
-    private static String inputPath2 = "day14.txt";
 
     @Autowired
     private Day14 day14;
@@ -22,11 +21,13 @@ public class Day14Test {
         day14.in.setDebug(true);
         assertThat(day14.getPart1()).isEqualTo("5158916779");
     }
+
     @Test
     public void getPart1Example2() {
         day14.in = new RecipeMaker("5");
         assertThat(day14.getPart1()).isEqualTo("0124515891");
     }
+
     @Test
     public void getPart1Example3() {
         day14.in = new RecipeMaker("18");
@@ -49,11 +50,15 @@ public class Day14Test {
     public void getPart2example2() {
         day14.in = new RecipeMaker("01245");
         assertThat(day14.getPart2()).isEqualTo(5);
-    }    @Test
+    }
+
+    @Test
     public void getPart2example3() {
         day14.in = new RecipeMaker("92510");
         assertThat(day14.getPart2()).isEqualTo(18);
-    }    @Test
+    }
+
+    @Test
     public void getPart2example4() {
         day14.in = new RecipeMaker("59414");
         assertThat(day14.getPart2()).isEqualTo(2018);

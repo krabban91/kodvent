@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day17 {
-    private static String inputPath = "day17.txt";
     Reservoir in;
 
     public long getPart1() {
@@ -26,6 +25,7 @@ public class Day17 {
 
     public Day17() {
         System.out.println("::: Starting Day 17 :::");
+        String inputPath = "y2018/d17/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

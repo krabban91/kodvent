@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day21 {
-    private static String inputPath = "day21.txt";
     ActivationProcess in;
 
     public long getPart1() {
@@ -28,6 +27,7 @@ public class Day21 {
 
     public Day21() {
         System.out.println("::: Starting Day 21 :::");
+        String inputPath = "y2018/d21/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

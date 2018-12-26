@@ -24,7 +24,7 @@ public class Day23Test {
     @Test
     public void getPart1() {
 
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d23/input.txt").getFile().getPath()))) {
             day23.in = day23.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -34,7 +34,7 @@ public class Day23Test {
 
     @Test
     public void getPart2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d23/input.txt").getFile().getPath()))) {
             day23.in = day23.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,7 +45,7 @@ public class Day23Test {
 
     @Test
     public void getPart2Example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day23-2.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d23/extra.txt").getFile().getPath()))) {
             day23.in = day23.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();

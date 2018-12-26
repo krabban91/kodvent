@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day23 {
-    private static String inputPath = "day23.txt";
     NanoGrid in;
 
     public long getPart1() {
@@ -26,6 +25,7 @@ public class Day23 {
 
     public Day23() {
         System.out.println("::: Starting Day 23 :::");
+        String inputPath = "y2018/d23/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

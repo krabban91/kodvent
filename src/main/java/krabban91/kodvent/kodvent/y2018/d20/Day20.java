@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class Day20 {
-    private static String inputPath = "day20.txt";
     Maze in;
 
     public long getPart1() {
@@ -28,6 +27,7 @@ public class Day20 {
 
     public Day20() {
         System.out.println("::: Starting Day 20 :::");
+        String inputPath = "y2018/d20/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

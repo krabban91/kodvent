@@ -14,7 +14,7 @@ public class Star {
                 Integer.parseInt(split1[0].replace(" ", "")),
                 Integer.parseInt(split1[1].split(">")[0].replace(" ", "")));
         String[] split2 = split[2].split(",");
-        position = new Point(
+        velocity = new Point(
                 Integer.parseInt(split2[0].replace(" ", "")),
                 Integer.parseInt(split2[1].split(">")[0].replace(" ", "")));
     }

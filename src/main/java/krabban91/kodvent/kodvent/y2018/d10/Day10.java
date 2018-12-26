@@ -14,7 +14,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day10 {
-    private static String inputPath = "day10.txt";
     List<Star> stars;
     int second = 0;
 
@@ -76,6 +75,7 @@ public class Day10 {
 
     public Day10() {
         System.out.println("::: Starting Day 10 :::");
+        String inputPath = "y2018/d10/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             stars = readInput(stream);
         } catch (IOException e) {

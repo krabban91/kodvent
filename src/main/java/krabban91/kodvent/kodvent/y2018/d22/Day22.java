@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day22 {
-    private static String inputPath = "day22.txt";
     ModeMaze in;
 
     public long getPart1() {
@@ -28,6 +27,7 @@ public class Day22 {
 
     public Day22() {
         System.out.println("::: Starting Day 22 :::");
+        String inputPath = "y2018/d22/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {

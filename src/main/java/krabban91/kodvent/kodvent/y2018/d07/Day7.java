@@ -11,7 +11,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day7 {
-    private static String inputPath = "day7.txt";
     List<Order> orderList;
     PriorityQueue<Character> avaliableMoves = new PriorityQueue<>(Character::compareTo);
     Map<Character, List<Character>> blockingMoves = new HashMap<>();
@@ -135,6 +134,7 @@ public class Day7 {
 
     public Day7() {
         System.out.println("::: Starting Day 7 :::");
+        String inputPath = "y2018/d07/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             orderList = readInput(stream);
         } catch (IOException e) {

@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 public class GuardLogger {
 
-    private static String inputPath = "day4.txt";
     private Map<Integer, Map<Integer, AtomicInteger>> guardEntries = new HashMap<>();
     private Integer currentGuard = null;
     private int startedSleepingAt;
@@ -107,6 +106,7 @@ public class GuardLogger {
 
     public GuardLogger() {
         System.out.println("::: Starting Day 4:::");
+        String inputPath = "y2018/d04/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             logGuardEntries(stream);
         } catch (IOException e) {

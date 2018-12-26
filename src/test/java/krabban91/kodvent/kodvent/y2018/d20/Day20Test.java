@@ -24,12 +24,19 @@ public class Day20Test {
 
     @Test
     public void getPart1example1() {
+
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/input.txt").getFile().getPath()))) {
+            day20.in = day20.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         assertThat(day20.getPart1()).isEqualTo(18);
     }
 
     @Test
     public void getPart1example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day20-2.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/extra.txt").getFile().getPath()))) {
             day20.in = day20.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,7 +46,7 @@ public class Day20Test {
 
     @Test
     public void getPart1Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day20-3.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/extra2.txt").getFile().getPath()))) {
             day20.in = day20.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,7 +56,7 @@ public class Day20Test {
 
     @Test
     public void getPart1exampleSmall1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day20-small1.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/extraSmall.txt").getFile().getPath()))) {
             day20.in = day20.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,7 +67,7 @@ public class Day20Test {
 
     @Test
     public void getPart1exampleSmall2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("day20-small2.txt").getFile().getPath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/extraSmall2.txt").getFile().getPath()))) {
             day20.in = day20.readInput(stream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,6 +77,11 @@ public class Day20Test {
 
     @Test
     public void getPart2example1() {
+        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d20/input.txt").getFile().getPath()))) {
+            day20.in = day20.readInput(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         assertThat(day20.getPart2()).isEqualTo(0);
     }
 

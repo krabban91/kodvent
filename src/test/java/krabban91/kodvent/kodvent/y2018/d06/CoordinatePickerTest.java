@@ -21,15 +21,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class CoordinatePickerTest {
-        private static String inputPath = "day6.txt";
 
-        private List<Point> locations;
+    private List<Point> locations;
 
     @Autowired
     private CoordinatePicker coordinatePicker;
 
     @Before
     public void setUp(){
+        String inputPath = "y2018/d06/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             locations = coordinatePicker.readInput(stream);
         } catch (IOException e) {

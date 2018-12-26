@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 public class InventoryManager {
 
-    private static String inputPath = "day2.txt";
     // keeps track of number of each letter in each ID
     private List<Map<Integer, Integer>> inventory = new LinkedList<>();
     private List<List<Integer>> words = new LinkedList<>();
@@ -76,6 +75,7 @@ public class InventoryManager {
 
     public InventoryManager() {
         System.out.println("::: Starting Day 2 :::");
+        String inputPath = "y2018/d02/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             readInventoryList(stream);
         } catch (IOException e) {

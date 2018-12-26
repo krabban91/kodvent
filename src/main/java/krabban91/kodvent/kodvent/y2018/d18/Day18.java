@@ -11,7 +11,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Day18 {
-    private static String inputPath = "day18.txt";
     List<List<SettlerTile>> in;
     boolean hasBegunToCycle;
     Integer firstCycleStart;
@@ -146,6 +145,7 @@ public class Day18 {
 
     public Day18() {
         System.out.println("::: Starting Day 18 :::");
+        String inputPath = "y2018/d18/input.txt";
         try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
             in = readInput(stream);
         } catch (IOException e) {
