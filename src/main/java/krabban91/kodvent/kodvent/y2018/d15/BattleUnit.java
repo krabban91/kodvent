@@ -3,8 +3,8 @@ package krabban91.kodvent.kodvent.y2018.d15;
 import krabban91.kodvent.kodvent.utilities.Distances;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public class BattleUnit {
@@ -14,6 +14,7 @@ public class BattleUnit {
     int attackPower;
     Point location;
     CaveBattle battle;
+    private boolean debug;
 
     public BattleUnit(Point location, boolean goblin, int hitpoints, CaveBattle battle) {
         this.location = location;
@@ -22,6 +23,7 @@ public class BattleUnit {
         this.attackPower = 3;
         this.battle = battle;
     }
+
 
     private void move() {
         if(battle.battleIsOver()){
@@ -35,34 +37,40 @@ public class BattleUnit {
             return;
         }
         Stream<BattleUnit> targets = battle.targets(!goblin);
-
+        Map<Point, Map<Point, Map<Point, DistanceToPoint>>> known = new HashMap<>();
         Stream<Point> inRange = targets
                 .map(battle::avaliableStrikingLocations)
                 .flatMap(List::stream);
         Stream<Point> reachable = inRange
-                .filter(point -> battle.canReach(this, point));
-        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
+                .filter(point -> battle.canReach(this, point, known));
+        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e, known))
                 .filter(p -> p != null)
                 .sorted(DistanceToPoint::compare);
         Optional<DistanceToPoint> chosen = nearest.findFirst();
         if (chosen.isPresent()) {
             Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
                     .stream()
-                    .map(e -> battle.distanceBetween(chosen.get().point, e))
+                    .map(e -> battle.distanceBetween(chosen.get().point, e, known))
                     .filter(p -> p != null)
                     .sorted(DistanceToPoint::compare)
                     .findFirst();
             if (moveLocation.isPresent()) {
-                reportMovement(isGoblin(), this.location, moveLocation.get().point);
+                if(debug){
+                    reportMovement(isGoblin(), this.location, moveLocation.get().point);
+                }
                 this.location = moveLocation.get().point;
 
             } else {
-                System.out.println("THIS SHOULDN'T HAPPEN!");
-                reportHalting(this);
+                if(debug){
+                    System.out.println("THIS SHOULDN'T HAPPEN!");
+                    reportHalting(this);
+                }
 
             }
         } else {
-            reportHalting(this);
+            if(debug){
+                reportHalting(this);
+            }
         }
     }
 
@@ -88,7 +96,9 @@ public class BattleUnit {
 
     private void dealDamage(BattleUnit unit) {
         unit.takeDamage(this.attackPower);
-        reportBeating(this, unit, attackPower);
+        if(debug){
+            reportBeating(this, unit, attackPower);
+        }
     }
 
     private static void reportHalting(BattleUnit unit) {
@@ -216,5 +226,9 @@ public class BattleUnit {
 
     public void setAttackPower(int strength) {
         this.attackPower = strength;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

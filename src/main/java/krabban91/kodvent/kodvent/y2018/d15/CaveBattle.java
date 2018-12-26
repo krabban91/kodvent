@@ -15,6 +15,7 @@ public class CaveBattle {
     long initialElfCount;
     int round = 0;
     private boolean battleIsOver = false;
+    private boolean debug;
 
     public CaveBattle(List<String> rows) {
         map = rows.stream().map(this::getMapRow).collect(Collectors.toList());
@@ -37,17 +38,20 @@ public class CaveBattle {
     }
 
     private void visualizeBattle() {
-        System.out.println(": Round " + round + "! :");
+        StringBuilder builder = new StringBuilder();
+        builder.append(": Round " + round + "! :");
+        builder.append('\n');
         StringBuilder yRow1 = new StringBuilder();
         yRow1.append("   ");
         IntStream.range(0, map.get(0).size()).forEach(i -> yRow1.append((i / 10) > 0 ? i / 10 : " "));
-        System.out.println(yRow1.toString());
+        builder.append(yRow1.toString());
+        builder.append('\n');
         StringBuilder yRow2 = new StringBuilder();
         yRow2.append("   ");
         IntStream.range(0, map.get(0).size()).forEach(i -> yRow2.append(i % 10));
-        System.out.println(yRow2.toString());
+        builder.append(yRow2.toString());
+        builder.append('\n');
         IntStream.range(0, map.size()).forEach(y -> {
-            StringBuilder builder = new StringBuilder();
             int rowSize = map.get(y).size();
             if ((y / 10) == 0) {
                 builder.append(" ");
@@ -78,8 +82,9 @@ public class CaveBattle {
                         builder.append(u.toString());
                     });
 
-            System.out.println(builder.toString());
+            builder.append('\n');
         });
+        System.out.println(builder.toString());
     }
 
     List<Boolean> getMapRow(String row) {
@@ -88,7 +93,9 @@ public class CaveBattle {
 
     public long battleUntilItIsOverOrAnElfDies() {
         while (true) {
-            visualizeBattle();
+            if(debug){
+                visualizeBattle();
+            }
             units.stream()
                     .sorted(this::order)
                     .forEach(BattleUnit::movaAndAttack);
@@ -151,8 +158,10 @@ public class CaveBattle {
         return this.units.remove(battleUnit);
     }
 
-    public boolean canReach(BattleUnit battleUnit, Point point) {
-        DistanceToPoint distanceToPoint = distanceBetween(battleUnit.location, point);
+    public boolean canReach(
+            BattleUnit battleUnit, Point point,
+            Map<Point, Map<Point, Map<Point, DistanceToPoint>>> previousKnown) {
+        DistanceToPoint distanceToPoint = distanceBetween(battleUnit.location, point, previousKnown);
         return distanceToPoint != null && distanceToPoint.distance > 0 && distanceToPoint.distance < CaveBattle.UNREACHABLE_DISTANCE;
     }
 
@@ -174,14 +183,35 @@ public class CaveBattle {
                         .noneMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
     }
 
-    public DistanceToPoint distanceBetween(Point from, Point to) {
-        Map<Point, DistanceToPoint> checked = new HashMap<>();
+    public DistanceToPoint distanceBetween(
+            Point from, Point to,
+            Map<Point, Map<Point,Map<Point, DistanceToPoint>>> previousKnown) {
+        if (!previousKnown.containsKey(from)) {
+            previousKnown.put(from, new HashMap<>());
+        }
+        Map<Point, Map<Point, DistanceToPoint>> checkedMap = previousKnown.get(from);
+        if(!checkedMap.containsKey(to)){
+            checkedMap.put(to, new HashMap<>());
+        }
+        Map<Point, DistanceToPoint> checked = previousKnown.get(from).get(to);
         PriorityQueue<DistanceToPoint> unChecked = newQueue(from, to);
-        if (!(checked.containsKey(to))) {
+        if (!checked.containsKey(to)) {
             while (!unChecked.isEmpty()) {
                 DistanceToPoint poll = unChecked.poll();
-                addPointToChecked(checked, unChecked, poll);
+                addPointToChecked(checked, poll);
+                addSuroundingPointsToUnchecked(poll, checked, unChecked);
                 if (poll.point.equals(to)) {
+                    if (!previousKnown.containsKey(to)) {
+                        previousKnown.put(to, new HashMap<>());
+                    }
+                    Map<Point, Map<Point, DistanceToPoint>> checkedMap2 = previousKnown.get(to);
+                    if(!checkedMap2.containsKey(from)){
+                        checkedMap2.put(from, new HashMap<>());
+                    }
+                    Map<Point, DistanceToPoint> toChecked = previousKnown.get(to).get(from);
+                    DistanceToPoint fromPoll = new DistanceToPoint(from, poll.getDistance(), poll.target);
+                    addPointToChecked(toChecked, fromPoll);
+
                     return poll;
                 }
             }
@@ -195,9 +225,8 @@ public class CaveBattle {
         return queue;
     }
 
-    private void addPointToChecked(Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked, DistanceToPoint poll) {
+    private void addPointToChecked(Map<Point, DistanceToPoint> checked, DistanceToPoint poll) {
         checked.put(poll.point, poll);
-        addSuroundingPointsToUnchecked(poll, checked, unChecked);
     }
 
     private void addSuroundingPointsToUnchecked(DistanceToPoint poll, Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked) {
@@ -219,5 +248,10 @@ public class CaveBattle {
         if (!checked.containsKey(point1) && tileIsEmpty(point1)) {
             unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
         }
+    }
+
+    public void setDebug(boolean debug){
+        this.debug = debug;
+        units.forEach(u -> u.setDebug(debug));
     }
 }
