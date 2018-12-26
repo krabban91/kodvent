@@ -1,5 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d11;
 
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

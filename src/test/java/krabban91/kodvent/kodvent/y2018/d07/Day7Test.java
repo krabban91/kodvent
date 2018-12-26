@@ -24,8 +24,13 @@ public class Day7Test {
 
     @Test
     public void getPart2() {
+
+        day7.setDebug(true);
         int part2 = day7.getPart2(2, 0);
         assertThat(part2).isEqualTo(15);
+
+        day7.setDebug(false);
+
     }
 
     @Test

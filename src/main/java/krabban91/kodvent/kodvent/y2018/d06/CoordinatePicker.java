@@ -20,7 +20,7 @@ public class CoordinatePicker {
         return locations.stream()
                 .filter(this::hasFiniteArea)
                 .map(grid::getManhattanArea)
-                .max(Comparator.comparingInt(e -> e.intValue())).get();
+                .max(Comparator.comparingInt(e -> e)).orElse(-1);
     }
 
     public int getPart2(int distanceLimit) {

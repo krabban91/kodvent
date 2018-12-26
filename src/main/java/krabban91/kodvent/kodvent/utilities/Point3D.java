@@ -1,6 +1,4 @@
-package krabban91.kodvent.kodvent.y2018.d11;
-
-import krabban91.kodvent.kodvent.y2018.d15.CaveBattle;
+package krabban91.kodvent.kodvent.utilities;
 
 import java.awt.*;
 
@@ -28,7 +26,7 @@ public class Point3D {
     }
 
     public int manhattanDistance(Point3D other){
-        return manhattanDistance(this.xy,other.xy) + Math.abs(this.z - other.z);
+        return Distances.manhattan(this, other);
     }
 
     @Override
@@ -54,8 +52,5 @@ public class Point3D {
         return this.z;
     }
 
-    private static int manhattanDistance(Point a, Point b){
-        return CaveBattle.manhattanDistance(a,b);
-    }
 
 }

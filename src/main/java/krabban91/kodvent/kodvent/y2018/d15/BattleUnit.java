@@ -1,11 +1,11 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
+
 import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-;
 
 public class BattleUnit {
 
@@ -107,10 +107,11 @@ public class BattleUnit {
         builder.append(" halted.");
 
         System.out.println(builder.toString());
-
-
     }
 
+    public boolean isNextTo(Point point){
+        return Distances.manhattan(this.location,point) == 1;
+    }
 
     private static void reportMovement(boolean isGoblin, Point oldLocation, Point newLocation) {
         StringBuilder builder = new StringBuilder();

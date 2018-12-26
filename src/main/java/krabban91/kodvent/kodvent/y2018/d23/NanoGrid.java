@@ -1,7 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d23;
 
 
-import krabban91.kodvent.kodvent.y2018.d11.Point3D;
+import krabban91.kodvent.kodvent.utilities.Point3D;
 
 import java.util.Comparator;
 import java.util.List;

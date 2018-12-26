@@ -15,6 +15,7 @@ public class Day7 {
     PriorityQueue<Character> avaliableMoves = new PriorityQueue<>(Character::compareTo);
     Map<Character, List<Character>> blockingMoves = new HashMap<>();
     StringBuilder performed = new StringBuilder();
+    private boolean debug;
 
     public String getPart1() {
         resetValues();
@@ -31,11 +32,15 @@ public class Day7 {
         List<Worker> workers = IntStream.range(0, numberOfWorkers)
                 .mapToObj(i -> new Worker())
                 .collect(Collectors.toList());
-        this.reportStatusHeader(workers.size());
+        if (debug) {
+            reportStatusHeader(workers.size());
+        }
         while (thereIsWorkToBeDone(workers)) {
             work(workers);
             getMoreWork(extraTimePerJob, workers);
-            reportStatus(timeTaken, workers);
+            if (debug) {
+                reportStatus(timeTaken, workers);
+            }
             timeTaken++;
         }
         return --timeTaken;
@@ -130,6 +135,10 @@ public class Day7 {
         if (!characters.contains(order.getSelf())) {
             characters.add(order.getSelf());
         }
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     public Day7() {

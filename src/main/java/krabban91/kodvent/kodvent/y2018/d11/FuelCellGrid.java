@@ -1,5 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d11;
 
+import krabban91.kodvent.kodvent.utilities.Point3D;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +11,6 @@ import java.util.stream.IntStream;
 public class FuelCellGrid {
 
     private Integer[][] grid;
-
 
     public FuelCellGrid(String serialNumber) {
         this(Integer.parseInt(serialNumber));
@@ -101,7 +102,5 @@ public class FuelCellGrid {
                                         multiplyByRackId(x, y + 1),
                                         serialNumber))),
                 -5);
-
     }
-
 }

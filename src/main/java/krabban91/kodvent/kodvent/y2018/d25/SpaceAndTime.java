@@ -1,5 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d25;
 
+import krabban91.kodvent.kodvent.utilities.TimePoint;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +31,7 @@ public class SpaceAndTime {
                 if(collect.size() == 1){
                     // add to constellation
                     constellations.removeAll(collect);
-                    collect.stream().forEach(c -> c.add(p));
+                    collect.forEach(c -> c.add(p));
                     constellations.add(collect.stream().findAny().get());
                 }
                 else {

@@ -1,9 +1,8 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
-
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -29,7 +28,7 @@ public class CaveBattle {
         initialElfCount = countElfs();
     }
 
-    public void setElfStrength(int strength){
+    public void setElfStrength(int strength) {
         units.stream().filter(u -> !u.isGoblin()).forEach(u -> u.setAttackPower(strength));
     }
 
@@ -137,13 +136,8 @@ public class CaveBattle {
 
     public Stream<BattleUnit> targetsNextToPoint(boolean isGoblin, Point point) {
         return targets(isGoblin)
-                .filter(unit -> manhattanDistance(unit.getLocation(), point) == 1);
+                .filter(unit -> unit.isNextTo(point));
     }
-
-    public static int manhattanDistance(Point point, Point other) {
-        return (int) (Math.abs(point.getX() - other.getX()) + Math.abs(point.getY() - other.getY()));
-    }
-
 
     public boolean battleIsOver() {
         return this.battleIsOver;
@@ -176,10 +170,9 @@ public class CaveBattle {
 
     private boolean tileIsEmpty(Point point) {
         return point.x >= 0 && point.y >= 0 && map.get(point.y).get(point.x) &&
-                !units.stream()
-                        .anyMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
+                units.stream()
+                        .noneMatch(unit -> unit.getLocation().x == point.x && unit.getLocation().y == point.y);
     }
-
 
     public DistanceToPoint distanceBetween(Point from, Point to) {
         Map<Point, DistanceToPoint> checked = new HashMap<>();
@@ -227,5 +220,4 @@ public class CaveBattle {
             unChecked.add(new DistanceToPoint(point1, poll.distance + 1, poll.target));
         }
     }
-
 }

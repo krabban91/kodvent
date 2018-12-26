@@ -1,5 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d11;
 
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;

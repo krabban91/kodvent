@@ -1,6 +1,4 @@
-package krabban91.kodvent.kodvent.y2018.d25;
-
-import krabban91.kodvent.kodvent.y2018.d15.CaveBattle;
+package krabban91.kodvent.kodvent.utilities;
 
 import java.awt.*;
 
@@ -33,10 +31,15 @@ public class TimePoint {
     }
 
     public int manhattanDistance(TimePoint other){
-        return manhattanDistance(this.xy,other.xy) + manhattanDistance(this.zt, other.zt);
+        return Distances.manhattan(this,other);
     }
 
-    private static int manhattanDistance(Point a, Point b){
-        return CaveBattle.manhattanDistance(a,b);
+    public Point getXy() {
+        return xy;
     }
+
+    public Point getZt() {
+        return zt;
+    }
+
 }

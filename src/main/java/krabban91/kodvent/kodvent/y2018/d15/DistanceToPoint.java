@@ -1,5 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
+
 import java.awt.*;
 
 public class DistanceToPoint {
@@ -11,7 +13,7 @@ public class DistanceToPoint {
         this.point = point;
         this.distance = distance;
         this.target = target;
-        this.heuristic = CaveBattle.manhattanDistance(point,target);
+        this.heuristic = Distances.manhattan(point,target);
     }
 
     public Point getPoint() {

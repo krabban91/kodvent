@@ -1,5 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d22;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.y2018.d15.CaveBattle;
 
 public class TimeToRegion {
@@ -26,7 +27,7 @@ public class TimeToRegion {
 
 
     public int getHeuristic(){
-        return getElapsedTime() + CaveBattle.manhattanDistance(regionToReach.point, target.point);
+        return getElapsedTime() + Distances.manhattan(regionToReach.point, target.point);
     }
 
     public Tool getEquippedTool() {
