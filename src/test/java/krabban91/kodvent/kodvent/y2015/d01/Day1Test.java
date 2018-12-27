@@ -1,5 +1,6 @@
-package krabban91.kodvent.kodvent.y2018.d03;
+package krabban91.kodvent.kodvent.y2015.d01;
 
+import krabban91.kodvent.kodvent.y2018.d03.FabricSlicer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,20 +11,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class FabricSlicerTest {
+public class Day1Test {
 
     @Autowired
-    FabricSlicer fabricSlicer;
+    Day1 day1;
 
     @Test
     public void getPart1() {
-        long part1 = fabricSlicer.getPart1();
-        assertThat(part1).isEqualTo(4);
+        long part1 = day1.getPart1();
+        assertThat(part1).isEqualTo(-1);
     }
 
     @Test
     public void getPart2() {
-        int part2 = fabricSlicer.getPart2();
-        assertThat(part2).isEqualTo(3);
+        int part2 = day1.getPart2();
+        assertThat(part2).isEqualTo(5);
     }
+
 }
