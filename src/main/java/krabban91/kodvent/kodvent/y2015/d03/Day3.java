@@ -21,6 +21,7 @@ public class Day3 {
             deliverPackage(houses, location);
         });
         return houses.size();
+
     }
 
     public int getPart2() {

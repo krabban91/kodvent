@@ -25,6 +25,7 @@ repositories {
 
 
 dependencies {
+	implementation('commons-codec:commons-codec:1.9')
 	implementation('org.springframework.boot:spring-boot-starter')
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
