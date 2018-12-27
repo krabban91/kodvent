@@ -1,17 +1,13 @@
 package krabban91.kodvent.kodvent.y2018.d10;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Day10 {
     List<Star> stars;
@@ -21,13 +17,9 @@ public class Day10 {
         while (!shouldVisualize()) {
             waitSecond();
         }
-        while (shouldVisualize()) {
-            System.out.println("Star sky second " + second);
-            visualizeStars();
-            waitSecond();
-        }
-
-        return "";
+        System.out.println("Star sky second " + second);
+        visualizeStars();
+        return "HI";
     }
 
     private boolean shouldVisualize() {
@@ -67,20 +59,15 @@ public class Day10 {
         }
     }
 
-    public List<Star> readInput(Stream<String> stream) {
-        return stream
-                .map(Star::new)
-                .collect(Collectors.toList());
+    public void readInput(String path) {
+        this.second = 0;
+        this.stars = Input.getLines(path).stream().map(Star::new).collect(Collectors.toList());
     }
 
     public Day10() {
         System.out.println("::: Starting Day 10 :::");
         String inputPath = "y2018/d10/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            stars = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         String part1 = getPart1();
         System.out.println(": answer to part 1 is printed above.");
         System.out.println(part1);

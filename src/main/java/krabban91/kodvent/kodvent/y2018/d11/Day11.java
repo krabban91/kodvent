@@ -1,13 +1,8 @@
 package krabban91.kodvent.kodvent.y2018.d11;
 
+import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Point3D;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
-    
 public class Day11 {
     FuelCellGrid grid;
 
@@ -19,11 +14,8 @@ public class Day11 {
         return grid.getHighestValueFuelCellWithVariableWidth(300).getKey();
     }
 
-
-    public FuelCellGrid readInput(Stream<String> stream) {
-        return stream
-                .map(FuelCellGrid::new)
-                .findFirst().get();
+    public void readInput(String path) {
+        this.grid = new FuelCellGrid(Input.getSingleLine(path));
     }
 
     public void SetSerialNumber(int serialNumber) {
@@ -33,11 +25,7 @@ public class Day11 {
     public Day11() {
         System.out.println("::: Starting Day 11 :::");
         String inputPath = "y2018/d11/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            grid = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         Point3D part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

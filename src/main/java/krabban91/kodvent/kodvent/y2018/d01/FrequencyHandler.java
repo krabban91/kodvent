@@ -1,14 +1,11 @@
 package krabban91.kodvent.kodvent.y2018.d01;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 public class FrequencyHandler {
 
     private List<Integer> frequencyDeltas;
@@ -27,12 +24,6 @@ public class FrequencyHandler {
         return firstTwice;
     }
 
-    private void loadInput(Stream<String> stream) {
-        frequencyDeltas = stream
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
-    }
-
     private int sum(int l, int r) {
         int frequency = l + r;
         if (frequencies.contains(frequency)) {
@@ -45,14 +36,16 @@ public class FrequencyHandler {
         return frequency;
     }
 
+    public void readInput(String path) {
+        frequencyDeltas = Input.getLines(path).stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+    }
+
     public FrequencyHandler() {
         System.out.println("::: Starting Day 1 :::");
         String inputPath = "y2018/d01/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            loadInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         System.out.println(": answer to part 1 :");
         int part1 = getPart1();
         System.out.println(part1);

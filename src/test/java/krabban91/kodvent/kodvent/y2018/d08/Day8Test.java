@@ -34,12 +34,8 @@ public class Day8Test {
     @Test
     public void readInput() {
         String inputPath = "y2018/d08/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            LicenseTreeNode rows = day8.readInput(stream);
-            assertThat(rows.children.size()).isEqualTo(2);
-            assertThat(rows.metadata.size()).isEqualTo(3);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        LicenseTreeNode licenseTree = day8.getLicenseTree();
+        assertThat(licenseTree.children.size()).isEqualTo(2);
+        assertThat(licenseTree.metadata.size()).isEqualTo(3);
     }
 }

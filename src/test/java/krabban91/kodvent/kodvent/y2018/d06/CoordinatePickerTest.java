@@ -1,5 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d06;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,12 +30,7 @@ public class CoordinatePickerTest {
 
     @Before
     public void setUp(){
-        String inputPath = "y2018/d06/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            locations = coordinatePicker.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        locations = coordinatePicker.getLocations();
     }
 
     @Test
@@ -61,8 +57,8 @@ public class CoordinatePickerTest {
 
     @Test
     public void manhattanDistance() {
-        assertThat(coordinatePicker.manhattanDistance(locations.get(0),locations.get(1))).isEqualTo(5);
-        assertThat(coordinatePicker.manhattanDistance(locations.get(5),locations.get(1))).isEqualTo(10);
+        assertThat(Distances.manhattan(locations.get(0),locations.get(1))).isEqualTo(5);
+        assertThat(Distances.manhattan(locations.get(5),locations.get(1))).isEqualTo(10);
     }
 
     @Test

@@ -1,25 +1,28 @@
-package krabban91.kodvent.kodvent.y2018.d21;
+package krabban91.kodvent.kodvent.y20xx.dxx;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 
-public class Day21 {
-    ActivationProcess in;
+import java.util.List;
+
+//@Component
+public class DayX {
+    List<String> in;
 
     public long getPart1() {
-        return in.firstHaltingValue();
+        return -1L;
     }
 
     public long getPart2() {
-        return in.lastHaltingValue();
+        return -1;
     }
 
-    public void readInput(String path) {
-        this.in = new ActivationProcess(Input.getLines(path));
+    public void readInput(String inputPath) {
+        in = Input.getLines(inputPath);
     }
 
-    public Day21() {
-        System.out.println("::: Starting Day 21 :::");
-        String inputPath = "y2018/d21/input.txt";
+    public DayX() {
+        System.out.println("::: Starting Day X :::");
+        String inputPath = "y20xx/dxx.txt";
         readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");

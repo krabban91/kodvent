@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import java.util.stream.Stream;
 
 public class PlantGenerations {
     Map<Long, Boolean> state = new HashMap<>();
@@ -14,9 +13,8 @@ public class PlantGenerations {
     Long convergingStepValue;
     Long convergingGeneration;
 
-    public PlantGenerations(Stream<String> input) {
-        List<String> collect = input.collect(Collectors.toList());
-        String state = collect.remove(0);
+    public PlantGenerations(List<String> input) {
+        String state = input.remove(0);
         AtomicInteger inc = new AtomicInteger(0);
         state.chars().forEach(c -> {
             if (c == (int) '#') {
@@ -26,7 +24,7 @@ public class PlantGenerations {
             }
         });
         padStateWithEmpties();
-        patterns = collect.stream().filter(s -> s.contains("=>")).map(PlantPattern::new).collect(Collectors.toList());
+        patterns = input.stream().filter(s -> s.contains("=>")).map(PlantPattern::new).collect(Collectors.toList());
     }
 
     public void ageOneGeneration() {

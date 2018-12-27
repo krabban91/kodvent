@@ -1,10 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d03;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +27,10 @@ public class FabricSlicer {
         return santasClaimCandidate.get(0);
     }
 
-    private void mapClaims(Stream<String> stream) {
-        stream.map(Claim::new)
+    private void mapClaims(String path) {
+        Input.getLines(path)
+                .stream()
+                .map(Claim::new)
                 .forEach(this::mapClaim);
     }
 
@@ -72,11 +71,7 @@ public class FabricSlicer {
     public FabricSlicer() {
         System.out.println("::: Starting Day 3:::");
         String inputPath = "y2018/d03/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            this.mapClaims(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.mapClaims(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

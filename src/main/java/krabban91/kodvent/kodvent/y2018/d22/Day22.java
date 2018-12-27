@@ -1,12 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d22;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Day22 {
     ModeMaze in;
@@ -19,20 +14,14 @@ public class Day22 {
         return in.fewestMinutesToReachTarget();
     }
 
-    public ModeMaze readInput(Stream<String> stream) {
-        return new ModeMaze(stream
-                .map(String::new)
-                .collect(Collectors.toList()));
+    public void readInput(String path) {
+        in = new ModeMaze(Input.getLines(path));
     }
 
     public Day22() {
         System.out.println("::: Starting Day 22 :::");
         String inputPath = "y2018/d22/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

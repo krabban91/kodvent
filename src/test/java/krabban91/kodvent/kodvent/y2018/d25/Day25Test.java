@@ -23,52 +23,25 @@ public class Day25Test {
 
     @Test
     public void getPart1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d25/input.txt").getFile().getPath()))) {
-            day25.in = day25.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day25.readInput("y2018/d25/input.txt");
         assertThat(day25.getPart1()).isEqualTo(2);
     }
 
     @Test
     public void getPart1example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d25/extra.txt").getFile().getPath()))) {
-            day25.in = day25.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day25.readInput("y2018/d25/extra.txt");
         assertThat(day25.getPart1()).isEqualTo(4);
     }
 
     @Test
     public void getPart1Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d25/extra2.txt").getFile().getPath()))) {
-            day25.in = day25.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        day25.in.countConstellations();
+        day25.readInput("y2018/d25/extra2.txt");
         assertThat(day25.getPart1()).isEqualTo(3);
     }
 
     @Test
     public void getPart1Example4() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d25/extra3.txt").getFile().getPath()))) {
-            day25.in = day25.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        day25.in.countConstellations();
+        day25.readInput("y2018/d25/extra3.txt");
         assertThat(day25.getPart1()).isEqualTo(8);
-    }
-    @Test
-    public void getPart2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d25/input.txt").getFile().getPath()))) {
-            day25.in = day25.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day25.getPart2()).isEqualTo(51);
     }
 }

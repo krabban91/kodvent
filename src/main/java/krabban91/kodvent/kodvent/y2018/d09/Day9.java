@@ -1,11 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d09;
 
-import org.springframework.core.io.ClassPathResource;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
+import krabban91.kodvent.kodvent.utilities.Input;
 
 public class Day9 {
     MarbleRules rules;
@@ -24,22 +19,14 @@ public class Day9 {
         return game.getWinningScore();
     }
 
-    public MarbleRules readInput(Stream<String> stream) {
-        return stream.map(this::parseLicense).findFirst().get();
-    }
-
-    public MarbleRules parseLicense(String row) {
-        return new MarbleRules(row);
+    public void readInput(String path) {
+        this.rules = new MarbleRules(Input.getSingleLine(path));
     }
 
     public Day9() {
         System.out.println("::: Starting Day 9 :::");
         String inputPath = "y2018/d09/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            rules = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         this.setRules(rules);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");

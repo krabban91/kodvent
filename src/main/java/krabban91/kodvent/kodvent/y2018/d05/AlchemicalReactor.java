@@ -1,15 +1,11 @@
 package krabban91.kodvent.kodvent.y2018.d05;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class AlchemicalReactor {
 
@@ -29,8 +25,8 @@ public class AlchemicalReactor {
                 .get().getValue();
     }
 
-    private void readInput(Stream<String> stream) {
-        this.inputPolymer = stream.findFirst().get();
+    public void readInput(String path) {
+        this.inputPolymer = Input.getSingleLine(path);
     }
 
     private void retrieveResultForUnit(int i) {
@@ -73,11 +69,7 @@ public class AlchemicalReactor {
     public AlchemicalReactor() {
         System.out.println("::: Starting Day 5:::");
         String inputPath = "y2018/d05/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         int part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

@@ -1,11 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d25;
 
-import org.springframework.core.io.ClassPathResource;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
+import krabban91.kodvent.kodvent.utilities.Input;
 
 public class Day25 {
     SpaceAndTime in;
@@ -14,28 +9,16 @@ public class Day25 {
         return in.countConstellations();
     }
 
-    public long getPart2() {
-        return -1;
-    }
-
-
-    public SpaceAndTime readInput(Stream<String> stream) {
-        return new SpaceAndTime(stream);
+    public void readInput(String path) {
+        in = new SpaceAndTime(Input.getLines(path));
     }
 
     public Day25() {
         System.out.println("::: Starting Day 25 :::");
         String inputPath = "y2018/d25/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
     }
 }

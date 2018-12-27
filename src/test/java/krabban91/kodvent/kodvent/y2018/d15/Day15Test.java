@@ -23,120 +23,77 @@ public class Day15Test {
 
     @Test
     public void getPart1Debug() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra.txt");
     }
 
     @Test
     public void getPart1example6() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra6.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra6.txt");
         assertThat(day15.getPart1()).isEqualTo(27730);
     }
 
     @Test
     public void getPart1example1() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/input.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/input.txt");
         assertThat(day15.getPart1()).isEqualTo(36334);
     }
 
     @Test
     public void getPart1Example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra2.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra2.txt");
         assertThat(day15.getPart1()).isEqualTo(39514);
     }
 
     @Test
     public void getPart1Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra3.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra3.txt");
         assertThat(day15.getPart1()).isEqualTo(27755);
     }
 
     @Test
     public void getPart1Example4() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra4.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra4.txt");
         assertThat(day15.getPart1()).isEqualTo(28944);
     }
 
     @Test
     public void getPart1Example5() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra5.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        day15.readInput("y2018/d15/extra5.txt");
         assertThat(day15.getPart1()).isEqualTo(18740);
     }
 
     @Test
-    public void getPart2example6() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/extra6.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day15.getPart2("y2018/d15/extra6.txt")).isEqualTo(4988);
-    }
-
-    @Test
     public void getPart2Example2() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-2.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day15.getPart2("y2018/d15/day15-2.txt")).isEqualTo(31284);
+        String path = "y2018/d15/extra2.txt";
+        day15.readInput(path);
+        assertThat(day15.getPart2(path)).isEqualTo(31284);
     }
 
     @Test
     public void getPart2Example3() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-3.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day15.getPart2("y2018/d15/day15-3.txt")).isEqualTo(3478);
+        String path = "y2018/d15/extra3.txt";
+        day15.readInput(path);
+        assertThat(day15.getPart2(path)).isEqualTo(3478);
     }
 
     @Test
     public void getPart2Example4() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-4.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day15.getPart2("y2018/d15/day15-4.txt")).isEqualTo(6474);
+        String path = "y2018/d15/extra4.txt";
+        day15.readInput(path);
+        assertThat(day15.getPart2(path)).isEqualTo(6474);
     }
 
     @Test
     public void getPart2Example5() {
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource("y2018/d15/day15-5.txt").getFile().getPath()))) {
-            day15.in = day15.readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(day15.getPart2("y2018/d15/day15-5.txt")).isEqualTo(1140);
+        String path = "y2018/d15/extra5.txt";
+        day15.readInput(path);
+        assertThat(day15.getPart2(path)).isEqualTo(1140);
+    }
+
+    @Test
+    public void getPart2example6() {
+        String path = "y2018/d15/extra6.txt";
+        day15.readInput(path);
+        assertThat(day15.getPart2(path)).isEqualTo(4988);
     }
 }

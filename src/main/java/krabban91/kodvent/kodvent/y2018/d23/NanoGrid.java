@@ -1,6 +1,5 @@
 package krabban91.kodvent.kodvent.y2018.d23;
 
-
 import krabban91.kodvent.kodvent.utilities.Point3D;
 
 import java.util.Comparator;
@@ -11,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class NanoGrid {
 
@@ -19,8 +17,8 @@ public class NanoGrid {
     List<NanoBot> nanoBots;
     Point3D startLocation = new Point3D(0, 0, 0);
 
-    public NanoGrid(Stream<String> input) {
-        this.nanoBots = input.map(NanoBot::new).collect(Collectors.toList());
+    public NanoGrid(List<String> input) {
+        this.nanoBots = input.stream().map(NanoBot::new).collect(Collectors.toList());
     }
 
     public long numberOfNanobotsInRangeOfStrongest() {

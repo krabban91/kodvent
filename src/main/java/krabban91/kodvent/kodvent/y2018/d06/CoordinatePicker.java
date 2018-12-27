@@ -1,15 +1,12 @@
 package krabban91.kodvent.kodvent.y2018.d06;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Distances;
+import krabban91.kodvent.kodvent.utilities.Input;
 
 import java.awt.*;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CoordinatePicker {
 
@@ -33,10 +30,6 @@ public class CoordinatePicker {
         return gridContainer;
     }
 
-    public static int manhattanDistance(Point point, Point other) {
-        return Math.abs(point.x - other.x) + Math.abs(point.y - other.y);
-    }
-
     public boolean hasFiniteArea(Point point) {
         return !hasInfinateArea(point);
     }
@@ -48,14 +41,14 @@ public class CoordinatePicker {
         Point bottomLeft = new Point(-200, 20000);
         Point bottomRight = new Point(20000, 20000);
 
-        return !(isAnyCloserThan(point, topLeft, manhattanDistance(point, topLeft)) &&
-                isAnyCloserThan(point, topRight, manhattanDistance(point, topRight)) &&
-                isAnyCloserThan(point, bottomLeft, manhattanDistance(point, bottomLeft)) &&
-                isAnyCloserThan(point, bottomRight, manhattanDistance(point, bottomRight)));
+        return !(isAnyCloserThan(point, topLeft, Distances.manhattan(point, topLeft)) &&
+                isAnyCloserThan(point, topRight, Distances.manhattan(point, topRight)) &&
+                isAnyCloserThan(point, bottomLeft, Distances.manhattan(point, bottomLeft)) &&
+                isAnyCloserThan(point, bottomRight, Distances.manhattan(point, bottomRight)));
     }
 
     public static boolean isCloserToThan(Point point, Point other, int distance) {
-        int distance1 = manhattanDistance(point, other);
+        int distance1 = Distances.manhattan(point, other);
         return distance1 <= distance;
     }
 
@@ -78,18 +71,15 @@ public class CoordinatePicker {
         return new Point(x, y);
     }
 
-    public List<Point> readInput(Stream<String> stream) {
-        return stream.map(this::mapToPoint).collect(Collectors.toList());
+    public void readInput(String path) {
+        this.locations = Input.getLines(path).stream().map(this::mapToPoint).collect(Collectors.toList());
     }
+
 
     public CoordinatePicker() {
         System.out.println("::: Starting Day 6 :::");
         String inputPath = "y2018/d06/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            locations = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         grid = this.setUpGrid();
         int part1 = getPart1();
         System.out.println(": answer to part 1 :");
@@ -97,5 +87,9 @@ public class CoordinatePicker {
         int part2 = getPart2(10000);
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
+    }
+
+    public List<Point> getLocations() {
+        return locations;
     }
 }

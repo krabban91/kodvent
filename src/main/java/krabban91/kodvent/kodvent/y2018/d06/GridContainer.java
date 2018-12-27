@@ -1,5 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d06;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
+
 import java.awt.*;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -35,7 +37,7 @@ public class GridContainer {
                 gridAll[x][y] = new HashMap<>();
             }
             Point thisPoint = new Point(x + dx, y + dy);
-            int distance = CoordinatePicker.manhattanDistance(point, thisPoint);
+            int distance = Distances.manhattan(point, thisPoint);
             HashMap<Point, Integer> patch = grid[x][y];
             if (!patch.entrySet().stream().anyMatch(e -> e.getValue() < distance)) {
                 if (patch.entrySet().stream().anyMatch(e -> e.getValue() > distance)) {

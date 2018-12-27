@@ -1,12 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d16;
 
-import org.springframework.core.io.ClassPathResource;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import krabban91.kodvent.kodvent.utilities.Input;
 
 public class Day16 {
     Processor in;
@@ -19,21 +13,14 @@ public class Day16 {
         return in.valueAtRegisterAfterOperations(0);
     }
 
-
-    public Processor readInput(Stream<String> stream) {
-        return new Processor(stream
-                .map(String::new)
-                .collect(Collectors.toList()));
+    public void readInput(String path) {
+        this.in = new Processor(Input.getLines(path));
     }
 
     public Day16() {
         System.out.println("::: Starting Day 16 :::");
         String inputPath = "y2018/d16/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
@@ -41,5 +28,4 @@ public class Day16 {
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
-
 }

@@ -19,18 +19,14 @@ public class Day7Test {
     public void getPart1() {
         String part1 = day7.getPart1();
         assertThat(part1).isEqualTo("CABDFE");
-        assertThat(part1).isEqualTo("CABDFE");
     }
 
     @Test
     public void getPart2() {
-
         day7.setDebug(true);
         int part2 = day7.getPart2(2, 0);
-        assertThat(part2).isEqualTo(15);
-
         day7.setDebug(false);
-
+        assertThat(part2).isEqualTo(15);
     }
 
     @Test

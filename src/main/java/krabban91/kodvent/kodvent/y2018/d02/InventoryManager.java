@@ -1,15 +1,12 @@
 package krabban91.kodvent.kodvent.y2018.d02;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
 public class InventoryManager {
 
     // keeps track of number of each letter in each ID
@@ -25,8 +22,8 @@ public class InventoryManager {
                 StringBuilder::appendCodePoint, StringBuilder::append).toString();
     }
 
-    private void readInventoryList(Stream<String> stream) {
-        stream.forEach(this::inventoryRoundup);
+    public void readInventoryList(String path) {
+        Input.getLines(path).forEach(this::inventoryRoundup);
     }
 
     private boolean matchesIdWithOneOther(List<Integer> curr) {
@@ -53,7 +50,7 @@ public class InventoryManager {
         int doubles = inventory.stream().mapToInt(m -> m.values().contains(2) ? 1 : 0).sum();
         int triples = inventory.stream().mapToInt(m -> m.values().contains(3) ? 1 : 0).sum();
         System.out.println("doubles:" + doubles + ", triples: " + triples);
-        return doubles * triples;
+        return (long) doubles * triples;
     }
 
     private String inventoryRoundup(String s) {
@@ -75,11 +72,7 @@ public class InventoryManager {
     public InventoryManager() {
         System.out.println("::: Starting Day 2 :::");
         String inputPath = "y2018/d02/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            readInventoryList(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInventoryList(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

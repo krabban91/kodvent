@@ -1,12 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d19;
 
-import org.springframework.core.io.ClassPathResource;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import krabban91.kodvent.kodvent.utilities.Input;
 
 public class Day19 {
     GpuUnit in;
@@ -19,22 +13,14 @@ public class Day19 {
         return in.valueAtRegisterAfterOperationsPart2(0);
     }
 
-
-    public GpuUnit readInput(Stream<String> stream) {
-        return new GpuUnit(stream
-                .collect(Collectors.toList()));
+    public void readInput(String path) {
+        this.in = new GpuUnit(Input.getLines(path));
     }
-
-
 
     public Day19() {
         System.out.println("::: Starting Day 19 :::");
         String inputPath = "y2018/d19/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            in = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

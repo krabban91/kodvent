@@ -1,14 +1,10 @@
 package krabban91.kodvent.kodvent.y2018.d07;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Day7 {
     List<Order> orderList;
@@ -106,8 +102,8 @@ public class Day7 {
         return extraCost + ((int) order - (int) 'A') + 1;
     }
 
-    public List<Order> readInput(Stream<String> stream) {
-        return stream.map(this::parseRow).collect(Collectors.toList());
+    public void readInput(String path) {
+        this.orderList = Input.getLines(path).stream().map(this::parseRow).collect(Collectors.toList());
     }
 
     public Order parseRow(String row) {
@@ -144,11 +140,7 @@ public class Day7 {
     public Day7() {
         System.out.println("::: Starting Day 7 :::");
         String inputPath = "y2018/d07/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            orderList = readInput(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readInput(inputPath);
         String part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);

@@ -1,17 +1,13 @@
 package krabban91.kodvent.kodvent.y2018.d04;
 
-import org.springframework.core.io.ClassPathResource;
+import krabban91.kodvent.kodvent.utilities.Input;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class GuardLogger {
 
@@ -27,8 +23,10 @@ public class GuardLogger {
         return getResultBasedOnStrategy(this::guardSleepsMostAtACertainMinute);
     }
 
-    private void logGuardEntries(Stream<String> stream) {
-        stream.sorted(String::compareTo)
+    public void logGuardEntries(String path) {
+        Input.getLines(path)
+                .stream()
+                .sorted(String::compareTo)
                 .map(TimeEntry::new)
                 .forEach(this::logEntry);
     }
@@ -107,11 +105,7 @@ public class GuardLogger {
     public GuardLogger() {
         System.out.println("::: Starting Day 4:::");
         String inputPath = "y2018/d04/input.txt";
-        try (Stream<String> stream = Files.lines(Paths.get(new ClassPathResource(inputPath).getFile().getPath()))) {
-            logGuardEntries(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        logGuardEntries(inputPath);
         int part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
