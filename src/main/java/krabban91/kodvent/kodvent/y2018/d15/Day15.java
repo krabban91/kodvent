@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day15 {
     CaveBattle in;
 

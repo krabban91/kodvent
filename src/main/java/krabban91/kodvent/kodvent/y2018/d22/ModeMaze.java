@@ -14,6 +14,7 @@ public class ModeMaze {
 
     Map<Point, Integer> dangerMap = new HashMap<>();
     Map<Point, Region> regionMap;
+    private boolean debug;
 
     public ModeMaze(List<String> input) {
         depth = Integer.parseInt(input.get(0).split(": ")[1]);
@@ -68,6 +69,7 @@ public class ModeMaze {
     }
 
     public long fewestMinutesToReachTarget() {
+        Map<Point, Map<Tool, TimeToRegion>> cameFrom = new HashMap<>();
         Map<Point, Set<Tool>> triedtools = new HashMap<>();
         Tool initiallyEquippedTool = Tool.TORCH;
         Region targetRegion = this.regionMap.get(target);
@@ -79,6 +81,7 @@ public class ModeMaze {
             TimeToRegion poll = unchecked.poll();
             Point current = poll.getRegionToReach().point;
             Tool equippedTool = poll.getEquippedTool();
+
             addToolAsTried(triedtools, current, equippedTool);
             checked.put(current, poll);
             if (poll.isTarget()) {
@@ -93,21 +96,109 @@ public class ModeMaze {
                     }
                     if (canUseTool(triedtools, poll, region, equippedTool)) {
                         addToUnchecked(targetRegion, unchecked, poll, equippedTool, region, 0);
+                        addToCameFrom(point, poll, equippedTool, cameFrom);
+
                     } else {
                         Tool leftTool = rotateTool(equippedTool, -1);
                         if (canUseTool(triedtools, poll, region, leftTool)) {
                             addToUnchecked(targetRegion, unchecked, poll, leftTool, region, 7);
+                            addToCameFrom(point, poll, leftTool, cameFrom);
                         }
                         Tool rightTool = rotateTool(equippedTool, +1);
                         if (canUseTool(triedtools, poll, region, rightTool)) {
                             addToUnchecked(targetRegion, unchecked, poll, rightTool, region, 7);
+                            addToCameFrom(point, poll, rightTool, cameFrom);
                         }
                     }
                 }
             });
         }
+        if(debug){
+            visualizePath(cameFrom, checked.get(target));
+        }
         return checked.get(target)
                 .getElapsedTime();
+    }
+
+    private void visualizePath(Map<Point, Map<Tool, TimeToRegion>> cameFrom, TimeToRegion target) {
+        Stack<TimeToRegion> path = new Stack<>();
+        TimeToRegion current = target;
+        TimeToRegion from = cameFrom.get(current.getRegionToReach().point).get(current.getEquippedTool());
+        while (from != null) {
+            path.push(from);
+            current = from;
+            from = cameFrom.get(current.getRegionToReach().point).get(current.getEquippedTool());
+        }
+        while (!path.empty()) {
+            visualizeState(path.pop());
+        }
+    }
+
+    private void visualizeState(TimeToRegion currentLocation) {
+        int minX = Math.max(currentLocation.getRegionToReach().point.x - 20, regionMap.entrySet().stream().map(e -> e.getKey().x).min(Comparator.comparingInt(e -> e)).orElse(0));
+        int maxX = Math.min(minX + 40, regionMap.entrySet().stream().map(e -> e.getKey().x).max(Comparator.comparingInt(e -> e)).orElse(0));
+        int minY = Math.max(currentLocation.getRegionToReach().point.y - 10, regionMap.entrySet().stream().map(e -> e.getKey().y).min(Comparator.comparingInt(e -> e)).orElse(0));
+        int maxY = Math.min(minY + 20, regionMap.entrySet().stream().map(e -> e.getKey().y).max(Comparator.comparingInt(e -> e)).orElse(0));
+        StringBuilder builder = new StringBuilder();
+
+        builder.append('\n');
+        StringBuilder yRow0 = new StringBuilder();
+        yRow0.append("     ");
+        IntStream.rangeClosed(minX, maxX).forEach(i -> yRow0.append((i / 100) > 0 ? i / 100 : " "));
+        builder.append(yRow0.toString());
+        builder.append('\n');
+        StringBuilder yRow1 = new StringBuilder();
+        yRow1.append("     ");
+        IntStream.rangeClosed(minX, maxX).forEach(i -> yRow1.append((i / 10) > 0 ? (i / 10) % 10 : " "));
+        builder.append(yRow1.toString());
+        builder.append('\n');
+        StringBuilder yRow2 = new StringBuilder();
+        yRow2.append("     ");
+        IntStream.rangeClosed(minX, maxX).forEach(i -> yRow2.append(i % 10));
+        builder.append(yRow2.toString());
+        builder.append('\n');
+        IntStream.rangeClosed(minY, maxY).forEach(y -> {
+
+            if ((y / 100) == 0) {
+                builder.append("  ");
+            }
+            if ((y / 10) == 0) {
+                builder.append(" ");
+            }
+            builder.append((y));
+            builder.append(" ");
+            IntStream.rangeClosed(minX, maxX).forEach(x -> {
+                Point current = new Point(x, y);
+                if (current.equals(currentLocation.getRegionToReach().getPoint())) {
+                    builder.append('X');
+                } else if (current.equals(entrance)) {
+                    builder.append('M');
+                } else if (current.equals(target)) {
+                    builder.append('T');
+                } else {
+                    Region region = regionMap.get(current);
+                    switch (region.getType()) {
+                        case NARROW:
+                            builder.append('|');
+                            break;
+                        case WET:
+                            builder.append('=');
+                            break;
+                        default:
+                            builder.append('.');
+                    }
+                }
+            });
+            builder.append('\n');
+        });
+        System.out.println(builder.toString());
+    }
+
+    private void addToCameFrom(Point to, TimeToRegion from, Tool tool, Map<Point, Map<Tool, TimeToRegion>> cameFrom) {
+        if (!cameFrom.containsKey(to)) {
+            cameFrom.put(to, new HashMap<>());
+        }
+        cameFrom.get(to).put(tool, from);
     }
 
     private void addToolAsTried(Map<Point, Set<Tool>> triedtools, Point current, Tool equippedTool) {
@@ -159,5 +250,9 @@ public class ModeMaze {
                     (tool.equals(Tool.NEITHER) ?
                             Tool.CLIMBING : Tool.NEITHER), i - 1);
         }
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }
