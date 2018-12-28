@@ -21,22 +21,23 @@ public class Day4 {
         int result = 1;
         String target = Strings.repeated("0", times);
         while (true) {
-            try {
-                if (checkSumStartsWith(result, target)) {
-                    return result;
-                }
-                result++;
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            if (checkSumStartsWith(result, target)) {
+                return result;
             }
+            result++;
         }
     }
 
-    private boolean checkSumStartsWith(int key, String target) throws UnsupportedEncodingException {
-        return DigestUtils
-                .md5DigestAsHex((secret + key).getBytes("UTF-8"))
-                .substring(0, target.length())
-                .equals(target);
+    private boolean checkSumStartsWith(int key, String target) {
+        try {
+            return DigestUtils
+                    .md5DigestAsHex((secret + key).getBytes("UTF-8"))
+                    .substring(0, target.length())
+                    .equals(target);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void readInput(String inputPath) {
