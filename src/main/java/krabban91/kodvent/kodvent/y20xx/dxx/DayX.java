@@ -22,7 +22,7 @@ public class DayX {
 
     public DayX() {
         System.out.println("::: Starting Day X :::");
-        String inputPath = "y20xx/dxx.txt";
+        String inputPath = "y20xx/dxx/input.txt";
         readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");

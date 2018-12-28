@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d05;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.Strings;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,7 +11,6 @@ import java.util.stream.IntStream;
 public class AlchemicalReactor {
 
     private String inputPolymer;
-    private static String alphabet = "abcdefghijklmnopqrstuvwxyz";
     private Map<String, Integer> score = new HashMap<>();
 
     public int getPart1() {
@@ -18,7 +18,7 @@ public class AlchemicalReactor {
     }
 
     public int getPart2() {
-        IntStream.range(0, alphabet.length()).forEach(this::retrieveResultForUnit);
+        IntStream.range(0, Strings.ALPHABBET.length()).forEach(this::retrieveResultForUnit);
         return score.entrySet()
                 .stream()
                 .min(Comparator.comparingInt(e -> e.getValue()))
@@ -30,7 +30,7 @@ public class AlchemicalReactor {
     }
 
     private void retrieveResultForUnit(int i) {
-        String character = alphabet.substring(i, i + 1);
+        String character = Strings.ALPHABBET.substring(i, i + 1);
         score.put(character, applyReactionFully(inputPolymer
                 .replaceAll(String.format("[(%s)(%s)]", character, character.toUpperCase()), ""))
                 .length());
