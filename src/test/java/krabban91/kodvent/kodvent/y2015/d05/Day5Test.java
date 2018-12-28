@@ -19,6 +19,13 @@ public class Day5Test {
     public void getPart1() {
         day5.readInput("y2015/d05/input.txt");
         long part1 = day5.getPart1();
-        assertThat(part1).isEqualTo(3);
+        assertThat(part1).isEqualTo(2);
+    }
+
+    @Test
+    public void getPart2() {
+        day5.readInput("y2015/d05/extra.txt");
+        long part1 = day5.getPart2();
+        assertThat(part1).isEqualTo(2);
     }
 }
