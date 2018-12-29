@@ -1,27 +1,27 @@
-package krabban91.kodvent.kodvent.y2015.d06;
+package krabban91.kodvent.kodvent.y2015.d07;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 
 import java.util.stream.Collectors;
 
-public class Day6 {
-    LightGrid in;
+public class Day7 {
+    BobbyTablesKit in;
 
     public long getPart1() {
-        return in.countLitLights();
+        return in.getValueOf("a");
     }
 
     public long getPart2() {
-        return in.totalBrightness();
+        return in.complexRoutine();
     }
 
     public void readInput(String inputPath) {
-        in = new LightGrid(Input.getLines(inputPath).stream().map(Instruction::new).collect(Collectors.toList()));
+        in = new BobbyTablesKit(Input.getLines(inputPath).stream().map(Operation::new).collect(Collectors.toList()));
     }
 
-    public Day6() {
-        System.out.println("::: Starting Day 6 :::");
-        String inputPath = "y2015/d06/input.txt";
+    public Day7() {
+        System.out.println("::: Starting Day 7 :::");
+        String inputPath = "y2015/d07/input.txt";
         readInput(inputPath);
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
