@@ -1,18 +1,20 @@
 package krabban91.kodvent.kodvent.y2015.d09;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
+@Component
 public class Day9 {
-    PathPlanner in;
+    private PathPlanner in;
 
     public long getPart1() {
-        return in.shortestRoute().totalDistance();
+        return in.shortestRoute().cost();
     }
 
     public long getPart2() {
-        return in.longestRoute().totalDistance();
+        return in.longestRoute().cost();
     }
 
     public void readInput(String inputPath) {
