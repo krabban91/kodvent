@@ -1,9 +1,8 @@
 package krabban91.kodvent.kodvent.y2018.d20;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -27,7 +26,7 @@ public class Room {
         }
         this.point = point;
         this.maze = maze;
-        this.maze.AddRoomToExploration(this);
+        this.maze.addRoomToExploration(this);
     }
 
     public Room(Room cameFrom, Point point, Maze maze) {
@@ -38,7 +37,7 @@ public class Room {
         }
         this.point = point;
         this.maze = maze;
-        this.maze.AddRoomToExploration(this);
+        this.maze.addRoomToExploration(this);
     }
 
     public static void exploreMap(Room startingRoom, String map, Maze maze) {
@@ -201,6 +200,16 @@ public class Room {
         });
         return first;
     }
+    public Collection<Room> getDoors(){
+        Set<Room> rooms = new HashSet<>();
+        rooms.add(getNorth());
+        rooms.add(getWest());
+        rooms.add(getSouth());
+        rooms.add(getEast());
+        rooms.removeIf(Objects::isNull);
+        return rooms;
+    }
+
 
     public Room getNorth() {
         return north;

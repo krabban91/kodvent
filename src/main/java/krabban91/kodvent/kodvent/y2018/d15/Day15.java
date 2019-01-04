@@ -1,9 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
-@Component
 public class Day15 {
     CaveBattle in;
 

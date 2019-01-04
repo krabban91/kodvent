@@ -1,8 +1,12 @@
 package krabban91.kodvent.kodvent.y2018.d20;
 
+import krabban91.kodvent.kodvent.utilities.search.Edge;
+import krabban91.kodvent.kodvent.utilities.search.Graph;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Maze {
 
@@ -10,7 +14,7 @@ public class Maze {
 
     private Map<Point, List<Room>> roomCopies = new HashMap<>();
 
-    private Map<Point, DistanceToRoom> distances = new HashMap<>();
+    private Map<Point, DoorsToRoom> distances = new HashMap<>();
 
     public Maze(String regex) {
         String map = regex.substring(regex.indexOf("^") + 1, regex.lastIndexOf("$"));
@@ -22,7 +26,7 @@ public class Maze {
         return roomCopies.get(point);
     }
 
-    public void AddRoomToExploration(Room room) {
+    public void addRoomToExploration(Room room) {
         Point point = room.getPoint();
         if (!roomCopies.containsKey(point)) {
             roomCopies.put(point, new ArrayList<>());
@@ -31,35 +35,28 @@ public class Maze {
     }
 
     private void performBFS(){
-        PriorityQueue<DistanceToRoom> frontier = new PriorityQueue<>(Comparator.comparingInt(DistanceToRoom::getDistance));
-        frontier.add(new DistanceToRoom(startingPoint,0));
-        while (!frontier.isEmpty()){
-            DistanceToRoom pop = frontier.poll();
-            distances.put(pop.getRoom().getPoint(), pop);
-            if(pop.room.getNorth() != null && !distances.containsKey(pop.room.getNorth().getPoint())){
-                frontier.add(new DistanceToRoom(pop.room.getNorth(), pop.getDistance()+1));
-            }
-            if(pop.room.getWest() != null && !distances.containsKey(pop.room.getWest().getPoint())){
-                frontier.add(new DistanceToRoom(pop.room.getWest(), pop.getDistance()+1));
-            }
-            if(pop.room.getSouth() != null && !distances.containsKey(pop.room.getSouth().getPoint())){
-                frontier.add(new DistanceToRoom(pop.room.getSouth(), pop.getDistance()+1));
-            }
-            if(pop.room.getEast() != null && !distances.containsKey(pop.room.getEast().getPoint())){
-                frontier.add(new DistanceToRoom(pop.room.getEast(), pop.getDistance()+1));
+        PriorityQueue<DoorsToRoom> frontier = new PriorityQueue<>(Comparator.comparingInt(DoorsToRoom::cost));
+        frontier.add(new DoorsToRoom(startingPoint));
+        Graph<DoorsToRoom, Edge, Room> graph = new Graph<>();
+        graph.search(frontier, this::exploreRoom, null);
+    }
 
-            }
-        }
+    private Collection<DoorsToRoom> exploreRoom(DoorsToRoom path, Map<Room,Collection<Edge>> ignored) {
+        distances.put(path.destination().getPoint(), path);
+        return path.destination().getDoors().stream()
+                .filter(r -> !distances.containsKey(r.getPoint()))
+                .map(r -> new DoorsToRoom(path, r))
+                .collect(Collectors.toSet());
     }
 
     public int getDistanceToFurthestRoom(){
         this.performBFS();
-        return distances.entrySet().stream().max(Comparator.comparingInt(e-> e.getValue().getDistance())).get().getValue().getDistance();
+        return distances.entrySet().stream().max(Comparator.comparingInt(e-> e.getValue().cost())).get().getValue().cost();
     }
 
     public long getCountOfRoomsWithDistanceAtleast(int distance){
         this.performBFS();
-        return distances.entrySet().stream().filter(e-> e.getValue().getDistance()>=distance).count();
+        return distances.entrySet().stream().filter(e-> e.getValue().cost()>=distance).count();
     }
 
 }
