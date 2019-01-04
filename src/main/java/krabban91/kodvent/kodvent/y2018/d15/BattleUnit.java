@@ -37,29 +37,28 @@ public class BattleUnit {
             return;
         }
         Stream<BattleUnit> targets = battle.targets(!goblin);
-        Map<Point, Map<Point, Map<Point, DistanceToPoint>>> known = new HashMap<>();
         Stream<Point> inRange = targets
                 .map(battle::avaliableStrikingLocations)
                 .flatMap(List::stream);
         Stream<Point> reachable = inRange
-                .filter(point -> battle.canReach(this, point, known));
-        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e, known))
-                .filter(p -> p != null)
+                .filter(point -> battle.canReach(this, point));
+        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
+                .filter(Objects::nonNull)
                 .sorted(DistanceToPoint::compare);
         Optional<DistanceToPoint> chosen = nearest.findFirst();
         if (chosen.isPresent()) {
             Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
                     .stream()
-                    .map(e -> battle.distanceBetween(chosen.get().point, e, known))
-                    .filter(p -> p != null)
+                    .map(e -> battle.distanceBetween(chosen.get().destination(), e))
+                    .filter(Objects::nonNull)
                     .sorted(DistanceToPoint::compare)
                     .findFirst();
             if (moveLocation.isPresent()) {
                 if(debug){
-                    reportMovement(isGoblin(), this.location, moveLocation.get().point);
+                    reportMovement(isGoblin(), this.location, moveLocation.get().destination());
                 }
-                this.location = moveLocation.get().point;
-
+                this.location = moveLocation.get().destination();
+                battle.regenerateNetwork();
             } else {
                 if(debug){
                     System.out.println("THIS SHOULDN'T HAPPEN!");
@@ -180,6 +179,7 @@ public class BattleUnit {
         this.hitpoints -= hitpoints;
         if (!isAlive()) {
             battle.removeFromBattle(this);
+            battle.regenerateNetwork();
         }
     }
 

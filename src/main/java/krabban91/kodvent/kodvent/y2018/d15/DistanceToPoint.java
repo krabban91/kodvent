@@ -1,45 +1,69 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import krabban91.kodvent.kodvent.utilities.Distances;
+import krabban91.kodvent.kodvent.utilities.search.Path;
 
 import java.awt.*;
 
-public class DistanceToPoint {
-    Point point;
+public class DistanceToPoint implements Path<Point> {
+    Point current;
     int distance;
     Point target;
     int heuristic;
-    public DistanceToPoint(Point point, int distance,Point target){
-        this.point = point;
-        this.distance = distance;
+
+    DistanceToPoint previous;
+
+    public DistanceToPoint(Point point, Point target) {
+        this.current = point;
+        this.distance = 0;
         this.target = target;
-        this.heuristic = Distances.manhattan(point,target);
+        this.heuristic = Distances.manhattan(current, target);
     }
 
-    public Point getPoint() {
-        return point;
-    }
-
-    public int getDistance() {
-        return distance;
+    public DistanceToPoint(DistanceToPoint previous, Step edge) {
+        this.previous = previous;
+        this.current = edge.leadsTo(previous.destination());
+        this.distance = edge.cost();
+        this.target = previous.target;
+        this.heuristic = Distances.manhattan(current, target);
     }
 
     public int heuristic(){
-        return distance + heuristic;
+        return this.cost() + heuristic;
     }
 
     public static int compare(DistanceToPoint l, DistanceToPoint r){
         if(l == null || r == null){
             return 0;
         }
-        int compare = Integer.compare(l.distance, r.distance);
+        int compare = Integer.compare(l.cost(), r.cost());
         if(compare == 0){
-            int compare1 = Integer.compare(l.point.y, r.point.y);
+            int compare1 = Integer.compare(l.current.y, r.current.y);
             if(compare1 == 0){
-                return Integer.compare(l.point.x,r.point.x);
+                return Integer.compare(l.current.x, r.current.x);
             }
             return compare1;
         }
         return compare;
+    }
+
+    @Override
+    public Point destination() {
+        return current;
+    }
+
+    @Override
+    public boolean hasVisited(Point destination) {
+        return this.destination().equals(destination) || (this.previous != null && this.previous.hasVisited(destination));
+    }
+
+    @Override
+    public int cost() {
+        return this.distance + (this.previous != null ? this.previous.cost() : 0);
+    }
+
+    @Override
+    public boolean isTarget() {
+        return target.equals(current);
     }
 }

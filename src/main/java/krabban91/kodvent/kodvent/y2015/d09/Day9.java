@@ -1,11 +1,9 @@
 package krabban91.kodvent.kodvent.y2015.d09;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
-@Component
 public class Day9 {
     private PathPlanner in;
 
