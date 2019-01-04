@@ -1,10 +1,10 @@
 package krabban91.kodvent.kodvent.utilities.search;
 
-public interface Path {
+public interface Path<V> {
 
-    String destination();
+    V destination();
 
-    boolean hasVisited(String destination);
+    boolean hasVisited(V destination);
 
     boolean isTarget();
 

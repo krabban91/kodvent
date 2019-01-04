@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.function.BiFunction;
 
-public class Graph<P extends Path, E extends Edge> {
+public class Graph<P extends Path, E extends Edge, V> {
 
-    public P search(PriorityQueue<P> unchecked, BiFunction<P, Map<String, Collection<E>>, Collection<P>> getNextFunction, Map<String, Collection<E>> map) {
+    public P search(PriorityQueue<P> unchecked, BiFunction<P, Map<V, Collection<E>>, Collection<P>> getNextFunction, Map<V, Collection<E>> map) {
         while (!unchecked.isEmpty()) {
             P poll = unchecked.poll();
             if (poll.isTarget()) {

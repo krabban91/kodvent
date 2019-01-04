@@ -2,7 +2,7 @@ package krabban91.kodvent.kodvent.y2015.d09;
 
 import krabban91.kodvent.kodvent.utilities.search.Path;
 
-public class Route implements Path {
+public class Route implements Path<String> {
 
     private String current;
     private Route pathToHere;
@@ -23,10 +23,6 @@ public class Route implements Path {
     }
 
 
-    public int reachedCities() {
-        return 1 + (pathToHere != null ? pathToHere.reachedCities() : 0);
-    }
-
     @Override
     public boolean hasVisited(String destination) {
         return destination.equals(current) || (pathToHere != null && pathToHere.hasVisited(destination));
@@ -45,6 +41,10 @@ public class Route implements Path {
     @Override
     public int cost() {
         return costToHere + (pathToHere != null ? pathToHere.cost() : 0);
+    }
+
+    private int reachedCities() {
+        return 1 + (pathToHere != null ? pathToHere.reachedCities() : 0);
     }
 
     public int getTargetSize() {

@@ -2,13 +2,13 @@ package krabban91.kodvent.kodvent.utilities.search;
 
 import java.util.Set;
 
-public interface Edge {
+public interface Edge<V> {
 
-    Set<String> vertices();
+    Set<V> vertices();
 
-    String leadsTo(String from);
+    V leadsTo(V from);
 
-    boolean isConnectedTo(String vertex);
+    boolean isConnectedTo(V vertex);
 
     int cost();
 }

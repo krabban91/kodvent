@@ -21,7 +21,7 @@ public class PathPlanner {
     public Route shortestRoute() {
         Deque<String> citiesToTry = new ArrayDeque<>(cities);
         Map<String, Route> salesmanPaths = new HashMap<>();
-        Graph<Route, Road> graph = new Graph<>();
+        Graph<Route, Road,String> graph = new Graph<>();
         while (!citiesToTry.isEmpty()) {
             String pop = citiesToTry.pop();
             PriorityQueue<Route> unchecked = new PriorityQueue<>(Comparator.comparingInt(Route::cost));
@@ -34,7 +34,7 @@ public class PathPlanner {
     public Route longestRoute() {
         Deque<String> citiesToTry = new ArrayDeque<>(cities);
         Map<String, Route> salesmanPaths = new HashMap<>();
-        Graph<Route, Road> graph = new Graph<>();
+        Graph<Route, Road, String> graph = new Graph<>();
         while (!citiesToTry.isEmpty()) {
             String pop = citiesToTry.pop();
             PriorityQueue<Route> unchecked = new PriorityQueue<>(Comparator.comparingInt(Route::cost).reversed());
