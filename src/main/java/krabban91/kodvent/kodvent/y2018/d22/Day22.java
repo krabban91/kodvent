@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2018.d22;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 
-
 public class Day22 {
     ModeMaze in;
 
