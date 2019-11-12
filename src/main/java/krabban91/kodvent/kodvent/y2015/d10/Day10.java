@@ -19,11 +19,9 @@ public class Day10 {
 
     private String lookAndSay(String in, int i) {
         String lookAt = in;
-        System.out.println("i: " + i + ", look: " + lookAt);
         while (i > 0) {
             lookAt = lookAndSay(lookAt);
             i--;
-            System.out.println("i: " + i + ", look: " + lookAt);
         }
         return lookAt;
     }
