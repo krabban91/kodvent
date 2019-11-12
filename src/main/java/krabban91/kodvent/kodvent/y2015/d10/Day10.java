@@ -1,11 +1,7 @@
 package krabban91.kodvent.kodvent.y2015.d10;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
-import java.util.stream.IntStream;
-
-@Component
 public class Day10 {
     String in;
 
