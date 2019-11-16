@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +29,24 @@ public class Day17Test {
                         new Container(5),
                         new Container(5)),
                 25,
+                new ConcurrentReferenceHashMap<>(),
                 new ConcurrentReferenceHashMap<>())).isEqualTo(4);
+    }
+
+    @Test
+    public void bestWaysOfTheEggNod() {
+        ConcurrentReferenceHashMap<List<Container>, Integer> history = new ConcurrentReferenceHashMap<>();
+        day17.waysOfTheEggNod(
+                Arrays.asList(
+                        new Container(20),
+                        new Container(15),
+                        new Container(10),
+                        new Container(5),
+                        new Container(5)),
+                25,
+                new ConcurrentReferenceHashMap<>(),
+                history);
+        assertThat(day17.bestWaysOfTheEggNod(history)).isEqualTo(3);
     }
 
 }
