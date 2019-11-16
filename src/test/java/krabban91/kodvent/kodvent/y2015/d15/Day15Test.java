@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,8 +20,8 @@ public class Day15Test {
     @Test
     public void score() {
         Map<Ingredient, Integer> collect = Map.of(
-                day15.in.stream().filter(e->e.getName().equals("Butterscotch")).findFirst().get(), 44,
-                day15.in.stream().filter(e->e.getName().equals("Cinnamon")).findFirst().get(), 56);
+                day15.in.stream().filter(e -> e.getName().equals("Butterscotch")).findFirst().get(), 44,
+                day15.in.stream().filter(e -> e.getName().equals("Cinnamon")).findFirst().get(), 56);
 
         long part1 = day15.score(collect);
         assertThat(part1).isEqualTo(62842880);

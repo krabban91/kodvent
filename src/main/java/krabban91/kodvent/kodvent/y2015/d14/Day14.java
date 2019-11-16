@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2015.d14;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
@@ -35,7 +34,7 @@ public class Day14 {
     private List<Reindeer> performRace() {
         List<Reindeer> reindeers = in.stream().map(Reindeer::new).collect(Collectors.toList());
         int second = 0;
-        while (second < 2503){
+        while (second < 2503) {
             reindeers.forEach(Reindeer::move);
             reindeers.stream().max(Comparator.comparingLong(Reindeer::getDistance)).get().score();
             second++;
