@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2015.d13;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day13 {
     List<HappinessDelta> in;
 
