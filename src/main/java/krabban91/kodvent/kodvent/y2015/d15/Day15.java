@@ -1,14 +1,12 @@
 package krabban91.kodvent.kodvent.y2015.d15;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day15 {
     List<Ingredient> in;
 
