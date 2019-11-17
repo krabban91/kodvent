@@ -3,13 +3,15 @@ package krabban91.kodvent.kodvent.y2018.d18;
 import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day18 {
     Grid<SettlerTile> in;
     boolean hasBegunToCycle;
@@ -20,6 +22,19 @@ public class Day18 {
     private Map<Integer, Long> cycleScoreDeltas = new HashMap<>();
     private int minute = 0;
     private boolean debug;
+
+    public Day18() {
+        System.out.println("::: Starting Day 18 :::");
+        String inputPath = "y2018/d18/input.txt";
+        readInput(inputPath);
+
+        long part1 = getPart1();
+        System.out.println(": answer to part 1 :");
+        System.out.println(part1);
+        long part2 = getPart2();
+        System.out.println(": answer to part 2 :");
+        System.out.println(part2);
+    }
 
     public long getPart1() {
         tickMinutes(10);
@@ -89,8 +104,8 @@ public class Day18 {
     }
 
     private void updateTilesOneMinute() {
-        this.in.forEachRanged((x,y)-> {
-            SettlerTile current = in.get(x,y);
+        this.in.forEachRanged((x, y) -> {
+            SettlerTile current = in.get(x, y);
             List<SettlerTile> adjacentTiles = getAdjacentTiles(in, x, y);
             long adjacentForest = adjacentTiles.stream().filter(SettlerTile::isForest).count();
             long adjacentMill = adjacentTiles.stream().filter(SettlerTile::isLumberMill).count();
@@ -115,8 +130,8 @@ public class Day18 {
     }
 
     long getScoreOfMinute() {
-        Long lumberMills = in.sum(t-> t.isLumberMill()? 1: 0);
-        Long forests = in.sum(t->t.isForest()? 1:0);
+        Long lumberMills = in.sum(t -> t.isLumberMill() ? 1 : 0);
+        Long forests = in.sum(t -> t.isForest() ? 1 : 0);
         return lumberMills * forests;
     }
 
@@ -126,18 +141,5 @@ public class Day18 {
                         .mapToObj(SettlerTile::new)
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList()));
-    }
-
-    public Day18() {
-        System.out.println("::: Starting Day 18 :::");
-        String inputPath = "y2018/d18/input.txt";
-        readInput(inputPath);
-
-        long part1 = getPart1();
-        System.out.println(": answer to part 1 :");
-        System.out.println(part1);
-        long part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
     }
 }

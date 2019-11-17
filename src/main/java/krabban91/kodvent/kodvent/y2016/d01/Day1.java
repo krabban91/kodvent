@@ -1,12 +1,10 @@
 package krabban91.kodvent.kodvent.y2016.d01;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 
-@Component
 public class Day1 {
 
     List<String> instructions;
