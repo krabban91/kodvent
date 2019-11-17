@@ -3,12 +3,10 @@ package krabban91.kodvent.kodvent.y2015.d18;
 import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class Day18 {
     List<String> in;
     boolean debug = false;

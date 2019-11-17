@@ -1,25 +1,11 @@
 package krabban91.kodvent.kodvent.y2015.d06;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
-@Component
 public class Day6 {
     LightGrid in;
-
-    public long getPart1() {
-        return in.countLitLights();
-    }
-
-    public long getPart2() {
-        return in.totalBrightness();
-    }
-
-    public void readInput(String inputPath) {
-        in = new LightGrid(Input.getLines(inputPath).stream().map(Instruction::new).collect(Collectors.toList()));
-    }
 
     public Day6() {
         System.out.println("::: Starting Day 6 :::");
@@ -31,5 +17,17 @@ public class Day6 {
         long part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
+    }
+
+    public long getPart1() {
+        return in.countLitLights();
+    }
+
+    public long getPart2() {
+        return in.totalBrightness();
+    }
+
+    public void readInput(String inputPath) {
+        in = new LightGrid(Input.getLines(inputPath).stream().map(Instruction::new).collect(Collectors.toList()));
     }
 }
