@@ -1,16 +1,12 @@
 package krabban91.kodvent.kodvent.y2015.d18;
 
+import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-@Component
 public class Day18 {
     List<String> in;
     boolean debug = false;
@@ -36,26 +32,22 @@ public class Day18 {
     }
 
     public long runGIF(List<List<Light>> lights, int seconds, boolean forcedCorners) {
+        Grid<Light> lightGrid = new Grid<>();
         if (debug) {
             System.out.println("Initial state");
             System.out.println(LogUtils.tiles(lights));
         }
         for (int s = 1; s <= seconds; s++) {
-            IntStream.range(0, lights.size())
-                    .forEach(row -> IntStream.range(0, lights.get(row).size())
-                            .forEach(col -> {
-                                List<Light> collect = getSurroundingLights(row, col, lights);
-                                lights.get(row).get(col).setNextState(collect);
-                            }));
+            lightGrid.forEachRanged(lights, (row, col) ->
+                    lights.get(row).get(col).setNextState(lightGrid.getSurroundingTiles(row, col, lights)));
             if (forcedCorners) {
                 lights.get(0).get(0).setNextState(true);
                 lights.get(0).get(lights.get(0).size() - 1).setNextState(true);
                 lights.get(lights.size() - 1).get(0).setNextState(true);
                 lights.get(lights.size() - 1).get(lights.get(0).size() - 1).setNextState(true);
             }
-            IntStream.range(0, lights.size()).forEach(row -> IntStream.range(0, lights.get(row).size()).forEach(col -> {
-                lights.get(row).get(col).moveForwardInTime();
-            }));
+
+            lightGrid.forEachRanged(lights, (row, col) -> lights.get(row).get(col).moveForwardInTime());
             if (debug) {
                 System.out.println("state after second " + s);
                 System.out.println(LogUtils.tiles(lights));
@@ -64,23 +56,8 @@ public class Day18 {
         return lights.stream().mapToInt(r -> r.stream().mapToInt(Light::getState).sum()).sum();
     }
 
-
-    private List<Light> getSurroundingLights(int row, int col, List<List<Light>> lights) {
-        return IntStream
-                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, lights.size() - 1))
-                .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, lights.get(row).size() - 1))
-                        .mapToObj(j -> (i == row && j == col) ? null : lights.get(i).get(j))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-    }
-
-
     public void readInput(String inputPath) {
         in = Input.getLines(inputPath);
-
     }
 
     public List<List<Light>> getNewLights() {

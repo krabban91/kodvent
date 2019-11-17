@@ -1,10 +1,17 @@
 package krabban91.kodvent.kodvent.y2018.d18;
 
-public class SettlerTile {
+import krabban91.kodvent.kodvent.utilities.logging.Loggable;
+
+public class SettlerTile implements Loggable {
 
 
     Type oldState;
     Type newState;
+
+    @Override
+    public String showTile() {
+        return this.toString();
+    }
 
     public enum Type {
         OPEN,
