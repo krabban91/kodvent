@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2016.d03;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day3 {
 
     List<String> in;
@@ -26,33 +24,41 @@ public class Day3 {
         System.out.println(part2);
     }
 
-
     public long getPart1() {
-        return in.stream()
-                .map(e -> Arrays.stream(e.split(" "))
-                        .filter(l -> !l.isBlank())
-                        .map(Integer::parseInt)
-                        .sorted()
-                        .collect(Collectors.toList()))
+        List<List<Integer>> collect = getTriangleMeasurements();
+        return collect.stream()
                 .mapToInt(l -> isPossibleTriangle(l.get(0), l.get(1), l.get(2)) ? 1 : 0)
                 .sum();
     }
 
     public long getPart2() {
+        List<List<Integer>> lists = getFlippedTriangleMeasurements();
+        return lists.stream()
+                .mapToLong(l -> IntStream.range(0, l.size() / 3)
+                        .mapToLong(i -> isPossibleTriangle(l.get(3 * i), l.get(3 * i + 1), l.get(3 * i + 2)) ? 1 : 0)
+                        .sum())
+                .sum();
+    }
 
-        List<List<Integer>> lists = Arrays.asList(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        in.stream()
+    private List<List<Integer>> getTriangleMeasurements() {
+        return in.stream()
                 .map(e -> Arrays.stream(e.split(" "))
                         .filter(l -> !l.isBlank())
                         .map(Integer::parseInt)
                         .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+    }
+
+    private List<List<Integer>> getFlippedTriangleMeasurements() {
+        List<List<Integer>> lists = Arrays.asList(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        List<List<Integer>> collect = getTriangleMeasurements();
+        collect.stream()
                 .forEachOrdered(l -> {
                     lists.get(0).add(l.get(0));
                     lists.get(1).add(l.get(1));
                     lists.get(2).add(l.get(2));
                 });
-        return lists.stream().mapToLong(l -> IntStream.range(0, l.size() / 3)
-                .mapToLong(i -> isPossibleTriangle(l.get(3 * i), l.get(3 * i + 1), l.get(3 * i + 2)) ? 1 : 0).sum()).sum();
+        return lists;
     }
 
     public boolean isPossibleTriangle(int a, int b, int c) {

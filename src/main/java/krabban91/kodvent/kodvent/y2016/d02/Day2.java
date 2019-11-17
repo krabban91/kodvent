@@ -1,14 +1,12 @@
 package krabban91.kodvent.kodvent.y2016.d02;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Component
 public class Day2 {
 
     List<List<Integer>> instructions;
@@ -72,9 +70,9 @@ public class Day2 {
     }
 
     private Point move(Point from, Point vector, char[][] map) {
-        int newX = Math.min(Math.max(from.x + vector.x, 0), map.length-1);
-        int newY = Math.min(Math.max(from.y + vector.y, 0), map[0].length-1);
-        if(map[newY][newX]=='.'){
+        int newX = Math.min(Math.max(from.x + vector.x, 0), map.length - 1);
+        int newY = Math.min(Math.max(from.y + vector.y, 0), map[0].length - 1);
+        if (map[newY][newX] == '.') {
             return from;
         }
         return new Point(newX, newY);
