@@ -2,16 +2,14 @@ package krabban91.kodvent.kodvent.y2016.d05;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Component;
 
-@Component
 public class Day5 {
 
     String in;
 
     public Day5() {
-        System.out.println("::: Starting Day 4 :::");
-        String inputPath = "y2016/d04/input.txt";
+        System.out.println("::: Starting Day 5 :::");
+        String inputPath = "y2016/d05/input.txt";
         readInput(inputPath);
         String part1 = getPart1();
         System.out.println(": answer to part 1 :");

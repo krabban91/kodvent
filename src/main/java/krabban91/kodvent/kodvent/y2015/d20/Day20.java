@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2015.d20;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-@Component
 public class Day20 {
     int in;
 
