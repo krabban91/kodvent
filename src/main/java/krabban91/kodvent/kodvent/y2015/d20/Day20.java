@@ -59,7 +59,7 @@ public class Day20 {
         return i % 210 == 0; //2*3*5*7
     }
 
-    private long countGifts(int houseNumber) {
+    public long countGifts(int houseNumber) {
         return IntStream.rangeClosed(1, houseNumber)
                 .filter(i -> houseNumber % i == 0)
                 .map(i -> i * 10)
@@ -67,7 +67,7 @@ public class Day20 {
 
     }
 
-    private long countGiftsLazyElves(int houseNumber) {
+    public long countGiftsLazyElves(int houseNumber) {
         return IntStream.rangeClosed(1, houseNumber)
                 .filter(i -> houseNumber % i == 0)
                 .filter(i -> houseNumber / i <= 50)
