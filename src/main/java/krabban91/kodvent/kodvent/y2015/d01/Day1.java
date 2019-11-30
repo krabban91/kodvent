@@ -1,11 +1,10 @@
 package krabban91.kodvent.kodvent.y2015.d01;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Component
+//@Component
 public class Day1 {
     String in;
 
