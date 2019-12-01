@@ -1,12 +1,10 @@
 package krabban91.kodvent.kodvent.y2019.d01;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class Day1 {
     private List<Long> in;
 
