@@ -22,21 +22,10 @@ public class Day2Test {
         assertThat(day2.getPart1(Arrays.asList(1,0,0,0,99), 0,0)).isEqualTo(2);
         assertThat(day2.getPart1(Arrays.asList(2,3,0,3,99),3,0)).isEqualTo(2);
         assertThat(day2.getPart1(Arrays.asList(1,1,1,4,99,5,6,0,99),1,1)).isEqualTo(30);
-
+        assertThat(day2.getPart1(day2.in,1,12)).isEqualTo(682636L);
     }
-
-    @Test
-    public void add()
-    {
-        assertThat(day2.add(0, Arrays.asList(1,0,0,0,99))).isEqualTo(Arrays.asList(2,0,0,0,99));
-        assertThat(day2.multiply(0, Arrays.asList(2,3,0,3,99))).isEqualTo(Arrays.asList(2,3,0,6,99));
-        assertThat(day2.add(0, Arrays.asList(1,0,0,0,99))).isEqualTo(Arrays.asList(2,0,0,0,99));
-        assertThat(day2.add(0, Arrays.asList(1,0,0,0,99))).isEqualTo(Arrays.asList(2,0,0,0,99));
-    }
-
     @Test
     public void getPart2() {
-        assertThat(day2.getPart2()).isEqualTo(-1);
+        assertThat(day2.getPart2()).isEqualTo(5696L);
     }
-
 }
