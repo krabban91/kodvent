@@ -18,11 +18,11 @@ public class Day3Test {
 
     @Test
     public void getPart1() {
-        assertThat(day3.getPart1()).isEqualTo(-1);
+        assertThat(day3.getPart1()).isEqualTo(159);
     }
 
     @Test
     public void getPart2() {
-        assertThat(day3.getPart2()).isEqualTo(-1);
+        assertThat(day3.getPart2()).isEqualTo(610);
     }
 }
