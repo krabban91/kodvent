@@ -86,7 +86,6 @@ public class Day4 {
     }
 
     public void readInput(String inputPath) {
-
         in = Input.getSingleLine(inputPath);
     }
 }
