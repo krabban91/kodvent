@@ -14,15 +14,14 @@ public class Day5Test {
 
     @Autowired
     Day5 day5;
-
-
+    
     @Test
     public void getPart1() {
-        assertThat(day5.getPart1()).isEqualTo(-1);
+        assertThat(day5.getPart1()).isEqualTo(4511442);
     }
 
     @Test
     public void getPart2() {
-        assertThat(day5.getPart2()).isEqualTo(-1);
+        assertThat(day5.getPart2()).isEqualTo(12648139);
     }
 }

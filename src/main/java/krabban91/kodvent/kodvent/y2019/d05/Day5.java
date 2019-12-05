@@ -42,7 +42,8 @@ public class Day5 {
     }
 
     public void readInput(String inputPath) {
-
-        in = Stream.of(Input.getSingleLine(inputPath).split(",")).map(Integer::parseInt).collect(Collectors.toList());
+        in = Stream.of(Input.getSingleLine(inputPath).split(","))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 }
