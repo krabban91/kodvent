@@ -3,7 +3,10 @@ package krabban91.kodvent.kodvent.y2019.shared;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class IntCodeComputer {
 
@@ -13,15 +16,33 @@ public class IntCodeComputer {
     public static final int MUL_SIZE = 4;
     public static final int HALT_CODE = 99;
     public static final int HALT_SIZE = 1;
+    public static final int OUTPUT_CODE = 4;
+    public static final int OUTPUT_SIZE = 2;
+    public static final int INPUT_CODE = 3;
+    public static final int INPUT_SIZE = 2;
+    public static final int IFTRUE_CODE = 5;
+    public static final int IF_TRUE_SIZE = 3;
+    public static final int IF_FALSE_CODE = 6;
+    public static final int LESS_THAN_CODE = 7;
+    public static final int EQUALS_CODE = 8;
+    public static final int MEMORY_MODE = 0;
+    public static final int IMEDIATE_MODE = 1;
+    private static final int IF_FALSE_SIZE = 3;
+    private static final int LESS_THAN_SIZE = 4;
+    private static final int EQUALS_SIZE = 4;
     private final List<Integer> program;
+    private final Deque<Integer> inputs;
+    private int output;
     private int pointer;
 
-    public IntCodeComputer(@NotNull List<Integer> program) {
-        this(program,0,0);
+    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+        this.program = new ArrayList<>(program);
+        this.inputs = inputs;
     }
 
+
     public IntCodeComputer(@NotNull List<Integer> program, int noun, int verb) {
-        this.program = new ArrayList<>(program);
+        this(program, new LinkedBlockingDeque<>());
         this.setNoun(noun);
         this.setVerb(verb);
     }
@@ -40,7 +61,7 @@ public class IntCodeComputer {
         return program.get(i);
     }
 
-    public int getOutput(){
+    public int getOutput() {
         return getAddress(0);
     }
 
@@ -57,26 +78,116 @@ public class IntCodeComputer {
     }
 
     private void step() {
-        switch (this.getAddress(pointer)) {
+
+        int address = this.getAddress(pointer);
+        int opCode = address % 100;
+        int modes = address / 100;
+        int mode1 = modes % 10;
+        int mode2 = (modes / 10) % 10;
+        switch (opCode) {
             case ADD_CODE:
-                add();
+                add(mode1, mode2);
                 break;
             case MUL_CODE:
-                multiply();
+                multiply(mode1, mode2);
+                break;
+            case INPUT_CODE:
+                input();
+                break;
+            case OUTPUT_CODE:
+                output(mode1);
+                break;
+            case IFTRUE_CODE:
+                ifTrue(mode1, mode2);
+                break;
+            case IF_FALSE_CODE:
+                ifFalse(mode1, mode2);
+                break;
+            case LESS_THAN_CODE:
+                lessThan(mode1, mode2);
+                break;
+            case EQUALS_CODE:
+                isEqual(mode1, mode2);
                 break;
             case HALT_CODE:
                 break;
         }
     }
 
-    private void add() {
-        program.set(program.get(pointer + 3), program.get(program.get(pointer + 1)) + program.get(program.get(pointer + 2)));
+    private void lessThan(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        program.set(getValue(IMEDIATE_MODE, pointer+3), a < b ? 1 : 0);
+        pointer += LESS_THAN_SIZE;
+    }
+
+    private void isEqual(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        program.set(getValue(IMEDIATE_MODE, pointer+3), a == b ? 1 : 0);
+        pointer += EQUALS_SIZE;
+    }
+
+    private void ifFalse(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        if (a == 0) {
+            pointer = b;
+        } else {
+            pointer += IF_FALSE_SIZE;
+        }
+    }
+
+    private void ifTrue(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        if (a != 0) {
+            pointer = b;
+        } else {
+            pointer += IF_TRUE_SIZE;
+        }
+    }
+
+    public int lastOutput() {
+        return output;
+    }
+
+    private void output(int mode1) {
+        int a = getValue(mode1, pointer+1);
+        this.output = a;
+        System.out.println("output: " + a);
+        pointer += OUTPUT_SIZE;
+    }
+
+    private void input() {
+        int in;
+        if (inputs.isEmpty()) {
+            Scanner scan = new Scanner(System.in);
+            in = scan.nextInt();
+        } else {
+            in = inputs.pop();
+        }
+        System.out.println("input: " + in);
+        program.set(getValue(IMEDIATE_MODE, pointer+1), in);
+        pointer += INPUT_SIZE;
+    }
+
+    private void add(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        program.set(getValue(IMEDIATE_MODE, pointer+3), a + b);
         pointer += ADD_SIZE;
     }
 
-    private void multiply() {
-        program.set(program.get(pointer + 3), program.get(program.get(pointer + 1)) * program.get(program.get(pointer + 2)));
+    private void multiply(int mode1, int mode2) {
+        int a = getValue(mode1, pointer+1);
+        int b = getValue(mode2, pointer+2);
+        program.set(getValue(IMEDIATE_MODE, pointer+3), a * b);
         pointer += MUL_SIZE;
+    }
+
+    private Integer getValue(int mode, int address) {
+        return mode == MEMORY_MODE ? program.get(program.get(address)) : program.get(address);
     }
 
 }
