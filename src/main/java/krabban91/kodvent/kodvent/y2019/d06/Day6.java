@@ -54,37 +54,37 @@ public class Day6 {
     public long getPart1() {
         Map<String, Set<String>> isOrbitedBy = getOrbits(in);
         Map<String, Integer> countOfOrbits = new ConcurrentReferenceHashMap<>();
-        isOrbitedBy.keySet().forEach(e -> countOfOrbits.computeIfAbsent(e, k -> countOrbits(k, isOrbitedBy, countOfOrbits)));
+        isOrbitedBy.keySet().forEach(e -> countOfOrbits.computeIfAbsent(e, k -> celestialBodysOf(k, isOrbitedBy, countOfOrbits)));
         return countOfOrbits.values().stream().mapToInt(i -> i).sum();
     }
 
     public long getPart2() {
-        Map<String, Set<String>> isOrbitedBy = getOrbits(in);
-        return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
+        Map<String, Set<String>> orbitedBy = getOrbits(in);
+        return orbitalDistance("YOU", "SAN", 0, orbitedBy) - 2;
     }
 
-    private int countOrbits(String current, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
-        Set<String> strings = isOrbitedBy.get(current);
-        if (strings == null) {
+    private int celestialBodysOf(String current, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
+        Set<String> bodys = isOrbitedBy.get(current);
+        if (bodys == null) {
             return 0;
         }
-        return strings.size() + strings.stream()
-                .mapToInt(orbiter -> counts.computeIfAbsent(orbiter, key -> countOrbits(key, isOrbitedBy, counts)))
+        return bodys.size() + bodys.stream()
+                .mapToInt(body -> counts.computeIfAbsent(body, key -> celestialBodysOf(key, isOrbitedBy, counts)))
                 .sum();
     }
 
-    private int stepsBetween(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
+    private int orbitalDistance(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
         if (current.equals(target)) {
-            return stepsTaken - 2;
+            return stepsTaken;
         }
         if (indirectOrbit(target, current, isOrbitedBy)) {
             //move out
             String newCurrent = isOrbitedBy.get(current).stream().filter(s -> indirectOrbit(target, s, isOrbitedBy)).findFirst().get();
-            return stepsBetween(newCurrent, target, stepsTaken + 1, isOrbitedBy);
+            return orbitalDistance(newCurrent, target, stepsTaken + 1, isOrbitedBy);
         } else {
             //move in
             String newCurrent = in.stream().filter(rel -> rel.orbiter.equals(current)).findFirst().get().main;
-            return stepsBetween(newCurrent, target, stepsTaken + 1, isOrbitedBy);
+            return orbitalDistance(newCurrent, target, stepsTaken + 1, isOrbitedBy);
         }
     }
 
