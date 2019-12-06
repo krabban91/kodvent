@@ -63,8 +63,7 @@ public class Day6 {
         return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
     }
 
-    @NotNull
-    public int countOrbits(String current, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
+    private int countOrbits(String current, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
         Set<String> strings = isOrbitedBy.get(current);
         if (strings == null) {
             return 0;
@@ -74,8 +73,7 @@ public class Day6 {
                 .sum();
     }
 
-    @NotNull
-    public int stepsBetween(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
+    private int stepsBetween(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
         if (current.equals(target)) {
             return stepsTaken - 2;
         }
