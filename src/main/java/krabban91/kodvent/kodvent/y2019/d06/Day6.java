@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d06;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
 public class Day6 {
     List<OrbitRelation> in;
 
