@@ -35,6 +35,11 @@ public class Day6 {
         return countOfOrbits.values().stream().mapToInt(i -> i).sum();
     }
 
+    public long getPart2() {
+        Map<String, Set<String>> isOrbitedBy = getOrbits();
+        return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
+    }
+
     @NotNull
     public Map<String, Set<String>> getOrbits() {
         Map<String, Set<String>> isOrbitedBy = new HashMap<>();
@@ -49,38 +54,35 @@ public class Day6 {
     }
 
     @NotNull
-    public int countOrbits(String k, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
-        Set<String> strings = isOrbitedBy.get(k);
+    public int countOrbits(String current, Map<String, Set<String>> isOrbitedBy, Map<String, Integer> counts) {
+        Set<String> strings = isOrbitedBy.get(current);
         if (strings == null) {
             return 0;
         }
-        return strings.size() + strings.stream().mapToInt(v -> counts.computeIfAbsent(v, l -> countOrbits(l, isOrbitedBy, counts))).sum();
+        return strings.size() + strings.stream()
+                .mapToInt(orbiter -> counts.computeIfAbsent(orbiter, key -> countOrbits(key, isOrbitedBy, counts)))
+                .sum();
     }
 
-    public long getPart2() {
-        Map<String, Set<String>> isOrbitedBy = getOrbits();
-        return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
-    }
 
     @NotNull
     public int stepsBetween(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
-        if(current.equals(target)){
-            return stepsTaken-2;
+        if (current.equals(target)) {
+            return stepsTaken - 2;
         }
-        if(indirectOrbit(target, current, isOrbitedBy)){
+        if (indirectOrbit(target, current, isOrbitedBy)) {
             //move out
-            String newCurrent = isOrbitedBy.get(current).stream().filter(s-> indirectOrbit(target,s,isOrbitedBy)).findFirst().get();
-            return stepsBetween(newCurrent, target, stepsTaken+1, isOrbitedBy);
-        }
-        else{
+            String newCurrent = isOrbitedBy.get(current).stream().filter(s -> indirectOrbit(target, s, isOrbitedBy)).findFirst().get();
+            return stepsBetween(newCurrent, target, stepsTaken + 1, isOrbitedBy);
+        } else {
             //move in
             String newCurrent = in.stream().filter(rel -> rel.orbiter.equals(current)).findFirst().get().main;
-            return stepsBetween(newCurrent, target, stepsTaken+1, isOrbitedBy);
+            return stepsBetween(newCurrent, target, stepsTaken + 1, isOrbitedBy);
         }
     }
 
     public boolean indirectOrbit(String target, String current, Map<String, Set<String>> isOrbitedBy) {
-        if(target.equals(current)){
+        if (target.equals(current)) {
             return true;
         }
         if (!isOrbitedBy.containsKey(current)) {
