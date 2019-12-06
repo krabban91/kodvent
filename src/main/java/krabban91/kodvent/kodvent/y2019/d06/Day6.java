@@ -28,22 +28,10 @@ public class Day6 {
         System.out.println(part2);
     }
 
-    public long getPart1() {
-        Map<String, Set<String>> isOrbitedBy = getOrbits();
-        Map<String, Integer> countOfOrbits = new ConcurrentReferenceHashMap<>();
-        isOrbitedBy.keySet().forEach(e -> countOfOrbits.computeIfAbsent(e, k -> countOrbits(k, isOrbitedBy, countOfOrbits)));
-        return countOfOrbits.values().stream().mapToInt(i -> i).sum();
-    }
-
-    public long getPart2() {
-        Map<String, Set<String>> isOrbitedBy = getOrbits();
-        return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
-    }
-
     @NotNull
-    public Map<String, Set<String>> getOrbits() {
+    private static Map<String, Set<String>> getOrbits(List<OrbitRelation> relations) {
         Map<String, Set<String>> isOrbitedBy = new HashMap<>();
-        in.forEach(o -> {
+        relations.forEach(o -> {
             isOrbitedBy.computeIfAbsent(o.main, k -> new HashSet<>());
             isOrbitedBy.computeIfPresent(o.main, (k, v) -> {
                 v.add(o.orbiter);
@@ -51,6 +39,28 @@ public class Day6 {
             });
         });
         return isOrbitedBy;
+    }
+
+    private static boolean indirectOrbit(String target, String current, Map<String, Set<String>> isOrbitedBy) {
+        if (target.equals(current)) {
+            return true;
+        }
+        if (!isOrbitedBy.containsKey(current)) {
+            return false;
+        }
+        return isOrbitedBy.get(current).stream().anyMatch(s -> s.equals(target) || indirectOrbit(target, s, isOrbitedBy));
+    }
+
+    public long getPart1() {
+        Map<String, Set<String>> isOrbitedBy = getOrbits(in);
+        Map<String, Integer> countOfOrbits = new ConcurrentReferenceHashMap<>();
+        isOrbitedBy.keySet().forEach(e -> countOfOrbits.computeIfAbsent(e, k -> countOrbits(k, isOrbitedBy, countOfOrbits)));
+        return countOfOrbits.values().stream().mapToInt(i -> i).sum();
+    }
+
+    public long getPart2() {
+        Map<String, Set<String>> isOrbitedBy = getOrbits(in);
+        return stepsBetween("YOU", "SAN", 0, isOrbitedBy);
     }
 
     @NotNull
@@ -63,7 +73,6 @@ public class Day6 {
                 .mapToInt(orbiter -> counts.computeIfAbsent(orbiter, key -> countOrbits(key, isOrbitedBy, counts)))
                 .sum();
     }
-
 
     @NotNull
     public int stepsBetween(String current, String target, int stepsTaken, Map<String, Set<String>> isOrbitedBy) {
@@ -79,16 +88,6 @@ public class Day6 {
             String newCurrent = in.stream().filter(rel -> rel.orbiter.equals(current)).findFirst().get().main;
             return stepsBetween(newCurrent, target, stepsTaken + 1, isOrbitedBy);
         }
-    }
-
-    public boolean indirectOrbit(String target, String current, Map<String, Set<String>> isOrbitedBy) {
-        if (target.equals(current)) {
-            return true;
-        }
-        if (!isOrbitedBy.containsKey(current)) {
-            return false;
-        }
-        return isOrbitedBy.get(current).stream().anyMatch(s -> s.equals(target) || indirectOrbit(target, s, isOrbitedBy));
     }
 
     public void readInput(String inputPath) {
