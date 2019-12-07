@@ -32,17 +32,23 @@ public class IntCodeComputer {
     private static final int EQUALS_SIZE = 4;
     private final List<Integer> program;
     private final Deque<Integer> inputs;
-    private int output;
+    private final Deque<Integer> outputs;
+    private boolean verbose = false;
     private int pointer;
 
-    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs, Deque<Integer> outputs) {
         this.program = new ArrayList<>(program);
         this.inputs = inputs;
+        this.outputs = outputs;
+    }
+
+    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+        this(program, inputs, new LinkedBlockingDeque<>());
     }
 
 
     public IntCodeComputer(@NotNull List<Integer> program, int noun, int verb) {
-        this(program, new LinkedBlockingDeque<>());
+        this(program, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         this.setNoun(noun);
         this.setVerb(verb);
     }
@@ -55,6 +61,16 @@ public class IntCodeComputer {
         while (!hasHalted()) {
             step();
         }
+    }
+
+    public void runUntilOutputSize(int i) {
+        while (!hasHalted() && this.outputs.size() < i) {
+            step();
+        }
+    }
+
+    public void addInput(int input) {
+        this.inputs.addLast(input);
     }
 
     public int getAddress(int i) {
@@ -115,22 +131,22 @@ public class IntCodeComputer {
     }
 
     private void lessThan(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
-        program.set(getValue(IMEDIATE_MODE, pointer+3), a < b ? 1 : 0);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
+        program.set(getValue(IMEDIATE_MODE, pointer + 3), a < b ? 1 : 0);
         pointer += LESS_THAN_SIZE;
     }
 
     private void isEqual(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
-        program.set(getValue(IMEDIATE_MODE, pointer+3), a == b ? 1 : 0);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
+        program.set(getValue(IMEDIATE_MODE, pointer + 3), a == b ? 1 : 0);
         pointer += EQUALS_SIZE;
     }
 
     private void ifFalse(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
         if (a == 0) {
             pointer = b;
         } else {
@@ -139,8 +155,8 @@ public class IntCodeComputer {
     }
 
     private void ifTrue(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
         if (a != 0) {
             pointer = b;
         } else {
@@ -148,18 +164,24 @@ public class IntCodeComputer {
         }
     }
 
-    public int lastOutput() {
-        return output;
+    public Integer lastOutput() {
+        return this.outputs.peekLast();
     }
 
     private void output(int mode1) {
-        int a = getValue(mode1, pointer+1);
-        this.output = a;
-        System.out.println("output: " + a);
+        int a = getValue(mode1, pointer + 1);
+        this.outputs.addLast(a);
+        if (verbose) {
+            System.out.println("output: " + a);
+        }
         pointer += OUTPUT_SIZE;
     }
 
     private void input() {
+        if (verbose) {
+            System.out.print("input: ");
+        }
+
         int in;
         if (inputs.isEmpty()) {
             Scanner scan = new Scanner(System.in);
@@ -167,22 +189,24 @@ public class IntCodeComputer {
         } else {
             in = inputs.pop();
         }
-        System.out.println("input: " + in);
-        program.set(getValue(IMEDIATE_MODE, pointer+1), in);
+        if (verbose) {
+            System.out.println(in);
+        }
+        program.set(getValue(IMEDIATE_MODE, pointer + 1), in);
         pointer += INPUT_SIZE;
     }
 
     private void add(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
-        program.set(getValue(IMEDIATE_MODE, pointer+3), a + b);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
+        program.set(getValue(IMEDIATE_MODE, pointer + 3), a + b);
         pointer += ADD_SIZE;
     }
 
     private void multiply(int mode1, int mode2) {
-        int a = getValue(mode1, pointer+1);
-        int b = getValue(mode2, pointer+2);
-        program.set(getValue(IMEDIATE_MODE, pointer+3), a * b);
+        int a = getValue(mode1, pointer + 1);
+        int b = getValue(mode2, pointer + 2);
+        program.set(getValue(IMEDIATE_MODE, pointer + 3), a * b);
         pointer += MUL_SIZE;
     }
 
