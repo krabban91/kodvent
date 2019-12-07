@@ -34,7 +34,6 @@ public class IntCodeComputer {
     private final Deque<Integer> inputs;
     private final Deque<Integer> outputs;
     private boolean verbose = false;
-    private Integer output;
     private int pointer;
 
     public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs, Deque<Integer> outputs) {
@@ -166,12 +165,11 @@ public class IntCodeComputer {
     }
 
     public Integer lastOutput() {
-        return output;
+        return this.outputs.peekLast();
     }
 
     private void output(int mode1) {
         int a = getValue(mode1, pointer + 1);
-        this.output = a;
         this.outputs.addLast(a);
         if(verbose){
             System.out.println("output: " + a);

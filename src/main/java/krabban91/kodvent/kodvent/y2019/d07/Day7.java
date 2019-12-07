@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 @Component
 public class Day7 {
+    public static final int TRIES = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
     List<Integer> in;
 
     public Day7() {
@@ -37,52 +38,45 @@ public class Day7 {
 
     public long getPart1() {
         List<Integer> phases = Arrays.asList(0, 1, 2, 3, 4);
-        int tries = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
-        return IntStream.range(0, tries)
+        return IntStream.range(0, TRIES)
                 .map(tests -> {
-                    Set<Integer> usedPhases = new HashSet<>();
                     Collections.shuffle(phases);
-                    int previousOutput = 0;
+                    List<IntCodeComputer> amplifiers = setUpAmplifiers(phases);
+                    amplifiers.get(0).addInput(0);
                     for (int i = 0; i < 5; i++) {
-                        List<Integer> collect = phases.stream().filter(e -> !usedPhases.contains(e)).collect(Collectors.toList());
-                        int phase = collect.get(0);
-                        usedPhases.add(phase);
-                        IntCodeComputer a = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(phase, previousOutput)));
+                        IntCodeComputer a = amplifiers.get(i);
                         a.run();
-                        previousOutput = a.lastOutput();
                     }
-                    return previousOutput;
-
+                    return amplifiers.get(4).lastOutput();
                 })
                 .max()
                 .orElse(-1);
     }
 
     public long getPart2() {
-        List<Integer> phases = Arrays.asList(9, 8, 7, 6, 5);
-        int tries = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
-        return IntStream.range(0, tries)
+        List<Integer> phases = Arrays.asList(5,6,7,8,9);
+        return IntStream.range(0, TRIES)
                 .map(tests -> {
                     Collections.shuffle(phases);
-                    List<IntCodeComputer> computers = setUpAmplifiers(phases);
-                    computers.get(0).addInput(0);
+                    List<IntCodeComputer> amplifiers = setUpAmplifiers(phases);
+                    amplifiers.get(0).addInput(0);
                     for (int i = 0; i < 4; i++) {
-                        IntCodeComputer a = computers.get(i);
+                        IntCodeComputer a = amplifiers.get(i);
                         a.runUntilOutputSize(2);
                     }
-                    IntCodeComputer amp = computers.get(4);
+                    IntCodeComputer amp = amplifiers.get(4);
                     amp.runUntilOutputSize(1);
                     boolean halted = false;
                     while (!halted) {
                         for (int i = 0; i < 5; i++) {
-                            amp = computers.get(i);
+                            amp = amplifiers.get(i);
                             amp.runUntilOutputSize(1);
                             if (amp.hasHalted()) {
                                 halted = true;
                             }
                         }
                     }
-                    return computers.get(4).lastOutput();
+                    return amplifiers.get(4).lastOutput();
                 })
                 .max()
                 .orElse(-1);
