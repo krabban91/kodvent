@@ -32,7 +32,7 @@ public class IntCodeComputer {
     private static final int EQUALS_SIZE = 4;
     private final List<Integer> program;
     private final Deque<Integer> inputs;
-    private int output;
+    private Integer output;
     private int pointer;
 
     public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
@@ -57,6 +57,9 @@ public class IntCodeComputer {
         }
     }
 
+    public void addInput(int input){
+        this.inputs.addLast(input);
+    }
     public int getAddress(int i) {
         return program.get(i);
     }
@@ -148,7 +151,7 @@ public class IntCodeComputer {
         }
     }
 
-    public int lastOutput() {
+    public Integer lastOutput() {
         return output;
     }
 
