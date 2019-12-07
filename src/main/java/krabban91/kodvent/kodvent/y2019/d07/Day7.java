@@ -2,17 +2,21 @@ package krabban91.kodvent.kodvent.y2019.d07;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @Component
@@ -32,90 +36,87 @@ public class Day7 {
     }
 
     public long getPart1() {
-        return -1;
-        /*
         List<Integer> phases = Arrays.asList(0, 1, 2, 3, 4);
-        int largestOutput = 0;
+        int tries = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
+        return IntStream.range(0, tries)
+                .map(tests -> {
+                    Set<Integer> usedPhases = new HashSet<>();
+                    Collections.shuffle(phases);
+                    int previousOutput = 0;
+                    for (int i = 0; i < 5; i++) {
+                        List<Integer> collect = phases.stream().filter(e -> !usedPhases.contains(e)).collect(Collectors.toList());
+                        int phase = collect.get(0);
+                        usedPhases.add(phase);
+                        IntCodeComputer a = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(phase, previousOutput)));
+                        a.run();
+                        previousOutput = a.lastOutput();
+                    }
+                    return previousOutput;
 
-        for (int tests = 0; tests < 10000; tests++) {
-            Set<Integer> usedPhases = new HashSet<>();
-            Collections.shuffle(phases);
-            int previousOutput = 0;
-            for (int i = 0; i < 5; i++) {
-                List<Integer> collect = phases.stream().filter(e -> !usedPhases.contains(e)).collect(Collectors.toList());
-                int phase = collect.get(0);
-                usedPhases.add(phase);
-                IntCodeComputer a = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(phase, previousOutput)));
-                a.run();
-                previousOutput = a.lastOutput();
-            }
-            largestOutput = Math.max(previousOutput, largestOutput);
-            System.out.println(largestOutput);
-        }
-
-
-        return largestOutput;
-            */
+                })
+                .max()
+                .orElse(-1);
     }
 
     public long getPart2() {
         List<Integer> phases = Arrays.asList(9, 8, 7, 6, 5);
-        int largestOutput = 0;
-
-        for (int tests = 0; tests < 10000; tests++) {
-            Set<Integer> usedPhases = new HashSet<>();
-            Collections.shuffle(phases);
-            int previousOutput = 0;
-            List<IntCodeComputer> computers = new ArrayList<>();
-            LinkedList[] inputs = new LinkedList[5];
-            LinkedList[] outputs = new LinkedList[5];
-            for(int i=0; i< 5; i++){
-                LinkedList<Integer> objects = new LinkedList<>();
-                inputs[i] = objects;
-                outputs[(i+5-1)%5] = objects;
-            }
-            for (int i = 0; i < 5; i++) {
-                List<Integer> collect = phases.stream().filter(e -> !usedPhases.contains(e)).collect(Collectors.toList());
-                int phase = collect.get(0);
-                usedPhases.add(phase);
-                LinkedList input = inputs[i];
-                input.add(phase);
-                IntCodeComputer a = new IntCodeComputer(in, input, outputs[i]);
-                computers.add(a);
-
-            }
-            computers.get(0).addInput(0);
-            for (int i = 0; i < 4; i++) {
-                IntCodeComputer a = computers.get(i);
-                a.runUntilOutputSize(2);
-            }
-            IntCodeComputer a = computers.get(4);
-            a.runUntilOutputSize(1);
-            boolean halted = false;
-            while (!halted) {
-                for (int i = 0; i < 5; i++) {
-                    a = computers.get(i);
-                    a.runUntilOutputSize(1);
-                    Integer previousOutput1 = a.lastOutput();
-                    if (a.hasHalted()) {
-                        halted = true;
+        int tries = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
+        return IntStream.range(0, tries)
+                .map(tests -> {
+                    Collections.shuffle(phases);
+                    List<IntCodeComputer> computers = setUpAmplifiers(phases);
+                    computers.get(0).addInput(0);
+                    for (int i = 0; i < 4; i++) {
+                        IntCodeComputer a = computers.get(i);
+                        a.runUntilOutputSize(2);
                     }
-                    previousOutput = previousOutput1;
-                        //computers.get((i + 1) % 5).addInput(previousOutput);
+                    IntCodeComputer amp = computers.get(4);
+                    amp.runUntilOutputSize(1);
+                    boolean halted = false;
+                    while (!halted) {
+                        for (int i = 0; i < 5; i++) {
+                            amp = computers.get(i);
+                            amp.runUntilOutputSize(1);
+                            if (amp.hasHalted()) {
+                                halted = true;
+                            }
+                        }
+                    }
+                    return computers.get(4).lastOutput();
+                })
+                .max()
+                .orElse(-1);
+    }
 
-                }
-            }
-
-            largestOutput = Math.max(previousOutput, largestOutput);
-            System.out.println(largestOutput);
+    @NotNull
+    public List<IntCodeComputer> setUpAmplifiers(List<Integer> phases) {
+        List<IntCodeComputer> computers = new ArrayList<>();
+        List<Map<Integer, Deque<Integer>>> inputOutput = buildInputAndOutputQueues();
+        for (int i = 0; i < 5; i++) {
+            int phase = phases.get(i);
+            Deque<Integer> input = inputOutput.get(0).get(i);
+            IntCodeComputer amp = new IntCodeComputer(in, input, inputOutput.get(1).get(i));
+            amp.addInput(phase);
+            computers.add(amp);
         }
+        return computers;
+    }
 
-
-        return largestOutput;
+    @NotNull
+    public List<Map<Integer, Deque<Integer>>> buildInputAndOutputQueues() {
+        Map<Integer, Deque<Integer>> inputs = new HashMap<>();
+        Map<Integer, Deque<Integer>> outputs = new HashMap<>();
+        for (int i = 0; i < 5; i++) {
+            LinkedList<Integer> objects = new LinkedList<>();
+            inputs.put(i, objects);
+            outputs.put((i + 5 - 1) % 5, objects);
+        }
+        return Arrays.asList(inputs, outputs);
     }
 
     public void readInput(String inputPath) {
-
-        in = Stream.of(Input.getSingleLine(inputPath).split(",")).map(Integer::parseInt).collect(Collectors.toList());
+        in = Stream.of(Input.getSingleLine(inputPath).split(","))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 }

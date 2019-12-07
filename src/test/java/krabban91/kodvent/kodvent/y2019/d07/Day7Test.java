@@ -17,11 +17,11 @@ public class Day7Test {
 
     @Test
     public void getPart1() {
-        assertThat(day7.getPart1()).isEqualTo(-1);
+        assertThat(day7.getPart1()).isEqualTo(359142L);
     }
 
     @Test
     public void getPart2() {
-        assertThat(day7.getPart2()).isEqualTo(-1);
+        assertThat(day7.getPart2()).isEqualTo(4374895L);
     }
 }
