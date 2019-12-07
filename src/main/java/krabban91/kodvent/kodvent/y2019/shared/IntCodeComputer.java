@@ -32,17 +32,22 @@ public class IntCodeComputer {
     private static final int EQUALS_SIZE = 4;
     private final List<Integer> program;
     private final Deque<Integer> inputs;
+    private final Deque<Integer> outputs;
     private Integer output;
     private int pointer;
 
-    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs, Deque<Integer> outputs) {
         this.program = new ArrayList<>(program);
         this.inputs = inputs;
+        this.outputs = outputs;
+    }
+    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+        this(program, inputs, new LinkedBlockingDeque<>());
     }
 
 
     public IntCodeComputer(@NotNull List<Integer> program, int noun, int verb) {
-        this(program, new LinkedBlockingDeque<>());
+        this(program, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         this.setNoun(noun);
         this.setVerb(verb);
     }
@@ -53,6 +58,12 @@ public class IntCodeComputer {
 
     public void run() {
         while (!hasHalted()) {
+            step();
+        }
+    }
+
+    public void runUntilOutputSize(int i) {
+        while (!hasHalted() && this.outputs.size()<i) {
             step();
         }
     }
@@ -158,11 +169,14 @@ public class IntCodeComputer {
     private void output(int mode1) {
         int a = getValue(mode1, pointer+1);
         this.output = a;
+        this.outputs.addLast(a);
         System.out.println("output: " + a);
         pointer += OUTPUT_SIZE;
     }
 
     private void input() {
+        System.out.print("input: ");
+
         int in;
         if (inputs.isEmpty()) {
             Scanner scan = new Scanner(System.in);
@@ -170,7 +184,7 @@ public class IntCodeComputer {
         } else {
             in = inputs.pop();
         }
-        System.out.println("input: " + in);
+        System.out.println(in);
         program.set(getValue(IMEDIATE_MODE, pointer+1), in);
         pointer += INPUT_SIZE;
     }
