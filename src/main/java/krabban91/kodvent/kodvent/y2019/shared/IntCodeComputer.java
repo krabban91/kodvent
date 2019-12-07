@@ -171,14 +171,14 @@ public class IntCodeComputer {
     private void output(int mode1) {
         int a = getValue(mode1, pointer + 1);
         this.outputs.addLast(a);
-        if(verbose){
+        if (verbose) {
             System.out.println("output: " + a);
         }
         pointer += OUTPUT_SIZE;
     }
 
     private void input() {
-        if(verbose){
+        if (verbose) {
             System.out.print("input: ");
         }
 
@@ -189,7 +189,7 @@ public class IntCodeComputer {
         } else {
             in = inputs.pop();
         }
-        if(verbose){
+        if (verbose) {
             System.out.println(in);
         }
         program.set(getValue(IMEDIATE_MODE, pointer + 1), in);

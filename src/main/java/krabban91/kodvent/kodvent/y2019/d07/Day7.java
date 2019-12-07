@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d07;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,11 +9,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -54,7 +51,7 @@ public class Day7 {
     }
 
     public long getPart2() {
-        List<Integer> phases = Arrays.asList(5,6,7,8,9);
+        List<Integer> phases = Arrays.asList(5, 6, 7, 8, 9);
         return IntStream.range(0, TRIES)
                 .map(tests -> {
                     Collections.shuffle(phases);
@@ -82,8 +79,13 @@ public class Day7 {
                 .orElse(-1);
     }
 
-    @NotNull
-    public List<IntCodeComputer> setUpAmplifiers(List<Integer> phases) {
+    public void readInput(String inputPath) {
+        in = Stream.of(Input.getSingleLine(inputPath).split(","))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+    }
+
+    private List<IntCodeComputer> setUpAmplifiers(List<Integer> phases) {
         List<IntCodeComputer> computers = new ArrayList<>();
         List<Map<Integer, Deque<Integer>>> inputOutput = buildInputAndOutputQueues();
         for (int i = 0; i < 5; i++) {
@@ -96,8 +98,7 @@ public class Day7 {
         return computers;
     }
 
-    @NotNull
-    public List<Map<Integer, Deque<Integer>>> buildInputAndOutputQueues() {
+    private List<Map<Integer, Deque<Integer>>> buildInputAndOutputQueues() {
         Map<Integer, Deque<Integer>> inputs = new HashMap<>();
         Map<Integer, Deque<Integer>> outputs = new HashMap<>();
         for (int i = 0; i < 5; i++) {
@@ -106,11 +107,5 @@ public class Day7 {
             outputs.put((i + 5 - 1) % 5, objects);
         }
         return Arrays.asList(inputs, outputs);
-    }
-
-    public void readInput(String inputPath) {
-        in = Stream.of(Input.getSingleLine(inputPath).split(","))
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
     }
 }
