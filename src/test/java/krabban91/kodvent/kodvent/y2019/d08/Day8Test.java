@@ -19,9 +19,4 @@ public class Day8Test {
     public void getPart1() {
         assertThat(day8.getPart1()).isEqualTo(1572);
     }
-
-    @Test
-    public void getPart2() {
-        //assertThat(day8.getPart2()).isEqualTo(-1);
-    }
 }
