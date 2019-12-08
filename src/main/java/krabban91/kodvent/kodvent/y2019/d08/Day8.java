@@ -22,7 +22,7 @@ public class Day8 {
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
+        String part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
@@ -40,7 +40,26 @@ public class Day8 {
 
     }
 
-    public Map<Integer, Map<Point, Integer>> getImage() {
+    public String getPart2() {
+        int width = 25;
+        int height = 6;
+        Map<Point, Integer> finalImage = new HashMap<>();
+        Map<Integer, Map<Point, Integer>> image = getImage();
+        for (int i = 0; i < in.size(); i++) {
+            Integer integer = image.get(layerNumber(width, height, i)).get(new Point(getX(width, height, i), getY(width, i)));
+            if (integer != 2) {
+                finalImage.putIfAbsent(new Point(getY(width, i), getX(width, height, i)), integer);
+            }
+        }
+        return LogUtils.mapToText(finalImage, i -> i == 0 ? " " : "*");
+    }
+
+    public void readInput(String inputPath) {
+        in = Input.getSingleLine(inputPath).chars().mapToObj(i -> (char) i + "")
+                .map(Integer::parseInt).collect(Collectors.toList());
+    }
+
+    private Map<Integer, Map<Point, Integer>> getImage() {
         int width = 25;
         int height = 6;
         Map<Integer, Map<Point, Integer>> image = new HashMap<>();
@@ -51,36 +70,15 @@ public class Day8 {
         return image;
     }
 
-    public int getY(int width, int i) {
+    private int getY(int width, int i) {
         return i % width;
     }
 
-    public int getX(int width, int height, int i) {
+    private int getX(int width, int height, int i) {
         return (getY(width * height, i)) / width;
     }
 
-    public long getPart2() {
-        int width = 25;
-        int height = 6;
-        Map<Point, Integer> finalImage = new HashMap<>();
-        Map<Integer, Map<Point, Integer>> image = getImage();
-        for (int i = 0; i < in.size(); i++) {
-            Integer integer = image.get(layerNumber(width, height, i)).get(new Point(getX(width, height, i), getY(width, i)));
-            if (integer != 2) {
-                finalImage.computeIfAbsent(new Point(getY(width, i), getX(width, height, i)), k -> integer);
-            }
-        }
-
-        System.out.println(LogUtils.mapToText(finalImage, i -> i == 0 ? " " : "*"));
-        return -1;
-    }
-
-    public int layerNumber(int width, int height, int i) {
+    private int layerNumber(int width, int height, int i) {
         return i / (width * height);
-    }
-
-    public void readInput(String inputPath) {
-        in = Input.getSingleLine(inputPath).chars().mapToObj(i -> (char) i + "")
-                .map(Integer::parseInt).collect(Collectors.toList());
     }
 }
