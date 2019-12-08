@@ -28,7 +28,7 @@ public class Day8 {
     }
 
     public long getPart1() {
-        Map<Integer, Map<Point, Integer>> image = getImage();
+        Map<Integer, Map<Point, Integer>> image = getImage(25, 6);
         return image.values()
                 .stream()
                 .min(Comparator.comparingLong(m -> m.values()
@@ -37,14 +37,14 @@ public class Day8 {
                         .count()))
                 .map(m -> m.values().stream().filter(i -> i == 1).count() * m.values().stream().filter(i -> i == 2).count())
                 .orElse(-1L);
-
     }
 
     public String getPart2() {
         int width = 25;
         int height = 6;
         Map<Point, Integer> finalImage = new HashMap<>();
-        Map<Integer, Map<Point, Integer>> image = getImage();
+
+        Map<Integer, Map<Point, Integer>> image = getImage(25, 6);
         for (int i = 0; i < in.size(); i++) {
             Integer integer = image.get(layerNumber(width, height, i)).get(new Point(getX(width, height, i), getY(width, i)));
             if (integer != 2) {
@@ -59,12 +59,10 @@ public class Day8 {
                 .map(Integer::parseInt).collect(Collectors.toList());
     }
 
-    private Map<Integer, Map<Point, Integer>> getImage() {
-        int width = 25;
-        int height = 6;
+    private Map<Integer, Map<Point, Integer>> getImage(int width, int height) {
         Map<Integer, Map<Point, Integer>> image = new HashMap<>();
         for (int i = 0; i < in.size(); i++) {
-            image.computeIfAbsent(layerNumber(width, height, i), k -> new HashMap<>());
+            image.putIfAbsent(layerNumber(width, height, i), new HashMap<>());
             image.get(layerNumber(width, height, i)).put(new Point(getX(width, height, i), getY(width, i)), in.get(i));
         }
         return image;
