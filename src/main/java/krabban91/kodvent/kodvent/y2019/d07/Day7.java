@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d07;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day7 {
     public static final int TRIES = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
     List<Integer> in;
