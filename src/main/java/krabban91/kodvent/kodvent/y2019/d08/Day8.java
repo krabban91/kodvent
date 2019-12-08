@@ -1,7 +1,7 @@
 package krabban91.kodvent.kodvent.y2019.d08;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.jetbrains.annotations.NotNull;
+import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,14 +28,15 @@ public class Day8 {
     }
 
     public long getPart1() {
-
         Map<Integer, Map<Point, Integer>> image = getImage();
-        Optional<Map<Point, Integer>> max = image.values().stream()
-                .min(Comparator.comparingLong(m -> m.values().stream().filter(i -> i == 0).count()));
-        return max
-                .map(m-> m.values().stream().filter(i-> i ==1).count() * m.values().stream().filter(i-> i ==2).count())
+        return image.values()
+                .stream()
+                .min(Comparator.comparingLong(m -> m.values()
+                        .stream()
+                        .filter(i -> i == 0)
+                        .count()))
+                .map(m -> m.values().stream().filter(i -> i == 1).count() * m.values().stream().filter(i -> i == 2).count())
                 .orElse(-1L);
-        //2378 too high
 
     }
 
@@ -45,10 +45,18 @@ public class Day8 {
         int height = 6;
         Map<Integer, Map<Point, Integer>> image = new HashMap<>();
         for (int i = 0; i < in.size(); i++) {
-            image.computeIfAbsent(i / (width * height), k -> new HashMap<>());
-            image.get(i / (width * height)).put(new Point((i%(width*height) )/ width, i % width), in.get(i));
+            image.computeIfAbsent(layerNumber(width, height, i), k -> new HashMap<>());
+            image.get(layerNumber(width, height, i)).put(new Point(getX(width, height, i), getY(width, i)), in.get(i));
         }
         return image;
+    }
+
+    public int getY(int width, int i) {
+        return i % width;
+    }
+
+    public int getX(int width, int height, int i) {
+        return (getY(width * height, i)) / width;
     }
 
     public long getPart2() {
@@ -57,26 +65,22 @@ public class Day8 {
         Map<Point, Integer> finalImage = new HashMap<>();
         Map<Integer, Map<Point, Integer>> image = getImage();
         for (int i = 0; i < in.size(); i++) {
+            Integer integer = image.get(layerNumber(width, height, i)).get(new Point(getX(width, height, i), getY(width, i)));
+            if (integer != 2) {
+                finalImage.computeIfAbsent(new Point(getY(width, i), getX(width, height, i)), k -> integer);
+            }
+        }
 
-            Integer integer = image.get(i / (width * height)).get(new Point((i % (width * height)) / width, i % width));
-            if(integer != 2){
-                finalImage.computeIfAbsent(new Point((i%(width*height) )/ width, i % width), k-> integer);
-            }
-        }
-        StringBuilder b = new StringBuilder();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                Integer obj = finalImage.get(new Point(y, x));
-                b.append(obj == 0 ? " ":"*");
-            }
-            b.append("\n");
-        }
-        System.out.println(b);
+        System.out.println(LogUtils.mapToText(finalImage, i -> i == 0 ? " " : "*"));
         return -1;
     }
 
+    public int layerNumber(int width, int height, int i) {
+        return i / (width * height);
+    }
+
     public void readInput(String inputPath) {
-        in = Input.getSingleLine(inputPath).chars().mapToObj(i -> (char)i + "")
+        in = Input.getSingleLine(inputPath).chars().mapToObj(i -> (char) i + "")
                 .map(Integer::parseInt).collect(Collectors.toList());
     }
 }
