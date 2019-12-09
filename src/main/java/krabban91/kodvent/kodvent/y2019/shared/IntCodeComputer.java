@@ -1,5 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.shared;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ public class IntCodeComputer {
     public static final int EQUALS_CODE = 8;
     public static final int RELATIVE_CHANGE_CODE = 9;
     public static final int RELATIVE_CHANGE_SIZE = 2;
-    public static final int MEMORY_MODE = 0;
+    public static final int POSITION_MODE = 0;
     public static final int IMEDIATE_MODE = 1;
     public static final int RELATIVE_MODE = 2;
     private static final int IF_FALSE_SIZE = 3;
@@ -42,7 +43,7 @@ public class IntCodeComputer {
     private int relativeBase = 0;
 
     public IntCodeComputer(List<Long> program, Deque<Long> inputs, Deque<Long> outputs) {
-        this.program = program;
+        this.program = new ArrayList<>(program);
         this.inputs = inputs;
         this.outputs = outputs;
     }
@@ -78,16 +79,24 @@ public class IntCodeComputer {
         this.inputs.addLast(input);
     }
 
-    public long getAddress(int i) {
-        return program.get(i);
+    public long getAddress(int index) {
+        if (index >= program.size()) {
+            return extraMemory.computeIfAbsent(index, k -> 0L);
+        } else {
+            return program.get(index);
+        }
     }
 
     public long getOutput() {
         return getAddress(0);
     }
 
-    public void setAddress(int i, int value) {
-        program.set(i, (long) value);
+    public void setAddress(int index, long value) {
+        if (index >= program.size()) {
+            extraMemory.put(index, value);
+        } else {
+            program.set(index, value);
+        }
     }
 
     public void setNoun(int value) {
@@ -137,7 +146,7 @@ public class IntCodeComputer {
             case HALT_CODE:
                 break;
             default:
-                throw new RuntimeException("Invalid Opcode: "+opCode);
+                throw new RuntimeException("Invalid Opcode: " + opCode);
         }
     }
 
@@ -150,14 +159,14 @@ public class IntCodeComputer {
     private void lessThan(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        setValue(mode3, pointer + 3, a < b ? 1L : 0L);
+        this.setValue(mode3, pointer + 3,  a < b ? 1L : 0L);
         pointer += LESS_THAN_SIZE;
     }
 
     private void isEqual(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        setValue(mode3, pointer + 3, a == b ? 1L : 0L);
+        this.setValue(mode3, pointer + 3, a == b ? 1L : 0L);
         pointer += EQUALS_SIZE;
     }
 
@@ -209,48 +218,45 @@ public class IntCodeComputer {
         if (verbose) {
             System.out.println(in);
         }
-        setValue(mode, pointer + 1, in);
+        this.setValue(mode, pointer + 1, in);
         pointer += INPUT_SIZE;
     }
 
     private void add(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        setValue(mode3, pointer + 3, a + b);
+        this.setValue(mode3, pointer + 3, a + b);
         pointer += ADD_SIZE;
     }
 
     private void multiply(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        setValue(mode3, pointer + 3, a * b);
+        this.setValue(mode3, pointer + 3, a * b);
         pointer += MUL_SIZE;
     }
 
-    private void setValue(int mode3, int position, long value) {
-        int index = (int) getValue(mode3, position);
-        if (index >= program.size()) {
-            extraMemory.put(index, value);
+    private void setValue(int mode, int address, long value) {
+        if (mode == POSITION_MODE) {
+            setAddress((int)getAddress(address), value);
+        } else if (mode == RELATIVE_MODE) {
+            setAddress((relativeBase + (int)getAddress(address)), value);
         } else {
-            program.set(index, value);
+            throw new RuntimeException("Invalid Mode in set: " + mode);
         }
     }
 
     private long getValue(int mode, int address) {
         int index;
-        if (mode == MEMORY_MODE) {
-            index = program.get(address).intValue();
+        if (mode == POSITION_MODE) {
+            index = (int) getAddress(address);
         } else if (mode == IMEDIATE_MODE) {
             index = address;
         } else if (mode == RELATIVE_MODE) {
-            index = relativeBase + program.get(address).intValue();
+            index = (int) (relativeBase + getAddress(address));
         } else {
-            throw new RuntimeException("Invalid Mode: "+mode);
+            throw new RuntimeException("Invalid Mode in get: " + mode);
         }
-        if (index >= program.size()) {
-            return extraMemory.computeIfAbsent(index, k -> 0L);
-        } else {
-            return program.get(index);
-        }
+        return getAddress(index);
     }
 }

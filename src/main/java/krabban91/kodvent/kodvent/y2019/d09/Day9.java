@@ -33,7 +33,9 @@ public class Day9 {
     }
 
     public long getPart2() {
-        return -1;
+        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(2L)));
+        intCodeComputer.run();
+        return intCodeComputer.lastOutput();
     }
 
     public void readInput(String inputPath) {
