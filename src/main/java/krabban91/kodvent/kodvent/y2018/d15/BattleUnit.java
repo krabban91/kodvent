@@ -3,8 +3,9 @@ package krabban91.kodvent.kodvent.y2018.d15;
 import krabban91.kodvent.kodvent.utilities.Distances;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class BattleUnit {
@@ -24,82 +25,6 @@ public class BattleUnit {
         this.battle = battle;
     }
 
-
-    private void move() {
-        if(battle.battleIsOver()){
-            return;
-        }
-        if (battle.targetsNextToPoint(!goblin, this.getLocation()).count() > 0) {
-            return;
-        }
-        if(battle.targets(!goblin).count() == 0){
-            battle.endBattle();
-            return;
-        }
-        Stream<BattleUnit> targets = battle.targets(!goblin);
-        Stream<Point> inRange = targets
-                .map(battle::avaliableStrikingLocations)
-                .flatMap(List::stream);
-        Stream<Point> reachable = inRange
-                .filter(point -> battle.canReach(this, point));
-        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
-                .filter(Objects::nonNull)
-                .sorted(DistanceToPoint::compare);
-        Optional<DistanceToPoint> chosen = nearest.findFirst();
-        if (chosen.isPresent()) {
-            Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
-                    .stream()
-                    .map(e -> battle.distanceBetween(chosen.get().destination(), e))
-                    .filter(Objects::nonNull)
-                    .sorted(DistanceToPoint::compare)
-                    .findFirst();
-            if (moveLocation.isPresent()) {
-                if(debug){
-                    reportMovement(isGoblin(), this.location, moveLocation.get().destination());
-                }
-                this.location = moveLocation.get().destination();
-                battle.regenerateNetwork();
-            } else {
-                if(debug){
-                    System.out.println("THIS SHOULDN'T HAPPEN!");
-                    reportHalting(this);
-                }
-
-            }
-        } else {
-            if(debug){
-                reportHalting(this);
-            }
-        }
-    }
-
-
-    private void attack() {
-        Stream<BattleUnit> targets = battle.targetsNextToPoint(!goblin, this.getLocation());
-        Optional<BattleUnit> first = targets
-                .sorted(this::attackCompare)
-                .findFirst();
-        if (first.isPresent()) {
-            this.dealDamage(first.get());
-        }
-
-    }
-
-    public int attackCompare(BattleUnit l, BattleUnit r) {
-        int compare = Integer.compare(l.getHitpoints(), r.getHitpoints());
-        if (compare == 0) {
-            return battle.order(l, r);
-        }
-        return compare;
-    }
-
-    private void dealDamage(BattleUnit unit) {
-        unit.takeDamage(this.attackPower);
-        if(debug){
-            reportBeating(this, unit, attackPower);
-        }
-    }
-
     private static void reportHalting(BattleUnit unit) {
         StringBuilder builder = new StringBuilder();
 
@@ -116,10 +41,6 @@ public class BattleUnit {
         builder.append(" halted.");
 
         System.out.println(builder.toString());
-    }
-
-    public boolean isNextTo(Point point){
-        return Distances.manhattan(this.location,point) == 1;
     }
 
     private static void reportMovement(boolean isGoblin, Point oldLocation, Point newLocation) {
@@ -141,6 +62,86 @@ public class BattleUnit {
         builder.append(newLocation.y);
         builder.append("]");
         System.out.println(builder.toString());
+    }
+
+    public static void movaAndAttack(BattleUnit battleUnit) {
+        if (battleUnit.isAlive()) {
+            battleUnit.move();
+            battleUnit.attack();
+        }
+    }
+
+    private void move() {
+        if (battle.battleIsOver()) {
+            return;
+        }
+        if (battle.targetsNextToPoint(!goblin, this.getLocation()).count() > 0) {
+            return;
+        }
+        if (battle.targets(!goblin).count() == 0) {
+            battle.endBattle();
+            return;
+        }
+        Stream<BattleUnit> targets = battle.targets(!goblin);
+        Stream<Point> inRange = targets
+                .map(battle::avaliableStrikingLocations)
+                .flatMap(List::stream);
+        Stream<Point> reachable = inRange
+                .filter(point -> battle.canReach(this, point));
+        Stream<DistanceToPoint> nearest = reachable.map(e -> battle.distanceBetween(this.location, e))
+                .filter(Objects::nonNull)
+                .sorted(DistanceToPoint::compare);
+        Optional<DistanceToPoint> chosen = nearest.findFirst();
+        if (chosen.isPresent()) {
+            Optional<DistanceToPoint> moveLocation = battle.avaliableStrikingLocations(this)
+                    .stream()
+                    .map(e -> battle.distanceBetween(chosen.get().destination(), e))
+                    .filter(Objects::nonNull)
+                    .sorted(DistanceToPoint::compare)
+                    .findFirst();
+            if (moveLocation.isPresent()) {
+                if (debug) {
+                    reportMovement(isGoblin(), this.location, moveLocation.get().destination());
+                }
+                this.location = moveLocation.get().destination();
+                battle.regenerateNetwork();
+            } else {
+                if (debug) {
+                    System.out.println("THIS SHOULDN'T HAPPEN!");
+                    reportHalting(this);
+                }
+
+            }
+        } else {
+            if (debug) {
+                reportHalting(this);
+            }
+        }
+    }
+
+    private void attack() {
+        Stream<BattleUnit> targets = battle.targetsNextToPoint(!goblin, this.getLocation());
+        Optional<BattleUnit> first = targets.min(this::attackCompare);
+        first.ifPresent(this::dealDamage);
+    }
+
+    public int attackCompare(BattleUnit l, BattleUnit r) {
+        int compare = Integer.compare(l.getHitpoints(), r.getHitpoints());
+        if (compare == 0) {
+            return battle.order(l, r);
+        }
+        return compare;
+    }
+
+    private void dealDamage(BattleUnit unit) {
+        unit.takeDamage(this.attackPower);
+        if (debug) {
+            reportBeating(this, unit, attackPower);
+        }
+    }
+
+    public boolean isNextTo(Point point) {
+        return Distances.manhattan(this.location, point) == 1;
     }
 
     private void reportBeating(BattleUnit battleUnit, BattleUnit unit, int damage) {
@@ -201,13 +202,6 @@ public class BattleUnit {
 
     public CaveBattle getBattle() {
         return battle;
-    }
-
-    public static void movaAndAttack(BattleUnit battleUnit) {
-        if (battleUnit.isAlive()) {
-            battleUnit.move();
-            battleUnit.attack();
-        }
     }
 
     @Override

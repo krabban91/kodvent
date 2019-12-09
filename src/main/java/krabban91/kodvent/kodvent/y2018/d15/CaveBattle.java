@@ -4,7 +4,7 @@ import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 
-import java.awt.Point;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -31,9 +31,8 @@ public class CaveBattle {
     private boolean debug;
 
     public CaveBattle(List<String> rows) {
-
         map = new Grid<>(rows.stream().map(this::getMapRow).collect(Collectors.toList()));
-        caveArea = map.indicesMatching(b->b);
+        caveArea = map.indicesMatching(b -> b);
         this.units = IntStream.range(0, rows.size())
                 .mapToObj(y -> IntStream.range(0, rows.get(y).length())
                         .filter(x -> rows.get(y).charAt(x) == 'G' || rows.get(y).charAt(x) == 'E')
@@ -165,7 +164,7 @@ public class CaveBattle {
 
     public DistanceToPoint distanceBetween(
             Point from, Point to) {
-        knownDistances.putIfAbsent(from,new HashMap<>());
+        knownDistances.putIfAbsent(from, new HashMap<>());
 
         Map<Point, Map<Point, DistanceToPoint>> fromMap = knownDistances.get(from);
         fromMap.putIfAbsent(to, new HashMap<>());
@@ -174,7 +173,7 @@ public class CaveBattle {
         PriorityQueue<DistanceToPoint> unChecked = newQueue(from, to);
         if (!checked.containsKey(to)) {
             Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
-            checked.put(to, graph.search(unChecked, (p,net)->this.addNext(p,net, checked, unChecked), network));
+            checked.put(to, graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), network));
         }
         return checked.get(to);
     }
@@ -187,7 +186,7 @@ public class CaveBattle {
                 .filter(d -> this.tileIsEmpty(d.destination()))
                 .filter(d -> !distanceToPoint.hasVisited(d.destination()))
                 .filter(d -> !checked.containsKey(d.current))
-                .filter(d -> unChecked.stream().noneMatch(p->p.current.equals(d.current)))
+                .filter(d -> unChecked.stream().noneMatch(p -> p.current.equals(d.current)))
                 .collect(Collectors.toSet());
 
         return collect;
@@ -247,7 +246,7 @@ public class CaveBattle {
     }
 
     private void visualizeMapCell(StringBuilder builder, int y, int x) {
-        if (map.get(x,y)) {
+        if (map.get(x, y)) {
             Optional<BattleUnit> any = units.stream().filter(u -> u.location.x == x && u.location.y == y).findAny();
             if (any.isPresent()) {
                 if (any.get().isGoblin()) {
