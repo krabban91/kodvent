@@ -1,11 +1,11 @@
 package krabban91.kodvent.kodvent.y2019.shared;
 
-import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.stream.LongStream;
 
 public class IntCodeComputer {
 
@@ -33,6 +33,8 @@ public class IntCodeComputer {
     private static final int LESS_THAN_SIZE = 4;
     private static final int EQUALS_SIZE = 4;
     private final List<Long> program;
+    private final Map<Integer, Long> extraMemory = new HashMap<>();
+
     private final Deque<Long> inputs;
     private final Deque<Long> outputs;
     private boolean verbose = true;
@@ -40,11 +42,7 @@ public class IntCodeComputer {
     private int relativeBase = 0;
 
     public IntCodeComputer(List<Long> program, Deque<Long> inputs, Deque<Long> outputs) {
-        this.program = new ArrayList<>();
-        LongStream.rangeClosed(0, 10000).forEachOrdered(this.program::add);
-        for (int i = 0; i < program.size(); i++) {
-            this.program.set(i, program.get(i));
-        }
+        this.program = program;
         this.inputs = inputs;
         this.outputs = outputs;
     }
@@ -138,6 +136,8 @@ public class IntCodeComputer {
                 break;
             case HALT_CODE:
                 break;
+            default:
+                throw new RuntimeException("Invalid Opcode: "+opCode);
         }
     }
 
@@ -150,14 +150,14 @@ public class IntCodeComputer {
     private void lessThan(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        program.set((int) getValue(mode3, pointer + 3), a < b ? 1L : 0L);
+        setValue(mode3, pointer + 3, a < b ? 1L : 0L);
         pointer += LESS_THAN_SIZE;
     }
 
     private void isEqual(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        program.set((int) getValue(mode3, pointer + 3), a == b ? 1L : 0L);
+        setValue(mode3, pointer + 3, a == b ? 1L : 0L);
         pointer += EQUALS_SIZE;
     }
 
@@ -209,34 +209,48 @@ public class IntCodeComputer {
         if (verbose) {
             System.out.println(in);
         }
-        program.set((int) getValue(mode, pointer + 1), in);
+        setValue(mode, pointer + 1, in);
         pointer += INPUT_SIZE;
     }
 
     private void add(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        program.set((int) getValue(mode3, pointer + 3), a + b);
+        setValue(mode3, pointer + 3, a + b);
         pointer += ADD_SIZE;
     }
 
     private void multiply(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        program.set((int) getValue(mode3, pointer + 3), a * b);
+        setValue(mode3, pointer + 3, a * b);
         pointer += MUL_SIZE;
     }
 
-    private long getValue(int mode, int address) {
-        int target;
-        if (mode == MEMORY_MODE) {
-            target = program.get(address).intValue();
-        } else if (mode == IMEDIATE_MODE) {
-            target = address;
+    private void setValue(int mode3, int position, long value) {
+        int index = (int) getValue(mode3, position);
+        if (index >= program.size()) {
+            extraMemory.put(index, value);
         } else {
-            target = relativeBase + program.get(address).intValue();
+            program.set(index, value);
         }
-        return program.get(target);
     }
 
+    private long getValue(int mode, int address) {
+        int index;
+        if (mode == MEMORY_MODE) {
+            index = program.get(address).intValue();
+        } else if (mode == IMEDIATE_MODE) {
+            index = address;
+        } else if (mode == RELATIVE_MODE) {
+            index = relativeBase + program.get(address).intValue();
+        } else {
+            throw new RuntimeException("Invalid Mode: "+mode);
+        }
+        if (index >= program.size()) {
+            return extraMemory.computeIfAbsent(index, k -> 0L);
+        } else {
+            return program.get(index);
+        }
+    }
 }
