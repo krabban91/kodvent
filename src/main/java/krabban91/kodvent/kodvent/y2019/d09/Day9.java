@@ -3,9 +3,7 @@ package krabban91.kodvent.kodvent.y2019.d09;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
