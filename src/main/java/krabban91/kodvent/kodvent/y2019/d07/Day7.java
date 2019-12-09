@@ -7,15 +7,14 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 @Component
@@ -54,12 +53,12 @@ public class Day7 {
 
     public long getPart2() {
         List<Integer> phases = Arrays.asList(5, 6, 7, 8, 9);
-        return IntStream.range(0, TRIES)
+        return LongStream.range(0, TRIES)
                 .map(tests -> {
                     Collections.shuffle(phases);
                     List<IntCodeComputer> amplifiers = setUpAmplifiers(phases);
                     amplifiers.get(0).addInput(0);
-                    IntStream.range(0,5).forEach(i->new Thread(amplifiers.get(i)).start());
+                    IntStream.range(0, 5).forEach(i -> new Thread(amplifiers.get(i)).start());
                     while (!amplifiers.get(4).hasHalted()) {
                         try {
                             TimeUnit.MICROSECONDS.sleep(1);
@@ -67,7 +66,7 @@ public class Day7 {
                             e.printStackTrace();
                         }
                     }
-                    return amplifiers.get(4).lastOutput().intValue();
+                    return amplifiers.get(4).lastOutput();
                 })
                 .max()
                 .orElse(-1);

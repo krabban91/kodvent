@@ -70,12 +70,6 @@ public class IntCodeComputer implements Runnable {
         }
     }
 
-    public void runUntilOutputSize(int i) {
-        while (!hasHalted() && this.outputs.size() < i) {
-            step();
-        }
-    }
-
     public void addInput(long input) {
         this.inputs.addLast(input);
     }
