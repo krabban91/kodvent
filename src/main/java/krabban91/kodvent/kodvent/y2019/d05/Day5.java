@@ -5,6 +5,7 @@ import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,7 +25,7 @@ public class Day5 {
     }
 
     public long getPart1() {
-        LinkedList<Long> input = new LinkedList<>();
+        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
         input.add(1L);
         IntCodeComputer intCodeComputer = new IntCodeComputer(in, input);
         intCodeComputer.run();
@@ -32,7 +33,7 @@ public class Day5 {
     }
 
     public long getPart2() {
-        LinkedList<Long> input = new LinkedList<>();
+        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
         input.add(5L);
         IntCodeComputer intCodeComputer = new IntCodeComputer(in, input);
         intCodeComputer.run();

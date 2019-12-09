@@ -5,10 +5,10 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
-public class IntCodeComputer {
+public class IntCodeComputer implements Runnable {
 
     private static final int ADD_CODE = 1;
     private static final int ADD_SIZE = 4;
@@ -36,19 +36,19 @@ public class IntCodeComputer {
     private final List<Long> program;
     private final Map<Integer, Long> extraMemory = new HashMap<>();
 
-    private final Deque<Long> inputs;
-    private final Deque<Long> outputs;
+    private final LinkedBlockingDeque<Long> inputs;
+    private final LinkedBlockingDeque<Long> outputs;
     private boolean verbose = false;
     private int pointer;
     private int relativeBase = 0;
 
-    public IntCodeComputer(List<Long> program, Deque<Long> inputs, Deque<Long> outputs) {
+    public IntCodeComputer(List<Long> program, LinkedBlockingDeque<Long> inputs, LinkedBlockingDeque<Long> outputs) {
         this.program = new ArrayList<>(program);
         this.inputs = inputs;
         this.outputs = outputs;
     }
 
-    public IntCodeComputer(List<Long> program, Deque<Long> inputs) {
+    public IntCodeComputer(List<Long> program, LinkedBlockingDeque<Long> inputs) {
         this(program, inputs, new LinkedBlockingDeque<>());
     }
 
@@ -63,6 +63,7 @@ public class IntCodeComputer {
         return this.program.get(pointer) == HALT_CODE;
     }
 
+    @Override
     public void run() {
         while (!hasHalted()) {
             step();
@@ -159,7 +160,7 @@ public class IntCodeComputer {
     private void lessThan(int mode1, int mode2, int mode3) {
         long a = getValue(mode1, pointer + 1);
         long b = getValue(mode2, pointer + 2);
-        this.setValue(mode3, pointer + 3,  a < b ? 1L : 0L);
+        this.setValue(mode3, pointer + 3, a < b ? 1L : 0L);
         pointer += LESS_THAN_SIZE;
     }
 
@@ -207,19 +208,22 @@ public class IntCodeComputer {
         if (verbose) {
             System.out.print("input: ");
         }
-
-        long in;
-        if (inputs.isEmpty()) {
-            Scanner scan = new Scanner(System.in);
-            in = scan.nextLong();
-        } else {
-            in = inputs.pop();
+        try {
+            Long in = inputs.pollFirst(10, TimeUnit.SECONDS);
+            if(in == null){
+                if (verbose) {
+                    System.out.println("<EMPTY>");
+                }
+                return;
+            }
+            if (verbose) {
+                System.out.println(in);
+            }
+            this.setValue(mode, pointer + 1, in);
+            pointer += INPUT_SIZE;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        if (verbose) {
-            System.out.println(in);
-        }
-        this.setValue(mode, pointer + 1, in);
-        pointer += INPUT_SIZE;
     }
 
     private void add(int mode1, int mode2, int mode3) {
@@ -238,9 +242,9 @@ public class IntCodeComputer {
 
     private void setValue(int mode, int address, long value) {
         if (mode == POSITION_MODE) {
-            setAddress((int)getAddress(address), value);
+            setAddress((int) getAddress(address), value);
         } else if (mode == RELATIVE_MODE) {
-            setAddress((relativeBase + (int)getAddress(address)), value);
+            setAddress((relativeBase + (int) getAddress(address)), value);
         } else {
             throw new RuntimeException("Invalid Mode in set: " + mode);
         }

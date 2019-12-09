@@ -4,8 +4,10 @@ import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,13 +27,13 @@ public class Day9 {
     }
 
     public long getPart1() {
-        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(1L)));
+        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedBlockingDeque<>(Collections.singletonList(1L)));
         intCodeComputer.run();
         return intCodeComputer.lastOutput();
     }
 
     public long getPart2() {
-        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(2L)));
+        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedBlockingDeque<>(Collections.singletonList(2L)));
         intCodeComputer.run();
         return intCodeComputer.lastOutput();
     }
