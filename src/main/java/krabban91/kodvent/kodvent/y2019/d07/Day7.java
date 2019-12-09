@@ -10,7 +10,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -58,13 +61,13 @@ public class Day7 {
                     Collections.shuffle(phases);
                     List<IntCodeComputer> amplifiers = setUpAmplifiers(phases);
                     amplifiers.get(0).addInput(0);
-                    IntStream.range(0, 5).forEach(i -> new Thread(amplifiers.get(i)).start());
-                    while (!amplifiers.get(4).hasHalted()) {
-                        try {
-                            TimeUnit.MICROSECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+                    IntStream.range(0, 5).forEach(i -> executor.execute(amplifiers.get(i)));
+                    executor.shutdown();
+                    try {
+                        executor.awaitTermination(1L, TimeUnit.DAYS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                     return amplifiers.get(4).lastOutput();
                 })
