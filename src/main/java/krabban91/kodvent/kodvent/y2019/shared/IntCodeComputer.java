@@ -10,26 +10,26 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class IntCodeComputer {
 
-    public static final int ADD_CODE = 1;
-    public static final int ADD_SIZE = 4;
-    public static final int MUL_CODE = 2;
-    public static final int MUL_SIZE = 4;
-    public static final int HALT_CODE = 99;
-    public static final int HALT_SIZE = 1;
-    public static final int OUTPUT_CODE = 4;
-    public static final int OUTPUT_SIZE = 2;
-    public static final int INPUT_CODE = 3;
-    public static final int INPUT_SIZE = 2;
-    public static final int IFTRUE_CODE = 5;
-    public static final int IF_TRUE_SIZE = 3;
-    public static final int IF_FALSE_CODE = 6;
-    public static final int LESS_THAN_CODE = 7;
-    public static final int EQUALS_CODE = 8;
-    public static final int RELATIVE_CHANGE_CODE = 9;
-    public static final int RELATIVE_CHANGE_SIZE = 2;
-    public static final int POSITION_MODE = 0;
-    public static final int IMEDIATE_MODE = 1;
-    public static final int RELATIVE_MODE = 2;
+    private static final int ADD_CODE = 1;
+    private static final int ADD_SIZE = 4;
+    private static final int MUL_CODE = 2;
+    private static final int MUL_SIZE = 4;
+    private static final int HALT_CODE = 99;
+    private static final int HALT_SIZE = 1;
+    private static final int OUTPUT_CODE = 4;
+    private static final int OUTPUT_SIZE = 2;
+    private static final int INPUT_CODE = 3;
+    private static final int INPUT_SIZE = 2;
+    private static final int IFTRUE_CODE = 5;
+    private static final int IF_TRUE_SIZE = 3;
+    private static final int IF_FALSE_CODE = 6;
+    private static final int LESS_THAN_CODE = 7;
+    private static final int EQUALS_CODE = 8;
+    private static final int RELATIVE_CHANGE_CODE = 9;
+    private static final int RELATIVE_CHANGE_SIZE = 2;
+    private static final int POSITION_MODE = 0;
+    private static final int IMEDIATE_MODE = 1;
+    private static final int RELATIVE_MODE = 2;
     private static final int IF_FALSE_SIZE = 3;
     private static final int LESS_THAN_SIZE = 4;
     private static final int EQUALS_SIZE = 4;
@@ -38,7 +38,7 @@ public class IntCodeComputer {
 
     private final Deque<Long> inputs;
     private final Deque<Long> outputs;
-    private boolean verbose = true;
+    private boolean verbose = false;
     private int pointer;
     private int relativeBase = 0;
 

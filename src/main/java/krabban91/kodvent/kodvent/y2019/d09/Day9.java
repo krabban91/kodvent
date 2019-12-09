@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d09;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day9 {
     List<Long> in;
 

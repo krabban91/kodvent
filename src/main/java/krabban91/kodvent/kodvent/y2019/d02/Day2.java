@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d02;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
