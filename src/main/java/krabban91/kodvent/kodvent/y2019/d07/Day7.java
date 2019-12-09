@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class Day7 {
     public static final int TRIES = 2 * 3 * 4 * 5 * 10; // markedly higher than 5!.
-    List<Integer> in;
+    List<Long> in;
 
     public Day7() {
         System.out.println("::: Starting Day 7 :::");
@@ -42,7 +42,7 @@ public class Day7 {
                         IntCodeComputer a = amplifiers.get(i);
                         a.run();
                     }
-                    return amplifiers.get(4).lastOutput();
+                    return amplifiers.get(4).lastOutput().intValue();
                 })
                 .max()
                 .orElse(-1);
@@ -71,7 +71,7 @@ public class Day7 {
                             }
                         }
                     }
-                    return amplifiers.get(4).lastOutput();
+                    return amplifiers.get(4).lastOutput().intValue();
                 })
                 .max()
                 .orElse(-1);
@@ -79,16 +79,16 @@ public class Day7 {
 
     public void readInput(String inputPath) {
         in = Stream.of(Input.getSingleLine(inputPath).split(","))
-                .map(Integer::parseInt)
+                .map(Long::parseLong)
                 .collect(Collectors.toList());
     }
 
     private List<IntCodeComputer> setUpAmplifiers(List<Integer> phases) {
         List<IntCodeComputer> computers = new ArrayList<>();
-        List<Map<Integer, Deque<Integer>>> inputOutput = buildInputAndOutputQueues();
+        List<Map<Integer, Deque<Long>>> inputOutput = buildInputAndOutputQueues();
         for (int i = 0; i < 5; i++) {
             int phase = phases.get(i);
-            Deque<Integer> input = inputOutput.get(0).get(i);
+            Deque<Long> input = inputOutput.get(0).get(i);
             IntCodeComputer amp = new IntCodeComputer(in, input, inputOutput.get(1).get(i));
             amp.addInput(phase);
             computers.add(amp);
@@ -96,11 +96,11 @@ public class Day7 {
         return computers;
     }
 
-    private List<Map<Integer, Deque<Integer>>> buildInputAndOutputQueues() {
-        Map<Integer, Deque<Integer>> inputs = new HashMap<>();
-        Map<Integer, Deque<Integer>> outputs = new HashMap<>();
+    private List<Map<Integer, Deque<Long>>> buildInputAndOutputQueues() {
+        Map<Integer, Deque<Long>> inputs = new HashMap<>();
+        Map<Integer, Deque<Long>> outputs = new HashMap<>();
         for (int i = 0; i < 5; i++) {
-            LinkedList<Integer> objects = new LinkedList<>();
+            LinkedList<Long> objects = new LinkedList<>();
             inputs.put(i, objects);
             outputs.put((i + 5 - 1) % 5, objects);
         }

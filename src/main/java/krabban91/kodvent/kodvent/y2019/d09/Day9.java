@@ -1,13 +1,18 @@
 package krabban91.kodvent.kodvent.y2019.d09;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class Day9 {
-    List<String> in;
+    List<Long> in;
 
     public Day9() {
         System.out.println("::: Starting Day 9 :::");
@@ -22,8 +27,9 @@ public class Day9 {
     }
 
     public long getPart1() {
-
-        return -1L;
+        IntCodeComputer intCodeComputer = new IntCodeComputer(in, new LinkedList<>(Arrays.asList(1L)));
+        intCodeComputer.run();
+        return intCodeComputer.lastOutput();
     }
 
     public long getPart2() {
@@ -31,6 +37,8 @@ public class Day9 {
     }
 
     public void readInput(String inputPath) {
-        in = Input.getLines(inputPath);
+        in = Stream.of(Input.getSingleLine(inputPath).split(","))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
     }
 }

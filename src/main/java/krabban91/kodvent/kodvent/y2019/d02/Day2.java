@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day2 {
-    List<Integer> in;
+    List<Long> in;
 
     public Day2() {
         System.out.println("::: Starting Day 2 :::");
@@ -51,7 +51,7 @@ public class Day2 {
 
     }
 
-    public long compute(List<Integer> in, int noun, int verb) {
+    public long compute(List<Long> in, int noun, int verb) {
         IntCodeComputer computer = new IntCodeComputer(in, noun, verb);
         computer.run();
         return computer.getOutput();
@@ -59,7 +59,7 @@ public class Day2 {
 
     public void readInput(String inputPath) {
         in = Stream.of(Input.getSingleLine(inputPath).split(","))
-                .map(Integer::parseInt)
+                .map(Long::parseLong)
                 .collect(Collectors.toList());
     }
 }

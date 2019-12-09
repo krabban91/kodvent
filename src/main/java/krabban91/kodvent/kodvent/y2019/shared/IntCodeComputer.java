@@ -1,12 +1,11 @@
 package krabban91.kodvent.kodvent.y2019.shared;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.stream.LongStream;
 
 public class IntCodeComputer {
 
@@ -25,29 +24,37 @@ public class IntCodeComputer {
     public static final int IF_FALSE_CODE = 6;
     public static final int LESS_THAN_CODE = 7;
     public static final int EQUALS_CODE = 8;
+    public static final int RELATIVE_CHANGE_CODE = 9;
+    public static final int RELATIVE_CHANGE_SIZE = 2;
     public static final int MEMORY_MODE = 0;
     public static final int IMEDIATE_MODE = 1;
+    public static final int RELATIVE_MODE = 2;
     private static final int IF_FALSE_SIZE = 3;
     private static final int LESS_THAN_SIZE = 4;
     private static final int EQUALS_SIZE = 4;
-    private final List<Integer> program;
-    private final Deque<Integer> inputs;
-    private final Deque<Integer> outputs;
-    private boolean verbose = false;
+    private final List<Long> program;
+    private final Deque<Long> inputs;
+    private final Deque<Long> outputs;
+    private boolean verbose = true;
     private int pointer;
+    private int relativeBase = 0;
 
-    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs, Deque<Integer> outputs) {
-        this.program = new ArrayList<>(program);
+    public IntCodeComputer(List<Long> program, Deque<Long> inputs, Deque<Long> outputs) {
+        this.program = new ArrayList<>();
+        LongStream.rangeClosed(0, 10000).forEachOrdered(this.program::add);
+        for (int i = 0; i < program.size(); i++) {
+            this.program.set(i, program.get(i));
+        }
         this.inputs = inputs;
         this.outputs = outputs;
     }
 
-    public IntCodeComputer(@NotNull List<Integer> program, Deque<Integer> inputs) {
+    public IntCodeComputer(List<Long> program, Deque<Long> inputs) {
         this(program, inputs, new LinkedBlockingDeque<>());
     }
 
 
-    public IntCodeComputer(@NotNull List<Integer> program, int noun, int verb) {
+    public IntCodeComputer(List<Long> program, int noun, int verb) {
         this(program, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         this.setNoun(noun);
         this.setVerb(verb);
@@ -69,20 +76,20 @@ public class IntCodeComputer {
         }
     }
 
-    public void addInput(int input) {
+    public void addInput(long input) {
         this.inputs.addLast(input);
     }
 
-    public int getAddress(int i) {
+    public long getAddress(int i) {
         return program.get(i);
     }
 
-    public int getOutput() {
+    public long getOutput() {
         return getAddress(0);
     }
 
     public void setAddress(int i, int value) {
-        program.set(i, value);
+        program.set(i, (long) value);
     }
 
     public void setNoun(int value) {
@@ -95,20 +102,21 @@ public class IntCodeComputer {
 
     private void step() {
 
-        int address = this.getAddress(pointer);
-        int opCode = address % 100;
-        int modes = address / 100;
+        long address = this.getAddress(pointer);
+        int opCode = (int) (address % 100);
+        int modes = (int) (address / 100);
         int mode1 = modes % 10;
         int mode2 = (modes / 10) % 10;
+        int mode3 = (modes / 100) % 10;
         switch (opCode) {
             case ADD_CODE:
-                add(mode1, mode2);
+                add(mode1, mode2, mode3);
                 break;
             case MUL_CODE:
-                multiply(mode1, mode2);
+                multiply(mode1, mode2, mode3);
                 break;
             case INPUT_CODE:
-                input();
+                input(mode1);
                 break;
             case OUTPUT_CODE:
                 output(mode1);
@@ -120,56 +128,65 @@ public class IntCodeComputer {
                 ifFalse(mode1, mode2);
                 break;
             case LESS_THAN_CODE:
-                lessThan(mode1, mode2);
+                lessThan(mode1, mode2, mode3);
                 break;
             case EQUALS_CODE:
-                isEqual(mode1, mode2);
+                isEqual(mode1, mode2, mode3);
+                break;
+            case RELATIVE_CHANGE_CODE:
+                changeRelativeBase(mode1);
                 break;
             case HALT_CODE:
                 break;
         }
     }
 
-    private void lessThan(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
-        program.set(getValue(IMEDIATE_MODE, pointer + 3), a < b ? 1 : 0);
+    private void changeRelativeBase(int mode1) {
+        long a = getValue(mode1, pointer + 1);
+        this.relativeBase += a;
+        pointer += RELATIVE_CHANGE_SIZE;
+    }
+
+    private void lessThan(int mode1, int mode2, int mode3) {
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
+        program.set((int) getValue(mode3, pointer + 3), a < b ? 1L : 0L);
         pointer += LESS_THAN_SIZE;
     }
 
-    private void isEqual(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
-        program.set(getValue(IMEDIATE_MODE, pointer + 3), a == b ? 1 : 0);
+    private void isEqual(int mode1, int mode2, int mode3) {
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
+        program.set((int) getValue(mode3, pointer + 3), a == b ? 1L : 0L);
         pointer += EQUALS_SIZE;
     }
 
     private void ifFalse(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
         if (a == 0) {
-            pointer = b;
+            pointer = (int) b;
         } else {
             pointer += IF_FALSE_SIZE;
         }
     }
 
     private void ifTrue(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
         if (a != 0) {
-            pointer = b;
+            pointer = (int) b;
         } else {
             pointer += IF_TRUE_SIZE;
         }
     }
 
-    public Integer lastOutput() {
+    public Long lastOutput() {
         return this.outputs.peekLast();
     }
 
     private void output(int mode1) {
-        int a = getValue(mode1, pointer + 1);
+        long a = getValue(mode1, pointer + 1);
         this.outputs.addLast(a);
         if (verbose) {
             System.out.println("output: " + a);
@@ -177,41 +194,49 @@ public class IntCodeComputer {
         pointer += OUTPUT_SIZE;
     }
 
-    private void input() {
+    private void input(int mode) {
         if (verbose) {
             System.out.print("input: ");
         }
 
-        int in;
+        long in;
         if (inputs.isEmpty()) {
             Scanner scan = new Scanner(System.in);
-            in = scan.nextInt();
+            in = scan.nextLong();
         } else {
             in = inputs.pop();
         }
         if (verbose) {
             System.out.println(in);
         }
-        program.set(getValue(IMEDIATE_MODE, pointer + 1), in);
+        program.set((int) getValue(mode, pointer + 1), in);
         pointer += INPUT_SIZE;
     }
 
-    private void add(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
-        program.set(getValue(IMEDIATE_MODE, pointer + 3), a + b);
+    private void add(int mode1, int mode2, int mode3) {
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
+        program.set((int) getValue(mode3, pointer + 3), a + b);
         pointer += ADD_SIZE;
     }
 
-    private void multiply(int mode1, int mode2) {
-        int a = getValue(mode1, pointer + 1);
-        int b = getValue(mode2, pointer + 2);
-        program.set(getValue(IMEDIATE_MODE, pointer + 3), a * b);
+    private void multiply(int mode1, int mode2, int mode3) {
+        long a = getValue(mode1, pointer + 1);
+        long b = getValue(mode2, pointer + 2);
+        program.set((int) getValue(mode3, pointer + 3), a * b);
         pointer += MUL_SIZE;
     }
 
-    private Integer getValue(int mode, int address) {
-        return mode == MEMORY_MODE ? program.get(program.get(address)) : program.get(address);
+    private long getValue(int mode, int address) {
+        int target;
+        if (mode == MEMORY_MODE) {
+            target = program.get(address).intValue();
+        } else if (mode == IMEDIATE_MODE) {
+            target = address;
+        } else {
+            target = relativeBase + program.get(address).intValue();
+        }
+        return program.get(target);
     }
 
 }

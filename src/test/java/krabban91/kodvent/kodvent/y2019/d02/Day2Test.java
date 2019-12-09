@@ -19,9 +19,9 @@ public class Day2Test {
 
     @Test
     public void computerCheck() {
-        assertThat(day2.compute(Arrays.asList(1, 0, 0, 0, 99), 0, 0)).isEqualTo(2);
-        assertThat(day2.compute(Arrays.asList(2, 3, 0, 3, 99), 3, 0)).isEqualTo(2);
-        assertThat(day2.compute(Arrays.asList(1, 1, 1, 4, 99, 5, 6, 0, 99), 1, 1)).isEqualTo(30);
+        assertThat(day2.compute(Arrays.asList(1L, 0L, 0L, 0L, 99L), 0, 0)).isEqualTo(2);
+        assertThat(day2.compute(Arrays.asList(2L, 3L, 0L, 3L, 99L), 3, 0)).isEqualTo(2);
+        assertThat(day2.compute(Arrays.asList(1L, 1L, 1L, 4L, 99L, 5L, 6L, 0L, 99L), 1, 1)).isEqualTo(30);
     }
 
     @Test
