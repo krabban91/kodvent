@@ -22,6 +22,17 @@ public class Day15Test {
     private Day15 day15;
 
     @Test
+    public void getPart1() {
+        day15.readInput("y2018/d15/input.txt");
+        assertThat(day15.getPart1()).isEqualTo(193476);
+    }
+
+    @Test
+    public void getPart2() {
+        assertThat(day15.getPart2("y2018/d15/input.txt")).isEqualTo(36768);
+    }
+
+    @Test
     public void getPart1Debug() {
         day15.readInput("y2018/d15/extra.txt");
     }
@@ -32,9 +43,10 @@ public class Day15Test {
         assertThat(day15.getPart1()).isEqualTo(27730);
     }
 
+
     @Test
     public void getPart1example1() {
-        day15.readInput("y2018/d15/input.txt");
+        day15.readInput("y2018/d15/input2.txt");
         assertThat(day15.getPart1()).isEqualTo(36334);
     }
 
