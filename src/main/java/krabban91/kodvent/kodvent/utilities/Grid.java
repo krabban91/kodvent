@@ -1,11 +1,14 @@
 package krabban91.kodvent.kodvent.utilities;
 
+import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,6 +23,16 @@ public class Grid<V> {
 
     public Grid(List<? extends List<V>> grid){
         this.raw = grid;
+    }
+
+    public Set<Point> indicesMatching(Predicate<V> filter){
+        return IntStream.range(0, raw.size()).mapToObj(y ->
+                IntStream.range(0, raw.get(y).size())
+                        .filter(x -> filter.test(raw.get(y).get(x)))
+                        .mapToObj(x -> new Point(x, y))
+                        .collect(Collectors.toSet()))
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
     }
 
     public List<V> getSurroundingTiles(int row, int col, List<? extends List<V>> item) {
@@ -64,7 +77,7 @@ public class Grid<V> {
     }
 
     public void forEach(Consumer<V> action) {
-        this.raw.forEach(l -> l.forEach(action::accept));
+        this.raw.forEach(l -> l.forEach(action));
     }
 
     public V get(int x, int y){
@@ -76,7 +89,7 @@ public class Grid<V> {
     }
 
     public Grid<V> clone(Function<V, V> cloneMethod){
-        return new Grid(raw.stream()
+        return new Grid<>(raw.stream()
                 .map(l -> l.stream()
                         .map(cloneMethod)
                         .collect(Collectors.toList()))

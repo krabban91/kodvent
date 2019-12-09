@@ -1,19 +1,27 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import krabban91.kodvent.kodvent.utilities.Distances;
+import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class CaveBattle {
 
-    List<List<Boolean>> map;
-    List<BattleUnit> units = new ArrayList();
+    Grid<Boolean> map;
+    List<BattleUnit> units;
     Set<Point> caveArea;
     Map<Point, Collection<Step>> network;
     Map<Point, Map<Point, Map<Point, DistanceToPoint>>> knownDistances;
@@ -23,22 +31,20 @@ public class CaveBattle {
     private boolean debug;
 
     public CaveBattle(List<String> rows) {
-        map = rows.stream().map(this::getMapRow).collect(Collectors.toList());
-        caveArea = IntStream.range(0, map.size()).mapToObj(y ->
-                IntStream.range(0, map.get(y).size())
-                        .filter(x -> map.get(y).get(x))
-                        .mapToObj(x -> new Point(x, y))
-                        .collect(Collectors.toSet()))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+        map = new Grid<>(rows.stream().map(this::getMapRow).collect(Collectors.toList()));
+        caveArea = map.indicesMatching(b -> b);
+        this.units = IntStream.range(0, rows.size())
+                .mapToObj(y -> IntStream.range(0, rows.get(y).length())
+                        .filter(x -> rows.get(y).charAt(x) == 'G' || rows.get(y).charAt(x) == 'E')
+                        .mapToObj(x -> new BattleUnit(
+                                new Point(x, y),
+                                rows.get(y).charAt(x) == 'G',
+                                200,
+                                this))
+                        .collect(Collectors.toList())
+                ).flatMap(List::stream)
+                .collect(Collectors.toList());
         regenerateNetwork();
-        IntStream.range(0, rows.size()).forEach(y -> IntStream.range(0, rows.get(y).length())
-                .filter(x -> rows.get(y).charAt(x) == 'G' || rows.get(y).charAt(x) == 'E')
-                .forEach(x -> units.add(new BattleUnit(
-                        new Point(x, y),
-                        rows.get(y).charAt(x) == 'G',
-                        200,
-                        this))));
         initialElfCount = countElfs();
     }
 
@@ -67,7 +73,7 @@ public class CaveBattle {
 
     public long battleUntilItIsOverOrAnElfDies() {
         while (true) {
-            if(debug){
+            if (debug) {
                 visualizeBattle();
             }
             units.stream()
@@ -158,29 +164,32 @@ public class CaveBattle {
 
     public DistanceToPoint distanceBetween(
             Point from, Point to) {
-        if (!knownDistances.containsKey(from)) {
-            knownDistances.put(from, new HashMap<>());
-        }
+        knownDistances.putIfAbsent(from, new HashMap<>());
+
         Map<Point, Map<Point, DistanceToPoint>> fromMap = knownDistances.get(from);
-        if(!fromMap.containsKey(to)){
-            fromMap.put(to, new HashMap<>());
-        }
+        fromMap.putIfAbsent(to, new HashMap<>());
+
         Map<Point, DistanceToPoint> checked = fromMap.get(to);
         PriorityQueue<DistanceToPoint> unChecked = newQueue(from, to);
         if (!checked.containsKey(to)) {
             Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
-            checked.put(to, graph.search(unChecked, this::addNext, network));
+            checked.put(to, graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), network));
         }
         return checked.get(to);
     }
 
-    private Collection<DistanceToPoint> addNext(DistanceToPoint distanceToPoint, Map<Point, Collection<Step>> network) {
-        return network.get(distanceToPoint.destination())
+    private Collection<DistanceToPoint> addNext(DistanceToPoint distanceToPoint, Map<Point, Collection<Step>> network, Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked) {
+        checked.putIfAbsent(distanceToPoint.current, distanceToPoint);
+        Set<DistanceToPoint> collect = network.get(distanceToPoint.destination())
                 .stream()
                 .map(w -> new DistanceToPoint(distanceToPoint, w))
                 .filter(d -> this.tileIsEmpty(d.destination()))
                 .filter(d -> !distanceToPoint.hasVisited(d.destination()))
+                .filter(d -> !checked.containsKey(d.current))
+                .filter(d -> unChecked.stream().noneMatch(p -> p.current.equals(d.current)))
                 .collect(Collectors.toSet());
+
+        return collect;
     }
 
     private PriorityQueue<DistanceToPoint> newQueue(Point from, Point to) {
@@ -189,7 +198,7 @@ public class CaveBattle {
         return queue;
     }
 
-    public void setDebug(boolean debug){
+    public void setDebug(boolean debug) {
         this.debug = debug;
         units.forEach(u -> u.setDebug(debug));
     }
@@ -203,23 +212,24 @@ public class CaveBattle {
     }
 
     private void visualizeMap(StringBuilder builder) {
+
         StringBuilder yRow1 = new StringBuilder();
         yRow1.append("   ");
-        IntStream.range(0, map.get(0).size()).forEach(i -> yRow1.append((i / 10) > 0 ? i / 10 : " "));
+        IntStream.range(0, map.getRaw().get(0).size()).forEach(i -> yRow1.append((i / 10) > 0 ? i / 10 : " "));
         builder.append(yRow1.toString());
         builder.append('\n');
         StringBuilder yRow2 = new StringBuilder();
         yRow2.append("   ");
-        IntStream.range(0, map.get(0).size()).forEach(i -> yRow2.append(i % 10));
+        IntStream.range(0, map.getRaw().get(0).size()).forEach(i -> yRow2.append(i % 10));
         builder.append(yRow2.toString());
         builder.append('\n');
-        IntStream.range(0, map.size()).forEach(y -> {
+        IntStream.range(0, map.getRaw().size()).forEach(y -> {
             visualizeMapRow(builder, y);
         });
     }
 
     private void visualizeMapRow(StringBuilder builder, int y) {
-        int rowSize = map.get(y).size();
+        int rowSize = map.getRaw().get(y).size();
         if ((y / 10) == 0) {
             builder.append(" ");
         }
@@ -230,15 +240,13 @@ public class CaveBattle {
         units.stream()
                 .filter(u -> u.location.y == y)
                 .sorted(Comparator.comparingInt(u -> u.getLocation().x))
-                .forEach(u -> {
-                    builder.append(u.toString());
-                });
+                .forEach(u -> builder.append(u.toString()));
 
         builder.append('\n');
     }
 
     private void visualizeMapCell(StringBuilder builder, int y, int x) {
-        if (map.get(y).get(x)) {
+        if (map.get(x, y)) {
             Optional<BattleUnit> any = units.stream().filter(u -> u.location.x == x && u.location.y == y).findAny();
             if (any.isPresent()) {
                 if (any.get().isGoblin()) {
