@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.d06;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
 import java.util.HashMap;
@@ -26,7 +25,6 @@ public class Day6 {
         System.out.println(part2);
     }
 
-    @NotNull
     private static Map<String, Set<String>> getOrbits(List<OrbitRelation> relations) {
         Map<String, Set<String>> isOrbitedBy = new HashMap<>();
         relations.forEach(o -> {

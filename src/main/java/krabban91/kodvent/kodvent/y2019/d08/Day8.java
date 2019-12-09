@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d08;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.Comparator;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Component
 public class Day8 {
     List<Integer> in;
 
