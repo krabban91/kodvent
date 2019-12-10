@@ -5,6 +5,7 @@ import krabban91.kodvent.kodvent.utilities.Input;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +19,7 @@ import java.util.stream.IntStream;
 
 @Component
 public class Day10 {
-    Map<Point, Boolean> in;
+    List<Point> in;
 
     public Day10() {
         System.out.println("::: Starting Day 10 :::");
@@ -33,50 +34,47 @@ public class Day10 {
     }
 
     public long getPart1() {
-        Map<Point, Boolean> allSlots = new HashMap<>(in);
-        return getStation(allSlots)
+        return getStation(new ArrayList<>(in))
                 .map(e -> e.getValue().size())
                 .orElse(-1);
     }
 
     public long getPart2() {
-        Map<Point, Boolean> allSlots = new HashMap<>(in);
-        Point origo = getStation(allSlots)
+        List<Point> asteroidsList = new ArrayList<>(in);
+        Point origo = getStation(asteroidsList)
                 .get()
                 .getKey();
         LinkedList<Point> blownUp = new LinkedList<>();
         double currentAngle = Math.PI / 2;
         while (blownUp.size() != 200) {
-            Map<Double, Set<Point>> potentialTargets = getPotentialTargets(origo, allSlots);
+            Map<Double, Set<Point>> potentialTargets = getPotentialTargets(origo, asteroidsList);
             Map.Entry<Double, Point> target = target(origo, potentialTargets, strictlyPositiveRadians(currentAngle));
             currentAngle = target.getKey();
-            blownUp.add(target.getValue());
-            allSlots.remove(target.getValue());
+            blownUp.addLast(target.getValue());
+            asteroidsList.remove(target.getValue());
         }
         return blownUp.getLast().x * 100 + blownUp.getLast().y;
     }
 
-    public Optional<Map.Entry<Point, Set<Double>>> getStation(Map<Point, Boolean> allSlots) {
-        List<Map.Entry<Point, Boolean>> asteroidsList = allSlots.entrySet()
-                .stream()
-                .filter(Map.Entry::getValue)
-                .collect(Collectors.toList());
+    private Optional<Map.Entry<Point, Set<Double>>> getStation(List<Point> asteroidsList) {
         Map<Point, Set<Double>> collect1 = asteroidsList.stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, origo -> asteroidsList.stream()
-                        .map(asteroid -> satan2(origo.getKey(), asteroid.getKey()))
-                        .collect(Collectors.toSet())));
+                .collect(Collectors.toMap(
+                        p -> p,
+                        origo -> asteroidsList.stream()
+                                .map(asteroid -> satan2(origo, asteroid))
+                                .collect(Collectors.toSet())));
         return collect1.entrySet().stream()
                 .max(Comparator.comparingInt(e -> e.getValue().size()));
     }
 
-    private Map<Double, Set<Point>> getPotentialTargets(Point origo, Map<Point, Boolean> allSlots) {
+
+    private Map<Double, Set<Point>> getPotentialTargets(Point origo, List<Point> asteroidsList) {
         Map<Double, Set<Point>> map = new HashMap<>();
-        allSlots.entrySet().stream()
-                .filter(Map.Entry::getValue)
+        asteroidsList
                 .forEach(e -> {
-                    double angle = satan2(origo, e.getKey());
+                    double angle = satan2(origo, e);
                     map.computeIfAbsent(angle, a -> new HashSet<>());
-                    map.get(angle).add(e.getKey());
+                    map.get(angle).add(e);
                 });
         return map;
     }
@@ -120,9 +118,10 @@ public class Day10 {
         List<String> lines = Input.getLines(inputPath);
         in = IntStream.range(0, lines.size())
                 .mapToObj(y -> IntStream.range(0, lines.get(y).length())
-                        .mapToObj(x -> Map.entry(new Point(x, y), lines.get(y).charAt(x) == '#'))
+                        .filter(x -> lines.get(y).charAt(x) == '#')
+                        .mapToObj(x -> new Point(x, y))
                         .collect(Collectors.toList()))
                 .flatMap(List::stream)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toList());
     }
 }
