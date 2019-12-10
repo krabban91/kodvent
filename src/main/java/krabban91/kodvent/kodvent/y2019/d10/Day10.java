@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d10;
 
 import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day10 {
     List<Point> in;
 
