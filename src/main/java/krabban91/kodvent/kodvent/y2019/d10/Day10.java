@@ -1,11 +1,16 @@
 package krabban91.kodvent.kodvent.y2019.d10;
 
+import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.utilities.Input;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -28,28 +33,73 @@ public class Day10 {
 
     public long getPart1() {
         List<List<AsteroidSlot>> collect = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> new AsteroidSlot(x, y, in.get(y).get(x))).collect(Collectors.toList())).collect(Collectors.toList());
+        Map<Point, AsteroidSlot> allSlots = collect.stream().flatMap(List::stream).collect(Collectors.toMap(AsteroidSlot::getPoint, a->a));
+        return getStation(allSlots)
+                .map(e->e.getValue().size())
+                .orElse(-1);
+    }
 
-        List<AsteroidSlot> allSlots = collect.stream().flatMap(List::stream).collect(Collectors.toList());
-        List<AsteroidSlot> asteroidsList = allSlots.stream().filter(a -> a.isAsteroid()).collect(Collectors.toList());
+    public Optional<Map.Entry<Point, Set<Double>>> getStation(Map<Point, AsteroidSlot> allSlots) {
+        List<AsteroidSlot> asteroidsList = allSlots.values().stream().filter(a -> a.isAsteroid()).collect(Collectors.toList());
         Map<Point, Set<Double>> collect1 = asteroidsList.stream()
                 .collect(Collectors.toMap(AsteroidSlot::getPoint, a -> asteroidsList.stream()
                         .map(b -> angle(a, b))
                         .collect(Collectors.toSet())));
-        return  collect1.values().stream()
-                .mapToInt(Set::size)
-                .max()
-                .orElse(-1);
+        return collect1.entrySet().stream()
+                .max(Comparator.comparingInt(e-> e.getValue().size()));
     }
 
     public long getPart2() {
-        return -1;
+        List<List<AsteroidSlot>> collect = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> new AsteroidSlot(x, y, in.get(y).get(x))).collect(Collectors.toList())).collect(Collectors.toList());
+        Map<Point, AsteroidSlot> allSlots = collect.stream().flatMap(List::stream).collect(Collectors.toMap(AsteroidSlot::getPoint, a->a));
+        Point origo = getStation(allSlots).get().getKey();
+        int blownUpAsteroids = 0;
+        Point latestBlownUp = null;
+        double currentAngle = Math.PI/2;
+        while(blownUpAsteroids != 200){
+            Map<Double, Set<Point>> potentialTargets = getPotentialTargets(origo, allSlots);
+            Map.Entry<Double, Point> target = target(origo, potentialTargets, (currentAngle + Math.PI*2)%(Math.PI*2));
+            currentAngle = target.getKey();
+            latestBlownUp = target.getValue();
+            blownUpAsteroids +=1;
+            allSlots.get(target.getValue()).obliterate();
+        }
+        // 405 is too low. 924 is too low
+        return latestBlownUp.x*100 + latestBlownUp.y;
     }
 
+    private Map<Double, Set<Point>> getPotentialTargets(Point origo, Map<Point, AsteroidSlot> allSlots) {
+        Map<Double, Set<Point>> map = new HashMap<>();
+        allSlots.entrySet().stream()
+                .filter(e->e.getValue().isAsteroid())
+                .forEach(e-> {
+            double angle = angle(origo, e.getKey());
+            map.computeIfAbsent(angle, a->new HashSet<>());
+            map.get(angle).add(e.getKey());
+        });
+        return map;
+    }
+    private Map.Entry<Double, Point> target(Point origo, Map<Double, Set<Point>> potential, double currentAngle) {
+        if (currentAngle == 0){
+            currentAngle = Math.PI*2;
+        }
+        double finalCurrentAngle = currentAngle;
+        Optional<Map.Entry<Double, Set<Point>>> max = potential.entrySet().stream()
+                .filter(e -> e.getKey().compareTo(finalCurrentAngle) < 0)
+                .max(Comparator.comparingDouble(e -> e.getKey()));
+
+        Map.Entry<Double, Set<Point>> closestAngleWise = max
+                .get();
+        Optional<Point> min = closestAngleWise.getValue().stream().min(Comparator.comparingInt(p -> Distances.manhattan(origo, p)));
+        return Map.entry(closestAngleWise.getKey(), min.get());
+    }
+
+
     private double angle(Point a, Point b) {
-        return Math.atan2((a.y - b.y) , ((double) a.x - b.x));
+        return (Math.atan2((a.y - b.y) , ((double) a.x - b.x))+Math.PI*2)%(Math.PI*2);
     }
     private double angle(AsteroidSlot a, AsteroidSlot b) {
-        return Math.atan2((a.getPoint().y - b.getPoint().y) , ((double) a.getPoint().x - b.getPoint().x));
+        return (Math.atan2((a.getPoint().y - b.getPoint().y) , ((double) a.getPoint().x - b.getPoint().x))+Math.PI*2)%(Math.PI*2);
     }
 
 
