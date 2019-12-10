@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,16 +41,20 @@ public class Day10 {
         Point origo = getStation(asteroidsList)
                 .get()
                 .getKey();
-        LinkedList<Point> blownUp = new LinkedList<>();
+        ArrayList<Point> blownUp = new ArrayList<>();
         double currentAngle = Math.PI / 2;
-        while (blownUp.size() != 200) {
+        while (!asteroidsList.isEmpty()) {
             Map<Double, Set<Point>> potentialTargets = getPotentialTargets(origo, asteroidsList);
-            Map.Entry<Double, Point> target = target(origo, potentialTargets, strictlyPositiveRadians(currentAngle));
-            currentAngle = target.getKey();
-            blownUp.addLast(target.getValue());
-            asteroidsList.remove(target.getValue());
+            Optional<Map.Entry<Double, Point>> target = target(origo, potentialTargets, strictlyPositiveRadians(currentAngle));
+            if (target.isPresent()) {
+                currentAngle = target.get().getKey();
+                blownUp.add(target.get().getValue());
+                asteroidsList.remove(target.get().getValue());
+            } else {
+                currentAngle -= 0.0001;
+            }
         }
-        return blownUp.getLast().x * 100 + blownUp.getLast().y;
+        return blownUp.get(199).x * 100 + blownUp.get(199).y;
     }
 
     private Optional<Map.Entry<Point, Set<Double>>> getStation(List<Point> asteroidsList) {
@@ -77,7 +80,7 @@ public class Day10 {
         return map;
     }
 
-    private Map.Entry<Double, Point> target(Point origo, Map<Double, Set<Point>> potential, double currentAngle) {
+    private Optional<Map.Entry<Double, Point>> target(Point origo, Map<Double, Set<Point>> potential, double currentAngle) {
         return potential.entrySet().stream()
                 .filter(e -> e.getKey().compareTo(currentAngle) < 0)
                 .max(Comparator.comparingDouble(Map.Entry::getKey))
@@ -86,8 +89,7 @@ public class Day10 {
                         e.getValue()
                                 .stream()
                                 .min(Comparator.comparingInt(p -> Distances.manhattan(origo, p)))
-                                .get()))
-                .get();
+                                .get()));
     }
 
 
