@@ -16,12 +16,19 @@ public class Day10Test {
     Day10 day10;
 
     @Test
+    public void examples() {
+        day10.readInput("y2019/d10/extra.txt");
+        assertThat(day10.getPart1()).isEqualTo(210);
+    }
+
+    @Test
     public void getPart1() {
-        assertThat(day10.getPart1()).isEqualTo(33);
+        day10.readInput("y2019/d10/input.txt");
+        assertThat(day10.getPart1()).isEqualTo(314);
     }
 
     @Test
     public void getPart2() {
-        assertThat(day10.getPart2()).isEqualTo(-1);
+        assertThat(day10.getPart2()).isEqualTo(1513);
     }
 }
