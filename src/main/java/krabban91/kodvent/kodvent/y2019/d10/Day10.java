@@ -42,8 +42,8 @@ public class Day10 {
     public Optional<Map.Entry<Point, Set<Double>>> getStation(Map<Point, AsteroidSlot> allSlots) {
         List<AsteroidSlot> asteroidsList = allSlots.values().stream().filter(a -> a.isAsteroid()).collect(Collectors.toList());
         Map<Point, Set<Double>> collect1 = asteroidsList.stream()
-                .collect(Collectors.toMap(AsteroidSlot::getPoint, a -> asteroidsList.stream()
-                        .map(b -> angle(a, b))
+                .collect(Collectors.toMap(AsteroidSlot::getPoint, origo -> asteroidsList.stream()
+                        .map(asteroid -> satan2(origo.getPoint(), asteroid.getPoint()))
                         .collect(Collectors.toSet())));
         return collect1.entrySet().stream()
                 .max(Comparator.comparingInt(e-> e.getValue().size()));
@@ -73,7 +73,7 @@ public class Day10 {
         allSlots.entrySet().stream()
                 .filter(e->e.getValue().isAsteroid())
                 .forEach(e-> {
-            double angle = angle(origo, e.getKey());
+            double angle = satan2(origo, e.getKey());
             map.computeIfAbsent(angle, a->new HashSet<>());
             map.get(angle).add(e.getKey());
         });
@@ -95,11 +95,8 @@ public class Day10 {
     }
 
 
-    private double angle(Point a, Point b) {
-        return (Math.atan2((a.y - b.y) , ((double) a.x - b.x))+Math.PI*2)%(Math.PI*2);
-    }
-    private double angle(AsteroidSlot a, AsteroidSlot b) {
-        return (Math.atan2((a.getPoint().y - b.getPoint().y) , ((double) a.getPoint().x - b.getPoint().x))+Math.PI*2)%(Math.PI*2);
+    private double satan2(Point origo, Point point) {
+        return (Math.atan2(-1*(point.y - origo.y) , ((double) point.x - origo.x))+Math.PI*2)%(Math.PI*2);
     }
 
 
