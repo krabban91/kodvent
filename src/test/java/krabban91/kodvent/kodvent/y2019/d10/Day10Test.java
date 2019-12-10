@@ -29,6 +29,7 @@ public class Day10Test {
 
     @Test
     public void getPart2() {
+        day10.readInput("y2019/d10/input.txt");
         assertThat(day10.getPart2()).isEqualTo(1513);
     }
 }
