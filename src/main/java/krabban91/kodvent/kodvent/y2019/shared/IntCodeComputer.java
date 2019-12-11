@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.shared;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +71,10 @@ public class IntCodeComputer implements Runnable {
 
     public void addInput(long input) {
         this.inputs.addLast(input);
+    }
+
+    public Long pollOutput(long timeoutSeconds) throws InterruptedException {
+        return outputs.pollFirst(timeoutSeconds, TimeUnit.SECONDS);
     }
 
     public long getAddress(int index) {
@@ -204,7 +207,7 @@ public class IntCodeComputer implements Runnable {
         }
         try {
             Long in = inputs.pollFirst(10, TimeUnit.SECONDS);
-            if(in == null){
+            if (in == null) {
                 if (verbose) {
                     System.out.println("<EMPTY>");
                 }

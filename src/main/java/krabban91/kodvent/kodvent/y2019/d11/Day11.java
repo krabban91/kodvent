@@ -52,17 +52,15 @@ public class Day11 {
     }
 
     private Map<Point, Boolean> paint(Map<Point, Boolean> painted) throws InterruptedException {
-        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
-        LinkedBlockingDeque<Long> output = new LinkedBlockingDeque<>();
-        IntCodeComputer brain = new IntCodeComputer(new ArrayList<>(in), input, output);
+        IntCodeComputer brain = new IntCodeComputer(new ArrayList<>(in), new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         Point robotLocation = new Point(0, 0);
         int currentDirection = 0;
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         executor.execute(brain);
         while (!brain.hasHalted()) {
-            input.addLast(painted.containsKey(robotLocation) && painted.get(robotLocation) ? 1L : 0L);
-            painted.put(robotLocation, output.pollFirst(10L, TimeUnit.SECONDS) == 1);
-            currentDirection = rotate(currentDirection, output.pollFirst(10L, TimeUnit.SECONDS));
+            brain.addInput(painted.containsKey(robotLocation) && painted.get(robotLocation) ? 1L : 0L);
+            painted.put(robotLocation, brain.pollOutput(10L) == 1);
+            currentDirection = rotate(currentDirection, brain.pollOutput(10L));
             robotLocation = move(robotLocation, currentDirection);
         }
         executor.shutdown();
