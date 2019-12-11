@@ -18,7 +18,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Day11 {
-    private static final List<Point> directions = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
+    private static final List<Point> directions = Arrays.asList(
+            new Point(0, -1), // up
+            new Point(1, 0),  // right
+            new Point(0, 1),  // down
+            new Point(-1, 0));// left
     List<Long> in;
 
     public Day11() throws InterruptedException {

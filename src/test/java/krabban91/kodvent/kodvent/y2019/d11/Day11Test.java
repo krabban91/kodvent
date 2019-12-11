@@ -17,11 +17,17 @@ public class Day11Test {
 
     @Test
     public void getPart1() throws InterruptedException {
-        assertThat(day11.getPart1()).isEqualTo(-1);
+        assertThat(day11.getPart1()).isEqualTo(2018L);
     }
 
     @Test
-    public void getPart2() {
-        assertThat(day11.getPart2()).isEqualTo(-1);
+    public void getPart2() throws InterruptedException {
+        assertThat(day11.getPart2()).isEqualTo(
+                "..##..###..####.#..#.###..#..#.###..###... \n" +
+                " #..#.#..#.#....#.#..#..#.#.#..#..#.#..#...\n" +
+                " #..#.#..#.###..##...#..#.##...###..#..#...\n" +
+                ".####.###..#....#.#..###..#.#..#..#.###... \n" +
+                ".#..#.#....#....#.#..#.#..#.#..#..#.#.#..  \n" +
+                " #..#.#....#....#..#.#..#.#..#.###..#..#.  \n");
     }
 }
