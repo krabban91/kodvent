@@ -49,7 +49,7 @@ public class Day8 {
                 finalImage.putIfAbsent(new Point(getY(width, i), getX(width, height, i)), integer);
             }
         }
-        return LogUtils.mapToText(finalImage, i -> i == 0 ? " " : "*");
+        return new LogUtils<Integer>().mapToText(finalImage, i -> i == 0 ? " " : "*");
     }
 
     public void readInput(String inputPath) {

@@ -3,7 +3,6 @@ package krabban91.kodvent.kodvent.y2019.d11;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day11 {
     private static final List<Point> directions = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
     List<Long> in;
@@ -44,8 +42,7 @@ public class Day11 {
         ship.put(new Point(0, 0), true);
 
         Map<Point, Boolean> painted = paint(ship);
-        System.out.println();
-        return LogUtils.mapToTextBool(painted, b -> b == null ? " " : ((!b ? "." : "#")));
+        return new LogUtils<Boolean>().mapToText(painted, b -> b == null ? " " : ((!b ? "." : "#")));
     }
 
     public void readInput(String inputPath) {
@@ -80,7 +77,8 @@ public class Day11 {
     private int rotate(int currentDirection, Long turn) {
         return (directions.size() + currentDirection + (turn == 0 ? -1 : 1)) % directions.size();
     }
-    private Point move(Point current, int direction){
+
+    private Point move(Point current, int direction) {
         Point vector = directions.get(direction);
         return new Point(current.x + vector.x, current.y + vector.y);
     }
