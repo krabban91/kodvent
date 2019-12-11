@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 @Component
 public class Day11 {
+    private static final List<Point> directions = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
     List<Long> in;
 
     public Day11() throws InterruptedException {
@@ -29,89 +30,58 @@ public class Day11 {
         long part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
+        String part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
 
     public long getPart1() throws InterruptedException {
-        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
-        LinkedBlockingDeque<Long> output = new LinkedBlockingDeque<>();
-        IntCodeComputer brain = new IntCodeComputer(new ArrayList<>(in), input, output);
-        Map<Point, Boolean> painted = new HashMap<>();
-        Point robotLocation = new Point(0, 0);
-        List<Point> directions = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
-        int currentDirection = 0;
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-        executor.execute(brain);
-        boolean hasOutput = false;
-        while (!brain.hasHalted() || hasOutput) {
-            input.addLast(painted.containsKey(robotLocation) && painted.get(robotLocation) ? 1L : 0L);
-            Long color = output.pollFirst(1L, TimeUnit.SECONDS);
-            if (color != null) {
-                hasOutput = true;
-                painted.put(robotLocation, color == 1);
-                Long direction = output.pollFirst(10L, TimeUnit.SECONDS);
-                currentDirection = (directions.size() + currentDirection + (direction == 0 ? -1 : 1)) % directions.size();
-
-                Point vector = directions.get(currentDirection);
-                robotLocation = new Point(robotLocation.x + vector.x, robotLocation.y + vector.y);
-            } else {
-                hasOutput = false;
-            }
-        }
-        System.out.println(LogUtils.mapToTextBool(painted, b -> b == null ? " " : ((!b ? "." : "#"))));
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1L, TimeUnit.DAYS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // 558 is wrong , 28 is wrong
-        return painted.size();
+        return paint(new HashMap<>()).size();
     }
 
-    public long getPart2()  throws InterruptedException {
-        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
-        LinkedBlockingDeque<Long> output = new LinkedBlockingDeque<>();
-        IntCodeComputer brain = new IntCodeComputer(new ArrayList<>(in), input, output);
-        Map<Point, Boolean> painted = new HashMap<>();
-        Point robotLocation = new Point(0, 0);
-        List<Point> directions = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
-        int currentDirection = 0;
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
-        executor.execute(brain);
-        painted.put(robotLocation, true);
-        boolean hasOutput = false;
-        while (!brain.hasHalted() || hasOutput) {
-            input.addLast(painted.containsKey(robotLocation) && painted.get(robotLocation) ? 1L : 0L);
-            Long color = output.pollFirst(1L, TimeUnit.SECONDS);
-            if (color != null) {
-                hasOutput = true;
-                painted.put(robotLocation, color == 1);
-                Long direction = output.pollFirst(10L, TimeUnit.SECONDS);
-                currentDirection = (directions.size() + currentDirection + (direction == 0 ? -1 : 1)) % directions.size();
+    public String getPart2() throws InterruptedException {
+        Map<Point, Boolean> ship = new HashMap<>();
+        ship.put(new Point(0, 0), true);
 
-                Point vector = directions.get(currentDirection);
-                robotLocation = new Point(robotLocation.x + vector.x, robotLocation.y + vector.y);
-            } else {
-                hasOutput = false;
-            }
-        }
-        System.out.println(LogUtils.mapToTextBool(painted, b -> b == null ? " " : ((!b ? "." : "#"))));
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1L, TimeUnit.DAYS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // 558 is wrong , 28 is wrong
-        return painted.size();
+        Map<Point, Boolean> painted = paint(ship);
+        System.out.println();
+        return LogUtils.mapToTextBool(painted, b -> b == null ? " " : ((!b ? "." : "#")));
     }
 
     public void readInput(String inputPath) {
         in = Stream.of(Input.getSingleLine(inputPath).split(","))
                 .map(Long::parseLong)
                 .collect(Collectors.toList());
+    }
+
+    private Map<Point, Boolean> paint(Map<Point, Boolean> painted) throws InterruptedException {
+        LinkedBlockingDeque<Long> input = new LinkedBlockingDeque<>();
+        LinkedBlockingDeque<Long> output = new LinkedBlockingDeque<>();
+        IntCodeComputer brain = new IntCodeComputer(new ArrayList<>(in), input, output);
+        Point robotLocation = new Point(0, 0);
+        int currentDirection = 0;
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        executor.execute(brain);
+        while (!brain.hasHalted()) {
+            input.addLast(painted.containsKey(robotLocation) && painted.get(robotLocation) ? 1L : 0L);
+            painted.put(robotLocation, output.pollFirst(10L, TimeUnit.SECONDS) == 1);
+            currentDirection = rotate(currentDirection, output.pollFirst(10L, TimeUnit.SECONDS));
+            robotLocation = move(robotLocation, currentDirection);
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1L, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return painted;
+    }
+
+    private int rotate(int currentDirection, Long turn) {
+        return (directions.size() + currentDirection + (turn == 0 ? -1 : 1)) % directions.size();
+    }
+    private Point move(Point current, int direction){
+        Point vector = directions.get(direction);
+        return new Point(current.x + vector.x, current.y + vector.y);
     }
 }
