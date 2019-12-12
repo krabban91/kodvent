@@ -56,6 +56,7 @@ public Moon(int lx, int ly, int lz, int vx, int vy, int vz){
     return this.pot() * this.kin();
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -65,6 +66,16 @@ public Moon(int lx, int ly, int lz, int vx, int vy, int vz){
 
         if (!location.equals(moon.location)) return false;
         return velocity.equals(moon.velocity);
+    }
+
+    public boolean xMatch(Moon o) {
+        return this.location.getX() == o.location.getX() && this.velocity.getX() == o.velocity.getX();
+    }
+    public boolean yMatch(Moon o) {
+        return this.location.getY() == o.location.getY() && this.velocity.getY() == o.velocity.getY();
+    }
+    public boolean zMatch(Moon o) {
+        return this.location.getZ() == o.location.getZ() && this.velocity.getZ() == o.velocity.getZ();
     }
 
     @Override

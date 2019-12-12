@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.y2019.d12;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.MathUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -47,21 +48,51 @@ public class Day12 {
     public long getPart2() {
         long steps = 0;
         final List<Moon> moons = in.stream().map((x) -> (Moon)x.clone()).collect(Collectors.toList());
+        Long xCycle = null;
+        Long yCycle = null;
+        Long zCycle = null;
         while (true){
-            // find cycle per axis. multiply and return. 
+            // find cycle per axis. multiply and return.
             gravitate(moons);
             move(moons);
             steps++;
+            if(xCycle == null && isInitialStateX(moons)){
+                xCycle = steps;
+            }
+            if(yCycle == null && isInitialStateY(moons)){
+                yCycle = steps;
+            }
+            if(zCycle == null && isInitialStateZ(moons)){
+                zCycle = steps;
+            }
 
-            if(isInitialState(moons)){
-                return steps;
+            if(xCycle != null && yCycle != null && zCycle != null){
+                return MathUtils.LCM(MathUtils.LCM(xCycle,yCycle),zCycle);
             }
         }
     }
 
-    private boolean isInitialState(List<Moon> moons) {
+
+
+    private boolean isInitialStateX(List<Moon> moons) {
         for(int i = 0; i <moons.size(); i++){
-            if(!moons.get(i).equals(in.get(i))){
+            if(!moons.get(i).xMatch(in.get(i))){
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean isInitialStateY(List<Moon> moons) {
+        for(int i = 0; i <moons.size(); i++){
+            if(!moons.get(i).yMatch(in.get(i))){
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean isInitialStateZ(List<Moon> moons) {
+        for(int i = 0; i <moons.size(); i++){
+            if(!moons.get(i).zMatch(in.get(i))){
                 return false;
             }
         }
@@ -69,7 +100,6 @@ public class Day12 {
     }
 
     public void readInput(String inputPath) {
-
         in = Input.getLines(inputPath).stream()
                 .map(Moon::new)
                 .collect(Collectors.toList());
