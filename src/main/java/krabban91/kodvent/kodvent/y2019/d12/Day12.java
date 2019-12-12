@@ -2,12 +2,10 @@ package krabban91.kodvent.kodvent.y2019.d12;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.MathUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class Day12 {
     List<Moon> in;
 
@@ -25,23 +23,27 @@ public class Day12 {
 
     public long getPart1() {
         int steps = 0;
-        final List<Moon> moons = in.stream().map((x) -> (Moon) x.clone()).collect(Collectors.toList());
+        final List<Moon> moons = in.stream()
+                .map(Moon::copy)
+                .collect(Collectors.toList());
         while (steps < 1000) {
-            gravitate(moons);
+            measureGravity(moons);
             move(moons);
             steps++;
         }
-        return moons.stream().mapToLong(Moon::tot).sum();
+        return moons.stream().mapToLong(Moon::totalEnergy).sum();
     }
 
     public long getPart2() {
         long steps = 0;
-        final List<Moon> moons = in.stream().map((x) -> (Moon) x.clone()).collect(Collectors.toList());
+        final List<Moon> moons = in.stream()
+                .map(Moon::copy)
+                .collect(Collectors.toList());
         Long xCycle = null;
         Long yCycle = null;
         Long zCycle = null;
         while (xCycle == null || yCycle == null || zCycle == null) {
-            gravitate(moons);
+            measureGravity(moons);
             move(moons);
             steps++;
             if (xCycle == null && isInitialStateX(moons)) {
@@ -61,8 +63,8 @@ public class Day12 {
         moons.forEach(Moon::move);
     }
 
-    private void gravitate(List<Moon> moons) {
-        moons.forEach(m -> m.applyGravity(moons));
+    private void measureGravity(List<Moon> moons) {
+        moons.forEach(m -> m.measureGravity(moons));
     }
 
     private boolean isInitialStateX(List<Moon> moons) {

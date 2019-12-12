@@ -9,7 +9,7 @@ public class Moon {
     private Point3D location;
     private Point3D velocity;
 
-    public Moon(Point3D location, Point3D velocity) {
+    private Moon(Point3D location, Point3D velocity) {
         this.location = location;
         this.velocity = velocity;
     }
@@ -24,7 +24,7 @@ public class Moon {
 
     }
 
-    public void applyGravity(List<Moon> moons) {
+    public void measureGravity(List<Moon> moons) {
         final List<Moon> other = moons.stream()
                 .filter(m -> !m.equals(this))
                 .collect(Collectors.toList());
@@ -40,24 +40,23 @@ public class Moon {
     }
 
     public void move() {
-        this.location = new Point3D(this.velocity.getX() + this.location.getX(), this.velocity.getY() + this.location.getY(), this.velocity.getZ() + this.location.getZ());
+        this.location = this.location.add(this.velocity);
     }
 
-    @Override
-    protected Object clone() {
-        return new Moon((Point3D) location.clone(), (Point3D) velocity.clone());
+    protected Moon copy() {
+        return new Moon(location.copy(), velocity.copy());
     }
 
-    public int pot() {
+    public int potentialEnergy() {
         return Math.abs(location.getX()) + Math.abs(location.getY()) + Math.abs(location.getZ());
     }
 
-    public int kin() {
+    public int kineticEnergy() {
         return Math.abs(velocity.getX()) + Math.abs(velocity.getY()) + Math.abs(velocity.getZ());
     }
 
-    public int tot() {
-        return this.pot() * this.kin();
+    public int totalEnergy() {
+        return this.potentialEnergy() * this.kineticEnergy();
     }
 
     public boolean xMatch(Moon o) {

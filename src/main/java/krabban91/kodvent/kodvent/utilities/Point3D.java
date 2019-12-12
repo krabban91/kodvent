@@ -8,16 +8,16 @@ public class Point3D {
     int z;
 
 
-    public Point3D(int x, int y, int z){
-        this.xy = new Point(x,y);
+    public Point3D(int x, int y, int z) {
+        this.xy = new Point(x, y);
         this.z = z;
     }
 
-    public boolean equals(Object other){
-        if(other instanceof Point3D){
-            Point3D point = (Point3D)other;
+    public boolean equals(Object other) {
+        if (other instanceof Point3D) {
+            Point3D point = (Point3D) other;
             boolean xyEq = xy.equals(point.xy);
-            if(xyEq){
+            if (xyEq) {
                 return this.z == point.z;
             }
             return xyEq;
@@ -25,7 +25,7 @@ public class Point3D {
         return false;
     }
 
-    public int manhattanDistance(Point3D other){
+    public int manhattanDistance(Point3D other) {
         return Distances.manhattan(this, other);
     }
 
@@ -42,18 +42,25 @@ public class Point3D {
         return builder.toString();
     }
 
-    @Override
-    public Object clone() {
+    public Point3D add(Point3D other) {
+        return new Point3D(this.getX() + other.getX(),
+                this.getY() + other.getY(),
+                this.getZ() + other.getZ());
+    }
+
+    public Point3D copy() {
         return new Point3D(this.getX(), this.getY(), this.getZ());
     }
 
-    public int getX(){
+    public int getX() {
         return this.xy.x;
     }
-    public int getY(){
+
+    public int getY() {
         return this.xy.y;
     }
-    public int getZ(){
+
+    public int getZ() {
         return this.z;
     }
 
