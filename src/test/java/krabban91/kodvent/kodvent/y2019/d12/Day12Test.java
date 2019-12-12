@@ -17,11 +17,25 @@ public class Day12Test {
 
     @Test
     public void getPart1() {
+        day12.readInput("y2019/d12/input.txt");
+        assertThat(day12.getPart1()).isEqualTo(13399L);
+    }
+
+    @Test
+    public void getPart1Extra() {
+        day12.readInput("y2019/d12/extra.txt");
         assertThat(day12.getPart1()).isEqualTo(183);
     }
 
     @Test
-    public void getPart2Example() {
+    public void getPart2() {
+        day12.readInput("y2019/d12/input.txt");
+        assertThat(day12.getPart2()).isEqualTo(312992287193064L);
+    }
+
+    @Test
+    public void getPart2Extra() {
+        day12.readInput("y2019/d12/extra.txt");
         assertThat(day12.getPart2()).isEqualTo(2772);
     }
 
