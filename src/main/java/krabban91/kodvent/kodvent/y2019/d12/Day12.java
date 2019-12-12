@@ -3,12 +3,15 @@ package krabban91.kodvent.kodvent.y2019.d12;
 import krabban91.kodvent.kodvent.utilities.Input;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 public class Day12 {
-    List<Ent> in;
+    List<Moon> in;
 
     public Day12() {
         System.out.println("::: Starting Day 12 :::");
@@ -23,19 +26,55 @@ public class Day12 {
     }
 
     public long getPart1() {
+        int steps = 0;
+        final List<Moon> moons = in.stream().map((x) -> (Moon)x.clone()).collect(Collectors.toList());
+        while (steps<1000){
+            gravitate(moons);
+            move(moons);
+            steps++;
+        }
+        // wrong 48072067L, 673
+        return moons.stream().mapToLong(Moon::tot).sum();
+    }
 
-        return -1L;
+    private void move(List<Moon> moons) {
+        moons.forEach(Moon::move);
+    }
+
+    private void gravitate(List<Moon> moons) {
+        moons.forEach(m->m.applyGravity(moons));
     }
 
     public long getPart2() {
+        int steps = 0;
+        final List<Moon> moons = in.stream().map((x) -> (Moon)x.clone()).collect(Collectors.toList());
+        while (true){
+            gravitate(moons);
+            move(moons);
+            steps++;
 
-        return -1;
+            if(isInitialState(moons)){
+                return steps;
+            }
+        }
+        // wrong 48072067L, 673
+    }
+
+    private boolean isInitialState(List<Moon> moons) {
+        for(int i = 0; i <moons.size(); i++){
+            final Moon a = moons.get(i);
+            final Moon b = in.get(i);
+            if(!a.equals(b)){
+                return false;
+            }
+        }
+        return true;
     }
 
     public void readInput(String inputPath) {
 
         in = Input.getLines(inputPath).stream()
-                .map(Ent::new)
+                .map(Moon::new)
                 .collect(Collectors.toList());
     }
 }
