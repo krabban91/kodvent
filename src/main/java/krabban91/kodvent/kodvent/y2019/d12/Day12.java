@@ -33,7 +33,6 @@ public class Day12 {
             move(moons);
             steps++;
         }
-        // wrong 48072067L, 673
         return moons.stream().mapToLong(Moon::tot).sum();
     }
 
@@ -46,9 +45,10 @@ public class Day12 {
     }
 
     public long getPart2() {
-        int steps = 0;
+        long steps = 0;
         final List<Moon> moons = in.stream().map((x) -> (Moon)x.clone()).collect(Collectors.toList());
         while (true){
+            // find cycle per axis. multiply and return. 
             gravitate(moons);
             move(moons);
             steps++;
@@ -57,14 +57,11 @@ public class Day12 {
                 return steps;
             }
         }
-        // wrong 48072067L, 673
     }
 
     private boolean isInitialState(List<Moon> moons) {
         for(int i = 0; i <moons.size(); i++){
-            final Moon a = moons.get(i);
-            final Moon b = in.get(i);
-            if(!a.equals(b)){
+            if(!moons.get(i).equals(in.get(i))){
                 return false;
             }
         }
