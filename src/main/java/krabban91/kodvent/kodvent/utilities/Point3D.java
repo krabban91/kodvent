@@ -42,6 +42,11 @@ public class Point3D {
         return builder.toString();
     }
 
+    @Override
+    public Object clone() {
+        return new Point3D(this.getX(), this.getY(), this.getZ());
+    }
+
     public int getX(){
         return this.xy.x;
     }
