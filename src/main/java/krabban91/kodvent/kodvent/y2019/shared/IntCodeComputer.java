@@ -62,6 +62,11 @@ public class IntCodeComputer implements Runnable {
         return this.program.get(pointer) == HALT_CODE;
     }
 
+    public boolean hasOutput() throws InterruptedException {
+        TimeUnit.MICROSECONDS.sleep(1);
+        return !this.outputs.isEmpty();
+    }
+
     @Override
     public void run() {
         while (!hasHalted()) {
@@ -206,13 +211,7 @@ public class IntCodeComputer implements Runnable {
             System.out.print("input: ");
         }
         try {
-            Long in = inputs.pollFirst(10, TimeUnit.SECONDS);
-            if (in == null) {
-                if (verbose) {
-                    System.out.println("<EMPTY>");
-                }
-                return;
-            }
+            Long in = inputs.pollFirst(10, TimeUnit.DAYS);
             if (verbose) {
                 System.out.println(in);
             }
