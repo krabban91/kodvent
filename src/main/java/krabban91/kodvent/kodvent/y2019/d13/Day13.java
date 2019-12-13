@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.y2019.d13;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
@@ -62,13 +63,41 @@ public class Day13 {
     }
 
 
-    public long getPart2() {
+    public long getPart2() throws InterruptedException {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+        final LinkedBlockingDeque<Long> outputs = new LinkedBlockingDeque<>();
+        IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), outputs);
+        computer.setAddress(0,2);
+        executor.execute(computer);
+        final Map<Point, Tile> map = new HashMap<>();
+        Long score = null;
+        while (!computer.hasHalted() || !outputs.isEmpty()){
 
-        return -1;
+            while (map.size()<740){
+                final Long x = computer.pollOutput(2);
+                final Long y = computer.pollOutput(2);
+                final Long type = computer.pollOutput(2);
+                map.put(new Point(x.intValue(),y.intValue()),new Tile(type));
+            }
+            final Long x = computer.pollOutput(2);
+            final Long y = computer.pollOutput(2);
+            score = computer.pollOutput(2);
+            System.out.println("X="+x+",Y="+y+", score:"+score);
+            //keep same x as ball location
+            final int ballX = map.entrySet().stream().filter(e -> e.getValue().isBall()).mapToInt(value -> value.getKey().x).findAny().orElse(-1);
+            final int paddleX = map.entrySet().stream().filter(e -> e.getValue().isPaddle()).mapToInt(value -> value.getKey().x).findAny().orElse(-1);
+            computer.addInput(Integer.compare(ballX,paddleX));
+            //updateMap.
+            
+            //System.out.println(new LogUtils<Tile>().mapToText(map, Tile::toString));
+            //give input
+        }
+        return score.longValue();
     }
 
     public void readInput(String inputPath) {
-        in = Stream.of(Input.getSingleLine(inputPath).split(",")).map(Long::new)
+        in = Stream.of(Input.getSingleLine(inputPath).split(","))
+                .map(Long::parseLong)
                 .collect(Collectors.toList());
     }
 }
