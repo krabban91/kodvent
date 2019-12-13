@@ -3,7 +3,6 @@ package krabban91.kodvent.kodvent.y2019.d13;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day13 {
     List<Long> in;
     private boolean debug = false;
@@ -67,7 +65,6 @@ public class Day13 {
         Long score = null;
         boolean started = false;
         while (!computer.hasHalted() || computer.hasOutput()) {
-
             final Long x = computer.pollOutput(2);
             final Long y = computer.pollOutput(2);
             final Long type = computer.pollOutput(2);
@@ -81,22 +78,19 @@ public class Day13 {
                 final Point key = new Point(x.intValue(), y.intValue());
                 final Tile tile = new Tile(type);
                 map.put(key, tile);
-                if (map.size() == 740) {
-                    TimeUnit.MICROSECONDS.sleep(1);
-                    if (!computer.hasOutput()) {
-                        if(debug){
-                            System.out.println(new LogUtils<Tile>().mapToText(map, t -> t == null ? " " : t.toString()));
-                        }
-                        Point ball = map.entrySet().stream()
-                                .filter(e -> e.getValue().isBall())
-                                .findFirst()
-                                .map(Map.Entry::getKey).get();
-                        Point paddle = map.entrySet().stream()
-                                .filter(e -> e.getValue().isPaddle())
-                                .findFirst()
-                                .map(Map.Entry::getKey).get();
-                        computer.addInput(Integer.compare(ball.x, paddle.x));
+                if (map.size() == 740 && !computer.hasOutput()) {
+                    if (debug) {
+                        System.out.println(new LogUtils<Tile>().mapToText(map, t -> t == null ? " " : t.toString()));
                     }
+                    Point ball = map.entrySet().stream()
+                            .filter(e -> e.getValue().isBall())
+                            .findFirst()
+                            .map(Map.Entry::getKey).get();
+                    Point paddle = map.entrySet().stream()
+                            .filter(e -> e.getValue().isPaddle())
+                            .findFirst()
+                            .map(Map.Entry::getKey).get();
+                    computer.addInput(Integer.compare(ball.x, paddle.x));
                 }
             }
         }
