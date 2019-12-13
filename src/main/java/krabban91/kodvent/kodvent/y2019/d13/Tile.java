@@ -35,4 +35,8 @@ public class Tile {
     public boolean isPaddle() {
         return type== 3;
     }
+
+    public boolean isWall() {
+        return type == 1;
+    }
 }
