@@ -23,17 +23,17 @@ import java.util.stream.Stream;
 
 @Component
 public class Day15 {
+    private static final boolean DEBUG = false;
+    private static final int NORTH = 1, SOUTH = 2, WEST = 3, EAST = 4;
+    private static final int WALL = 0, NORMAL = 1, OXYGEN = 2;
+    private static final Point VEC_NORTH = new Point(0, -1);
+    private static final Point VEC_EAST = new Point(1, 0);
+    private static final Point VEC_SOUTH = new Point(0, 1);
+    private static final Point VEC_WEST = new Point(-1, 0);
+    private static final List<Point> VECTORS = Arrays.asList(VEC_NORTH, VEC_SOUTH, VEC_WEST, VEC_EAST);
+    private static final List<Integer> DIRECTIONS = Arrays.asList(NORTH, SOUTH, WEST, EAST);
+    private static final  List<Integer> CAME_FROM_DIRECTIONS = Arrays.asList(SOUTH, NORTH, EAST, WEST);
     List<Long> in;
-    int north = 1, south = 2, west = 3, east = 4;
-    int wall = 0, movedToNormal = 1, movedToOxygen = 2;
-    Point vecNorth = new Point(0, -1);
-    Point vecEast = new Point(1, 0);
-    Point vecSouth = new Point(0, 1);
-    Point vecWest = new Point(-1, 0);
-    List<Point> directions = Arrays.asList(vecNorth, vecSouth, vecWest, vecEast);
-    private List<Integer> directionNumbers = Arrays.asList(north, south, west, east);
-    private List<Integer> cameFromNumbers = Arrays.asList(south, north, east, west);
-
 
     public Day15() throws InterruptedException {
         System.out.println("::: Starting Day 15 :::");
@@ -51,70 +51,12 @@ public class Day15 {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         executor.execute(computer);
-        Map<Point, Integer> map = new HashMap<>();
-        Point location = new Point(0, 0);
-        Deque<Integer> pathBackToStart = new LinkedBlockingDeque<>();
-        map.put(location, movedToNormal);
-        Point oxygenLocation = null;
-        while (!computer.hasHalted()) {
-            drawMap(map);
-            if (map.get(location).equals(movedToOxygen)) {
-                // we want to explore full map
+        Map<Point, Integer> map = generateMap(computer);
 
-            }
-            final Integer directionBack = pathBackToStart.peekLast();
-            Set<Integer> alternatives = new HashSet<>(this.directionNumbers);
-            if (directionBack != null) {
-                alternatives.remove(directionBack);
-            }
-            Point finalLocation = location;
-            final Optional<Integer> nextStep = alternatives.stream().filter(i -> {
-                final Point point = this.directions.get(this.directionNumbers.indexOf(i));
-                final Point point1 = new Point(finalLocation.x + point.x, finalLocation.y + point.y);
-                return !map.containsKey(point1);
-            }).findFirst();
-            if (nextStep.isEmpty()) {
-                if (pathBackToStart.isEmpty()) {
-                    // back to start, no more paths to take.
-                    // oxygen Tank should have been found.
-                    break;
-                }
-                final Integer integer = pathBackToStart.pollLast();
-
-                final Point vector = this.directions.get(this.directionNumbers.indexOf(integer));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
-                computer.addInput(integer);
-                location = nextLocation;
-                // we already know the answer
-                final Long report = computer.pollOutput(10);
-            } else {
-                final Integer next = nextStep.get();
-                final Point vector = this.directions.get(this.directionNumbers.indexOf(next));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
-                final Integer cameFrom = this.cameFromNumbers.get(this.directionNumbers.indexOf(next));
-                //move
-                computer.addInput(next);
-                pathBackToStart.addLast(cameFrom);
-                final Long report = computer.pollOutput(10);
-                if (report == wall) {
-                    map.put(nextLocation, wall);
-                    pathBackToStart.pollLast();
-                } else if (report == movedToOxygen) {
-                    map.put(nextLocation, movedToOxygen);
-                    location = nextLocation;
-                    oxygenLocation = location;
-                } else if (report == movedToNormal) {
-                    map.put(nextLocation, movedToNormal);
-                    location = nextLocation;
-                } else {
-                    int a = 0;
-                }
-            }
-        }
-
-        if (oxygenLocation != null) {
+        final Optional<Point> oxygenLocation = map.entrySet().stream().filter(e -> e.getValue() == Day15.OXYGEN).findFirst().map(Map.Entry::getKey);
+        if (oxygenLocation.isPresent()) {
             Point start = new Point(0, 0);
-            Point target = oxygenLocation;
+            Point target = oxygenLocation.get();
             Map<Point, Integer> distances = new HashMap<>();
             Deque<Point> toVisit = new LinkedBlockingDeque<>();
             toVisit.addLast(start);
@@ -124,20 +66,18 @@ public class Day15 {
                 final Integer distanceToHere = distances.get(point);
                 //here
                 final Integer integer = map.get(point);
-                if (integer == movedToOxygen) {
+                if (integer == Day15.OXYGEN) {
                     return distanceToHere;
                 }
                 //next
-                final List<Point> collect = directions.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
-                        .filter(p -> map.containsKey(p) && !map.get(p).equals(wall))
+                final List<Point> collect = VECTORS.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
+                        .filter(p -> map.containsKey(p) && !map.get(p).equals(WALL))
                         .filter(p -> !distances.containsKey(p))
                         .filter(p -> !toVisit.contains(p))
                         .collect(Collectors.toList());
                 collect.forEach(p -> toVisit.addLast(p));
                 collect.forEach(p -> distances.put(p, distanceToHere + 1));
             }
-            // shortest path algo to point.
-
             return distances.get(target);
         }
         executor.shutdown();
@@ -153,103 +93,34 @@ public class Day15 {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         executor.execute(computer);
-        Map<Point, Integer> map = new HashMap<>();
-        Point location = new Point(0, 0);
-        Deque<Integer> pathBackToStart = new LinkedBlockingDeque<>();
-        map.put(location, movedToNormal);
-        Point oxygenLocation = null;
-        while (!computer.hasHalted()) {
-            drawMap(map);
-            if (map.get(location).equals(movedToOxygen)) {
-                // we want to explore full map
-
-            }
-            final Integer directionBack = pathBackToStart.peekLast();
-            Set<Integer> alternatives = new HashSet<>(this.directionNumbers);
-            if (directionBack != null) {
-                alternatives.remove(directionBack);
-            }
-            Point finalLocation = location;
-            final Optional<Integer> nextStep = alternatives.stream().filter(i -> {
-                final Point point = this.directions.get(this.directionNumbers.indexOf(i));
-                final Point point1 = new Point(finalLocation.x + point.x, finalLocation.y + point.y);
-                return !map.containsKey(point1);
-            }).findFirst();
-            if (nextStep.isEmpty()) {
-                if (pathBackToStart.isEmpty()) {
-                    // back to start, no more paths to take.
-                    // oxygen Tank should have been found.
-                    break;
-                }
-                final Integer integer = pathBackToStart.pollLast();
-
-                final Point vector = this.directions.get(this.directionNumbers.indexOf(integer));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
-                computer.addInput(integer);
-                location = nextLocation;
-                // we already know the answer
-                final Long report = computer.pollOutput(10);
-            } else {
-                final Integer next = nextStep.get();
-                final Point vector = this.directions.get(this.directionNumbers.indexOf(next));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
-                final Integer cameFrom = this.cameFromNumbers.get(this.directionNumbers.indexOf(next));
-                //move
-                computer.addInput(next);
-                pathBackToStart.addLast(cameFrom);
-                final Long report = computer.pollOutput(10);
-                if (report == wall) {
-                    map.put(nextLocation, wall);
-                    pathBackToStart.pollLast();
-                } else if (report == movedToOxygen) {
-                    map.put(nextLocation, movedToOxygen);
-                    location = nextLocation;
-                    oxygenLocation = location;
-                } else if (report == movedToNormal) {
-                    map.put(nextLocation, movedToNormal);
-                    location = nextLocation;
-                } else {
-                    int a = 0;
-                }
-            }
-        }
-
-        if (oxygenLocation != null) {
-            //OxygenSpread
+        Map<Point, Integer> map = generateMap(computer);
+        final Optional<Point> oxygenLocation = map.entrySet().stream().filter(e -> e.getValue() == Day15.OXYGEN).findFirst().map(Map.Entry::getKey);
+        if (oxygenLocation.isPresent()) {
             int minutesPassed = -1;
-            Point start = oxygenLocation;
-            Map<Point, Integer> distances = new HashMap<>();
+            Point start = oxygenLocation.get();
             Map<Integer, Set<Point>> toVisit = new HashMap<>();
             toVisit.put(0, Set.of(start));
-            distances.put(start, 0);
-            while (map.values().stream().anyMatch(i -> i == movedToNormal)) {
+            while (map.values().stream().anyMatch(i -> i == NORMAL)) {
                 minutesPassed++;
                 final Set<Point> points = toVisit.get(minutesPassed);
                 for (Point current : points) {
                     //here
-                    map.put(current, movedToOxygen);
-                    final Integer distanceToHere = distances.get(current);
+                    map.put(current, Day15.OXYGEN);
 
                     //next
                     final int nextMinute = minutesPassed + 1;
-                    final List<Point> collect = directions.stream().map(p -> new Point(p.x + current.x, p.y + current.y))
-                            .filter(p -> map.containsKey(p) && !map.get(p).equals(wall))
-                            .filter(p -> !distances.containsKey(p))
+                    final List<Point> collect = VECTORS.stream().map(p -> new Point(p.x + current.x, p.y + current.y))
+                            .filter(p -> map.containsKey(p) && !map.get(p).equals(WALL))
                             .filter(p -> toVisit.entrySet().stream().noneMatch(s -> s.getValue().contains(p)))
                             .collect(Collectors.toList());
-                    collect.stream().forEach(p -> {
-                        toVisit.putIfAbsent(nextMinute, new HashSet<>());
-                        toVisit.computeIfPresent(nextMinute, (k, v) -> {
-                            v.add(p);
-                            return v;
-                        });
-                    });
-                    collect.forEach(p -> distances.put(p, distanceToHere + 1));
+                    toVisit.putIfAbsent(nextMinute, new HashSet<>());
+                    collect.forEach(p -> toVisit.computeIfPresent(nextMinute, (k, v) -> {
+                        v.add(p);
+                        return v;
+                    }));
                 }
                 drawMap(map);
             }
-            // shortest path algo to point.
-
             return minutesPassed;
         }
         executor.shutdown();
@@ -261,8 +132,67 @@ public class Day15 {
         return -1;
     }
 
-    public void drawMap(Map<Point, Integer> map) {
-        System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (i == 0 ? "#" : (i == 1 ? "." : "O"))));
+    private Map<Point, Integer> generateMap(IntCodeComputer computer) throws InterruptedException {
+        Map<Point, Integer> map = new HashMap<>();
+        Point location = new Point(0, 0);
+        Deque<Integer> pathBackToStart = new LinkedBlockingDeque<>();
+        map.put(location, NORMAL);
+        while (!computer.hasHalted()) {
+            drawMap(map);
+            map.get(location);// we want to explore full map
+            final Integer directionBack = pathBackToStart.peekLast();
+            Set<Integer> alternatives = new HashSet<>(DIRECTIONS);
+            if (directionBack != null) {
+                alternatives.remove(directionBack);
+            }
+            Point finalLocation = location;
+            final Optional<Integer> nextStep = alternatives.stream().filter(i -> {
+                final Point point = VECTORS.get(DIRECTIONS.indexOf(i));
+                final Point point1 = new Point(finalLocation.x + point.x, finalLocation.y + point.y);
+                return !map.containsKey(point1);
+            }).findFirst();
+            if (nextStep.isEmpty()) {
+                if (pathBackToStart.isEmpty()) {
+                    // back to start, no more paths to take.
+                    // OXYGEN Tank should have been found.
+                    break;
+                }
+                final Integer integer = pathBackToStart.pollLast();
+
+                final Point vector = VECTORS.get(DIRECTIONS.indexOf(integer));
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                computer.addInput(integer);
+                location = nextLocation;
+                // we already know the answer
+                final Long report = computer.pollOutput(10);
+            } else {
+                final Integer next = nextStep.get();
+                final Point vector = VECTORS.get(DIRECTIONS.indexOf(next));
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                final Integer cameFrom = CAME_FROM_DIRECTIONS.get(DIRECTIONS.indexOf(next));
+                //move
+                computer.addInput(next);
+                pathBackToStart.addLast(cameFrom);
+                final Long report = computer.pollOutput(10);
+                if (report == WALL) {
+                    map.put(nextLocation, WALL);
+                    pathBackToStart.pollLast();
+                } else if (report == OXYGEN) {
+                    map.put(nextLocation, OXYGEN);
+                    location = nextLocation;
+                } else if (report == NORMAL) {
+                    map.put(nextLocation, NORMAL);
+                    location = nextLocation;
+                }
+            }
+        }
+        return map;
+    }
+
+    private void drawMap(Map<Point, Integer> map) {
+        if (DEBUG) {
+            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (i == 0 ? "#" : (i == 1 ? "." : "O"))));
+        }
     }
 
     public void readInput(String inputPath) {
