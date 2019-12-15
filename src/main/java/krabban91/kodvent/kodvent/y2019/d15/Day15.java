@@ -32,7 +32,7 @@ public class Day15 {
     private static final Point VEC_WEST = new Point(-1, 0);
     private static final List<Point> VECTORS = Arrays.asList(VEC_NORTH, VEC_SOUTH, VEC_WEST, VEC_EAST);
     private static final List<Integer> DIRECTIONS = Arrays.asList(NORTH, SOUTH, WEST, EAST);
-    private static final  List<Integer> CAME_FROM_DIRECTIONS = Arrays.asList(SOUTH, NORTH, EAST, WEST);
+    private static final List<Integer> CAME_FROM_DIRECTIONS = Arrays.asList(SOUTH, NORTH, EAST, WEST);
     List<Long> in;
 
     public Day15() throws InterruptedException {
@@ -66,9 +66,6 @@ public class Day15 {
                 final Integer distanceToHere = distances.get(point);
                 //here
                 final Integer integer = map.get(point);
-                if (integer == Day15.OXYGEN) {
-                    return distanceToHere;
-                }
                 //next
                 final List<Point> collect = VECTORS.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
                         .filter(p -> map.containsKey(p) && !map.get(p).equals(WALL))
@@ -106,7 +103,6 @@ public class Day15 {
                 for (Point current : points) {
                     //here
                     map.put(current, Day15.OXYGEN);
-
                     //next
                     final int nextMinute = minutesPassed + 1;
                     final List<Point> collect = VECTORS.stream().map(p -> new Point(p.x + current.x, p.y + current.y))
@@ -140,53 +136,49 @@ public class Day15 {
         while (!computer.hasHalted()) {
             drawMap(map);
             map.get(location);// we want to explore full map
-            final Integer directionBack = pathBackToStart.peekLast();
-            Set<Integer> alternatives = new HashSet<>(DIRECTIONS);
-            if (directionBack != null) {
-                alternatives.remove(directionBack);
-            }
             Point finalLocation = location;
-            final Optional<Integer> nextStep = alternatives.stream().filter(i -> {
-                final Point point = VECTORS.get(DIRECTIONS.indexOf(i));
-                final Point point1 = new Point(finalLocation.x + point.x, finalLocation.y + point.y);
-                return !map.containsKey(point1);
-            }).findFirst();
+            final Optional<Integer> nextStep = nextStep(map, pathBackToStart, finalLocation);
+            // input
+            Point nextLocation;
             if (nextStep.isEmpty()) {
                 if (pathBackToStart.isEmpty()) {
-                    // back to start, no more paths to take.
-                    // OXYGEN Tank should have been found.
+                    // Map is fully explored
                     break;
                 }
-                final Integer integer = pathBackToStart.pollLast();
-
-                final Point vector = VECTORS.get(DIRECTIONS.indexOf(integer));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
-                computer.addInput(integer);
-                location = nextLocation;
-                // we already know the answer
-                final Long report = computer.pollOutput(10);
+                // backwards
+                final Integer previous = pathBackToStart.pollLast();
+                final Point vector = VECTORS.get(DIRECTIONS.indexOf(previous));
+                nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                computer.addInput(previous);
             } else {
+                // forward
                 final Integer next = nextStep.get();
                 final Point vector = VECTORS.get(DIRECTIONS.indexOf(next));
-                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                nextLocation = new Point(location.x + vector.x, location.y + vector.y);
                 final Integer cameFrom = CAME_FROM_DIRECTIONS.get(DIRECTIONS.indexOf(next));
-                //move
-                computer.addInput(next);
                 pathBackToStart.addLast(cameFrom);
-                final Long report = computer.pollOutput(10);
-                if (report == WALL) {
-                    map.put(nextLocation, WALL);
-                    pathBackToStart.pollLast();
-                } else if (report == OXYGEN) {
-                    map.put(nextLocation, OXYGEN);
-                    location = nextLocation;
-                } else if (report == NORMAL) {
-                    map.put(nextLocation, NORMAL);
-                    location = nextLocation;
-                }
+                computer.addInput(next);
+            }
+
+            final Long report = computer.pollOutput(10);
+            map.put(nextLocation, report.intValue());
+            // output
+            if (nextStep.isPresent() && report == WALL) {
+                pathBackToStart.pollLast();
+            } else {
+                location = nextLocation;
             }
         }
         return map;
+    }
+
+    private Optional<Integer> nextStep(Map<Point, Integer> map, Deque<Integer> pathBackToStart, Point current) {
+        return new HashSet<>(DIRECTIONS).stream()
+                .filter(i -> pathBackToStart.isEmpty() || !i.equals(pathBackToStart.peekLast()))
+                .filter(i -> {
+                    final Point vector = VECTORS.get(DIRECTIONS.indexOf(i));
+                    return !map.containsKey(new Point(current.x + vector.x, current.y + vector.y));
+                }).findFirst();
     }
 
     private void drawMap(Map<Point, Integer> map) {
