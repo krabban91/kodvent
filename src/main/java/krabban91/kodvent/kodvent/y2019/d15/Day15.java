@@ -3,7 +3,6 @@ package krabban91.kodvent.kodvent.y2019.d15;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -21,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day15 {
     private static final boolean DEBUG = false;
     private static final int NORTH = 1, SOUTH = 2, WEST = 3, EAST = 4;
