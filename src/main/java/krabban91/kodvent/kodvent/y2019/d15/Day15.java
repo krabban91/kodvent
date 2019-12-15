@@ -58,7 +58,7 @@ public class Day15 {
         map.put(location, movedToNormal);
         Point oxygenLocation = null;
         while (!computer.hasHalted()) {
-            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null? " ": (i== 0 ? "#" :(i==1?".":"O"))));
+            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (i == 0 ? "#" : (i == 1 ? "." : "O"))));
             if (map.get(location).equals(movedToOxygen)) {
                 // we want to explore full map
 
@@ -75,7 +75,7 @@ public class Day15 {
                 return !map.containsKey(point1);
             }).findFirst();
             if (nextStep.isEmpty()) {
-                if(pathBackToStart.isEmpty()){
+                if (pathBackToStart.isEmpty()) {
                     // back to start, no more paths to take.
                     // oxygen Tank should have been found.
                     break;
@@ -83,7 +83,7 @@ public class Day15 {
                 final Integer integer = pathBackToStart.pollLast();
 
                 final Point vector = this.directions.get(this.directionNumbers.indexOf(integer));
-                Point nextLocation = new Point(location.x+vector.x, location.y +vector.y);
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
                 computer.addInput(integer);
                 location = nextLocation;
                 // we already know the answer
@@ -91,7 +91,7 @@ public class Day15 {
             } else {
                 final Integer next = nextStep.get();
                 final Point vector = this.directions.get(this.directionNumbers.indexOf(next));
-                Point nextLocation = new Point(location.x+vector.x, location.y +vector.y);
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
                 final Integer cameFrom = this.cameFromNumbers.get(this.directionNumbers.indexOf(next));
                 //move
                 computer.addInput(next);
@@ -104,7 +104,7 @@ public class Day15 {
                     map.put(nextLocation, movedToOxygen);
                     location = nextLocation;
                     oxygenLocation = location;
-                } else if( report == movedToNormal){
+                } else if (report == movedToNormal) {
                     map.put(nextLocation, movedToNormal);
                     location = nextLocation;
                 } else {
@@ -113,11 +113,34 @@ public class Day15 {
             }
         }
 
-        if(oxygenLocation != null){
+        if (oxygenLocation != null) {
+            Point start = new Point(0, 0);
+            Point target = oxygenLocation;
+            Map<Point, Integer> distances = new HashMap<>();
+            Deque<Point> toVisit = new LinkedBlockingDeque<>();
+            toVisit.addLast(start);
+            distances.put(start,0);
+            while (!distances.containsKey(target)) {
+                final Point point = toVisit.pollFirst();
+                final Integer distanceToHere = distances.get(point);
+                //here
+                final Integer integer = map.get(point);
+                if(integer == movedToOxygen){
+                    return distanceToHere;
+                }
+                //next
+                final List<Point> collect = directions.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
+                        .filter(p -> map.containsKey(p) && !map.get(p).equals(wall))
+                        .filter(p -> !distances.containsKey(p))
+                        .filter(p -> !toVisit.contains(p))
+                        .collect(Collectors.toList());
+                collect.forEach(p -> toVisit.addLast(p));
+                collect.forEach(p -> distances.put(p,distanceToHere+1));
+            }
             // shortest path algo to point.
 
+            return distances.get(target);
         }
-
         executor.shutdown();
         try {
             executor.awaitTermination(1L, TimeUnit.DAYS);
