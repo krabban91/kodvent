@@ -48,7 +48,6 @@ public class Day15 {
     }
 
     public long getPart1() throws InterruptedException {
-        Long stepsFromStart = -1L;
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
         executor.execute(computer);
@@ -58,7 +57,7 @@ public class Day15 {
         map.put(location, movedToNormal);
         Point oxygenLocation = null;
         while (!computer.hasHalted()) {
-            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (i == 0 ? "#" : (i == 1 ? "." : "O"))));
+            drawMap(map);
             if (map.get(location).equals(movedToOxygen)) {
                 // we want to explore full map
 
@@ -119,13 +118,13 @@ public class Day15 {
             Map<Point, Integer> distances = new HashMap<>();
             Deque<Point> toVisit = new LinkedBlockingDeque<>();
             toVisit.addLast(start);
-            distances.put(start,0);
+            distances.put(start, 0);
             while (!distances.containsKey(target)) {
                 final Point point = toVisit.pollFirst();
                 final Integer distanceToHere = distances.get(point);
                 //here
                 final Integer integer = map.get(point);
-                if(integer == movedToOxygen){
+                if (integer == movedToOxygen) {
                     return distanceToHere;
                 }
                 //next
@@ -135,7 +134,7 @@ public class Day15 {
                         .filter(p -> !toVisit.contains(p))
                         .collect(Collectors.toList());
                 collect.forEach(p -> toVisit.addLast(p));
-                collect.forEach(p -> distances.put(p,distanceToHere+1));
+                collect.forEach(p -> distances.put(p, distanceToHere + 1));
             }
             // shortest path algo to point.
 
@@ -147,11 +146,123 @@ public class Day15 {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return stepsFromStart;
+        return -1;
     }
 
-    public long getPart2() {
+    public long getPart2() throws InterruptedException {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
+        executor.execute(computer);
+        Map<Point, Integer> map = new HashMap<>();
+        Point location = new Point(0, 0);
+        Deque<Integer> pathBackToStart = new LinkedBlockingDeque<>();
+        map.put(location, movedToNormal);
+        Point oxygenLocation = null;
+        while (!computer.hasHalted()) {
+            drawMap(map);
+            if (map.get(location).equals(movedToOxygen)) {
+                // we want to explore full map
+
+            }
+            final Integer directionBack = pathBackToStart.peekLast();
+            Set<Integer> alternatives = new HashSet<>(this.directionNumbers);
+            if (directionBack != null) {
+                alternatives.remove(directionBack);
+            }
+            Point finalLocation = location;
+            final Optional<Integer> nextStep = alternatives.stream().filter(i -> {
+                final Point point = this.directions.get(this.directionNumbers.indexOf(i));
+                final Point point1 = new Point(finalLocation.x + point.x, finalLocation.y + point.y);
+                return !map.containsKey(point1);
+            }).findFirst();
+            if (nextStep.isEmpty()) {
+                if (pathBackToStart.isEmpty()) {
+                    // back to start, no more paths to take.
+                    // oxygen Tank should have been found.
+                    break;
+                }
+                final Integer integer = pathBackToStart.pollLast();
+
+                final Point vector = this.directions.get(this.directionNumbers.indexOf(integer));
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                computer.addInput(integer);
+                location = nextLocation;
+                // we already know the answer
+                final Long report = computer.pollOutput(10);
+            } else {
+                final Integer next = nextStep.get();
+                final Point vector = this.directions.get(this.directionNumbers.indexOf(next));
+                Point nextLocation = new Point(location.x + vector.x, location.y + vector.y);
+                final Integer cameFrom = this.cameFromNumbers.get(this.directionNumbers.indexOf(next));
+                //move
+                computer.addInput(next);
+                pathBackToStart.addLast(cameFrom);
+                final Long report = computer.pollOutput(10);
+                if (report == wall) {
+                    map.put(nextLocation, wall);
+                    pathBackToStart.pollLast();
+                } else if (report == movedToOxygen) {
+                    map.put(nextLocation, movedToOxygen);
+                    location = nextLocation;
+                    oxygenLocation = location;
+                } else if (report == movedToNormal) {
+                    map.put(nextLocation, movedToNormal);
+                    location = nextLocation;
+                } else {
+                    int a = 0;
+                }
+            }
+        }
+
+        if (oxygenLocation != null) {
+            //OxygenSpread
+            int minutesPassed = -1;
+            Point start = oxygenLocation;
+            Map<Point, Integer> distances = new HashMap<>();
+            Map<Integer, Set<Point>> toVisit = new HashMap<>();
+            toVisit.put(0, Set.of(start));
+            distances.put(start, 0);
+            while (map.values().stream().anyMatch(i -> i == movedToNormal)) {
+                minutesPassed++;
+                final Set<Point> points = toVisit.get(minutesPassed);
+                for (Point current : points) {
+                    //here
+                    map.put(current, movedToOxygen);
+                    final Integer distanceToHere = distances.get(current);
+
+                    //next
+                    final int nextMinute = minutesPassed + 1;
+                    final List<Point> collect = directions.stream().map(p -> new Point(p.x + current.x, p.y + current.y))
+                            .filter(p -> map.containsKey(p) && !map.get(p).equals(wall))
+                            .filter(p -> !distances.containsKey(p))
+                            .filter(p -> toVisit.entrySet().stream().noneMatch(s -> s.getValue().contains(p)))
+                            .collect(Collectors.toList());
+                    collect.stream().forEach(p -> {
+                        toVisit.putIfAbsent(nextMinute, new HashSet<>());
+                        toVisit.computeIfPresent(nextMinute, (k, v) -> {
+                            v.add(p);
+                            return v;
+                        });
+                    });
+                    collect.forEach(p -> distances.put(p, distanceToHere + 1));
+                }
+                drawMap(map);
+            }
+            // shortest path algo to point.
+
+            return minutesPassed;
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1L, TimeUnit.DAYS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return -1;
+    }
+
+    public void drawMap(Map<Point, Integer> map) {
+        System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (i == 0 ? "#" : (i == 1 ? "." : "O"))));
     }
 
     public void readInput(String inputPath) {
