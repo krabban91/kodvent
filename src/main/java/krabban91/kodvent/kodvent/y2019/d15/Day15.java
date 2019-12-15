@@ -31,8 +31,8 @@ public class Day15 {
     Point vecSouth = new Point(0, 1);
     Point vecWest = new Point(-1, 0);
     List<Point> directions = Arrays.asList(vecNorth, vecSouth, vecWest, vecEast);
-    private List<Integer> directionNumbers = Arrays.asList(north, south, east, west);
-    private List<Integer> cameFromNumbers = Arrays.asList(south, north, west, east);
+    private List<Integer> directionNumbers = Arrays.asList(north, south, west, east);
+    private List<Integer> cameFromNumbers = Arrays.asList(south, north, east, west);
 
 
     public Day15() throws InterruptedException {
@@ -56,10 +56,12 @@ public class Day15 {
         Point location = new Point(0, 0);
         Deque<Integer> pathBackToStart = new LinkedBlockingDeque<>();
         map.put(location, movedToNormal);
+        Point oxygenLocation = null;
         while (!computer.hasHalted()) {
-            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null? " ": (i== 0 ? "#" : ".")));
+            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null? " ": (i== 0 ? "#" :(i==1?".":"O"))));
             if (map.get(location).equals(movedToOxygen)) {
-                return pathBackToStart.size();
+                // we want to explore full map
+
             }
             final Integer directionBack = pathBackToStart.peekLast();
             Set<Integer> alternatives = new HashSet<>(this.directionNumbers);
@@ -73,27 +75,47 @@ public class Day15 {
                 return !map.containsKey(point1);
             }).findFirst();
             if (nextStep.isEmpty()) {
-                pathBackToStart.pollLast();
-            } else {
-                final Point vector = this.directions.get(this.directionNumbers.indexOf(nextStep.get()));
+                if(pathBackToStart.isEmpty()){
+                    // back to start, no more paths to take.
+                    // oxygen Tank should have been found.
+                    break;
+                }
+                final Integer integer = pathBackToStart.pollLast();
+
+                final Point vector = this.directions.get(this.directionNumbers.indexOf(integer));
                 Point nextLocation = new Point(location.x+vector.x, location.y +vector.y);
-                final Integer dir = this.directionNumbers.get(this.directions.indexOf(vector));
+                computer.addInput(integer);
+                location = nextLocation;
+                // we already know the answer
+                final Long report = computer.pollOutput(10);
+            } else {
+                final Integer next = nextStep.get();
+                final Point vector = this.directions.get(this.directionNumbers.indexOf(next));
+                Point nextLocation = new Point(location.x+vector.x, location.y +vector.y);
+                final Integer cameFrom = this.cameFromNumbers.get(this.directionNumbers.indexOf(next));
                 //move
-                computer.addInput(dir);
-                final Integer cameFrom = this.cameFromNumbers.get(this.directions.indexOf(vector));
+                computer.addInput(next);
                 pathBackToStart.addLast(cameFrom);
-                final Long aLong = computer.pollOutput(10);
-                if (aLong == wall) {
+                final Long report = computer.pollOutput(10);
+                if (report == wall) {
                     map.put(nextLocation, wall);
                     pathBackToStart.pollLast();
-                } else if (aLong == movedToOxygen) {
+                } else if (report == movedToOxygen) {
                     map.put(nextLocation, movedToOxygen);
                     location = nextLocation;
-                } else {
+                    oxygenLocation = location;
+                } else if( report == movedToNormal){
                     map.put(nextLocation, movedToNormal);
                     location = nextLocation;
+                } else {
+                    int a = 0;
                 }
             }
+        }
+
+        if(oxygenLocation != null){
+            // shortest path algo to point.
+
         }
 
         executor.shutdown();
