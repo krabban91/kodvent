@@ -66,6 +66,6 @@ public class Day14Test {
     @Test
     public void getPart2() {
         day14.readInput("y2019/d14/input.txt");
-        assertThat(day14.getPart2()).isEqualTo(-1);
+        assertThat(day14.getPart2()).isEqualTo(1330066);
     }
 }
