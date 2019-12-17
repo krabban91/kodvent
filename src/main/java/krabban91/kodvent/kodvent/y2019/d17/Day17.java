@@ -89,12 +89,13 @@ public class Day17 {
         int x = 0;
         int y = 0;
         int maxX = 0;
-        Long lastOutput = null;
+        long largestOut = 0;
         boolean mapSearched = false;
         while (!computer.hasHalted() || computer.hasOutput()) {
-            lastOutput = computer.pollOutput(1);
+            Long lastOutput = computer.pollOutput(1);
+
             if(lastOutput == null){
-                System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (char) i.intValue() + ""));
+                System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? "  " : (char) i.intValue() + " "));
                 if(!mapSearched){
 
                     // A -> Left = 65
@@ -167,9 +168,19 @@ public class Day17 {
                         }
                     }
                     List<Integer> A = Arrays.asList((int) 'L', (int) '\n');
+
                     List<Integer> B = Arrays.asList((int) '1', (int) '\n');
                     List<Integer> C = Arrays.asList((int) 'R', (int) '\n');
-                    List<Integer> video = Arrays.asList((int) 'y', (int) '\n');
+                    List<Integer> video = Arrays.asList((int) 'n', (int) '\n');
+                    String m = "A,A,B,C,B\n";
+                    String a = "L,6,R,9,2,L,6,R,9,2,L,9,L,4,L,6\n";
+                    String bs = "L,6,R,9,2,L,6,L,9,L,9,L,4,L\n";
+                    String c = "6,R,9,2,L,9,L,4,L,6,L,9,L,9,L,4,L,6\n";
+                    mainRoutine = m.chars().boxed().collect(Collectors.toList());
+                    A = a.chars().boxed().collect(Collectors.toList());//.subList(a.length()-10,a.length());
+                    B = bs.chars().boxed().collect(Collectors.toList());
+                    C = c.chars().boxed().collect(Collectors.toList());
+                    System.out.println("main: "+(mainRoutine.size()-1)+", A: "+(A.size()-1)+", B: "+(B.size()-1)+", C: "+(C.size()-1));
                     mainRoutine.forEach(i->computer.addInput(i.longValue()));
                     A.forEach(i->computer.addInput(i.longValue()));
                     B.forEach(i->computer.addInput(i.longValue()));
@@ -179,7 +190,7 @@ public class Day17 {
                 }
 
             } else {
-
+                largestOut = Math.max(largestOut, lastOutput);
                 if (lastOutput.intValue() == 10) {
                     x = 0;
                     y++;
@@ -191,7 +202,9 @@ public class Day17 {
             }
 
         }
-        return lastOutput;
+        System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? "  " : (char) i.intValue() + " "));
+
+        return largestOut;
     }
 
     private int getHeading(int heading) {
