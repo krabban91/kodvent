@@ -107,12 +107,19 @@ public class Day17 {
                     ArrayList<Integer> inputs = new ArrayList<>();
                     Set<Point> hasVisited = new HashSet<>();
                     Point current = map.entrySet().stream().filter(e -> e.getValue() == (int) '^').findAny().map(Map.Entry::getKey).get();
+                    int range = 0;
                     while (!reachedEnd){
                         Point forth = vectors.get(getHeading(currentHeading));
                         Point pointForth = new Point(current.x + forth.x, current.y + forth.y);
                         Integer integer = map.get(pointForth);
                         if(integer != null && integer == (int)'#'){
-                            inputs.add((int)'B');
+                            if(range<9){
+                                range++;
+
+                            } else {
+                                inputs.add((int)'9');
+                                range=0;
+                            }
                             current = pointForth;
                         } else {
                             int headingLeft = getHeading(currentHeading - 1);
@@ -120,7 +127,11 @@ public class Day17 {
                             Point pointLeft = new Point(current.x + left.x, current.y + left.y);
                             Integer integerLeft = map.get(pointLeft);
                             if(integerLeft != null && integerLeft == (int)'#'){
-                                inputs.add((int)'A');
+                                if(range != 0){
+                                    inputs.add((int)(range+"").charAt(0));
+                                    range=0;
+                                }
+                                inputs.add((int)'L');
                                 currentHeading = headingLeft;
 
                             } else {
@@ -129,7 +140,11 @@ public class Day17 {
                                 Point pointRight = new Point(current.x + right.x, current.y + right.y);
                                 Integer integerRight = map.get(pointRight);
                                 if(integerRight != null && integerRight == (int)'#'){
-                                    inputs.add((int)'C');
+                                    if(range != 0){
+                                        inputs.add((int)(range+"").charAt(0));
+                                        range=0;
+                                    }
+                                    inputs.add((int)'R');
                                     currentHeading = headingRight;
                                 } else {
                                     reachedEnd = true;
@@ -138,6 +153,10 @@ public class Day17 {
 
                         }
                     }
+                    StringBuilder b = new StringBuilder();
+                    inputs.forEach(i-> b.append((char)i.intValue()));
+                    System.out.println(b.toString());
+                    // Optimize input into subroutines.
                     List<Integer> mainRoutine = new ArrayList<>();
                     for (int i = 0; i < inputs.size(); i++) {
                         mainRoutine.add(inputs.get(i));
