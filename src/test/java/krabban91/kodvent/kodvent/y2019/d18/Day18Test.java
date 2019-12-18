@@ -16,12 +16,39 @@ public class Day18Test {
     Day18 day18;
 
     @Test
-    public void getPart1() throws InterruptedException {
+    public void getPart1() {
+        day18.readInput("y2019/d18/input.txt");
         assertThat(day18.getPart1()).isEqualTo(-1);
+    }
+    @Test
+    public void getPart1Extra1() {
+        day18.readInput("y2019/d18/extra.txt");
+        assertThat(day18.getPart1()).isEqualTo(8);
+    }
+    @Test
+    public void getPart1Extra2() {
+        day18.readInput("y2019/d18/extra2.txt");
+        assertThat(day18.getPart1()).isEqualTo(86);
+    }
+    @Test
+    public void getPart1Extra3() {
+        day18.readInput("y2019/d18/extra3.txt");
+        assertThat(day18.getPart1()).isEqualTo(132);
+    }
+    @Test
+    public void getPart1Extra4() {
+        day18.readInput("y2019/d18/extra4.txt");
+        assertThat(day18.getPart1()).isEqualTo(136);
+    }
+    @Test
+    public void getPart1Extra5() {
+        day18.readInput("y2019/d18/extra5.txt");
+        assertThat(day18.getPart1()).isEqualTo(81);
     }
 
     @Test
-    public void getPart2() throws InterruptedException {
+    public void getPart2() {
+        day18.readInput("y2019/d18/input.txt");
         assertThat(day18.getPart2()).isEqualTo(-1);
     }
 }

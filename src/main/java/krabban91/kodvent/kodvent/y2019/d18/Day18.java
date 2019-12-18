@@ -20,7 +20,12 @@ import java.util.stream.IntStream;
 public class Day18 {
     List<List<Integer>> in;
     private static final int WALL = 35;
-
+    private static final int A = 65;
+    private static final int a = 97;
+    private static final int UPPER_TO_LOWER = a-A;
+    private static final int Z = 90;
+    private static final  int z = 122;
+    private static final int AT = 64;
     private static final Point VEC_NORTH = new Point(0, -1);
     private static final Point VEC_EAST = new Point(1, 0);
     private static final Point VEC_SOUTH = new Point(0, 1);
@@ -40,11 +45,6 @@ public class Day18 {
     }
 
     public long getPart1() {
-        int A = 65;
-        int a = 97;
-        int Z = 90;
-        int z = 122;
-        int AT = 64;
         final Map<Point, Integer> map = IntStream.range(0, in.size())
                 .mapToObj(y -> IntStream.range(0, in.get(y).size())
                         .boxed()
@@ -63,9 +63,6 @@ public class Day18 {
                 .findFirst()
                 .map(Map.Entry::getKey)
                 .get();
-        final Map<Point, Integer> importantKeys = keys.entrySet().stream()
-                .filter(e -> doors.values().stream().anyMatch(i -> e.getValue() == i + (a - A)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         int stepsTaken = 0;
         Point current = startLocation;
@@ -93,7 +90,7 @@ public class Day18 {
                             .filter(p -> !distances.containsKey(p))
                             .filter(p -> !toVisit.contains(p))
                             .collect(Collectors.toList());
-                collect.forEach(p -> toVisit.addLast(p));
+                collect.forEach(toVisit::addLast);
                 collect.forEach(p -> distances.put(p, distanceToHere + 1));
             }
 
@@ -105,7 +102,7 @@ public class Day18 {
             // remove key from map
             final Integer removedKey = keys.remove(bfsPoint);
             // unlock door connected to key
-            final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + (a - A)).findFirst();
+            final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER).findFirst();
             removedDoor.ifPresent(entry -> {
                 doors.remove(entry.getKey());
                 map.put(entry.getKey(), (int)'.');
