@@ -1,23 +1,28 @@
 package krabban91.kodvent.kodvent.y2019.d18;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.net.Inet4Address;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Component
 public class Day18 {
+    public static final int DOT = '.';
     List<List<Integer>> in;
     private static final int WALL = 35;
     private static final int A = 65;
@@ -36,7 +41,7 @@ public class Day18 {
         System.out.println("::: Starting Day 18 :::");
         String inputPath = "y2019/d18/input.txt";
         readInput(inputPath);
-        long part1 = getPart1();
+        long part1 = -1;//getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
         long part2 = getPart2();
@@ -67,8 +72,38 @@ public class Day18 {
         int stepsTaken = 0;
         Point current = startLocation;
         // while keys left to find
+        Map<Point, Integer> reachableMap = new HashMap<>();
+        Set<Point> visited = new HashSet<Point>();
+        Set<Point> reachableKeys = new HashSet<>();
+        Deque<Point> unVisited = new LinkedBlockingDeque<>();
+        unVisited.addLast(current);
         while (!keys.isEmpty()) {
             System.out.println(new LogUtils<Integer>().mapToText(map, i-> i==null? " ": ((char)i.intValue()+"")));
+            // populate reachable map
+            while (!unVisited.isEmpty()){
+                final Point point = unVisited.pollFirst();
+                //here
+                visited.add(point);
+                Integer type = map.get(point);
+                reachableMap.put(point, type);
+                if(type>=a && type<= z){
+                    reachableKeys.add(point);
+                }
+                if(type >= A && type <=Z){
+                    continue;
+                }
+                //next
+                VECTORS.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
+                        .filter(map::containsKey)
+                        .filter(p -> !map.get(p).equals(WALL))
+                        //.filter(p -> !(map.get(p) >= A && map.get(p)<=Z))
+                        .filter(p -> !unVisited.contains(p))
+                        .filter(p -> !visited.contains(p))
+                        .forEach(unVisited::addLast);
+            }
+            System.out.println(new LogUtils<Integer>().mapToText(reachableMap, i-> i==null? " ": ((char)i.intValue()+"")));
+
+
             // find location of closest key using bfs
             Map<Point, Integer> distances = new HashMap<>();
             Deque<Point> toVisit = new LinkedBlockingDeque<>();
@@ -95,17 +130,22 @@ public class Day18 {
             }
 
             // move to key location
-            map.put(current, (int)'.');
+            map.put(current, DOT);
+            reachableMap.put(current, DOT);
             stepsTaken+= distances.get(bfsPoint);
             current = bfsPoint;
-            map.put(current, (int)'@');
+            reachableMap.put(current, AT);
+            map.put(current, AT);
             // remove key from map
             final Integer removedKey = keys.remove(bfsPoint);
+            reachableKeys.remove(bfsPoint);
             // unlock door connected to key
             final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER).findFirst();
             removedDoor.ifPresent(entry -> {
                 doors.remove(entry.getKey());
-                map.put(entry.getKey(), (int)'.');
+                map.put(entry.getKey(), DOT);
+                reachableMap.put(entry.getKey(), DOT);
+                unVisited.addLast(entry.getKey());
             });
 
 
