@@ -1,24 +1,13 @@
 package krabban91.kodvent.kodvent.y2019.d19;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-//@Component
+@Component
 public class Day19 {
     List<String> in;
-
-    public long getPart1() {
-        return -1L;
-    }
-
-    public long getPart2() {
-        return -1;
-    }
-
-    public void readInput(String inputPath) {
-        in = Input.getLines(inputPath);
-    }
 
     public Day19() {
         System.out.println("::: Starting Day 19 :::");
@@ -30,5 +19,18 @@ public class Day19 {
         long part2 = getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
+    }
+
+    public long getPart1() {
+        return -1L;
+    }
+
+    public long getPart2() {
+        return -1;
+    }
+
+    public void readInput(String inputPath) {
+
+        in = Input.getLines(inputPath);
     }
 }
