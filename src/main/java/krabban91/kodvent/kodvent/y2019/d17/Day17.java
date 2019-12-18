@@ -1,19 +1,15 @@
 package krabban91.kodvent.kodvent.y2019.d17;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -22,10 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day17 {
     List<Long> in;
-    List<Point> vectors = Arrays.asList(new Point(0,-1), new Point(1,0), new Point(0,1), new Point(-1,0));
+    List<Point> vectors = Arrays.asList(new Point(0, -1), new Point(1, 0), new Point(0, 1), new Point(-1, 0));
 
     public Day17() throws InterruptedException {
         System.out.println("::: Starting Day 17 :::");
@@ -89,44 +84,36 @@ public class Day17 {
     public long getPart2() throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
         IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
-        computer.setAddress(0,2);
+        computer.setAddress(0, 2);
         executor.execute(computer);
 
         HashMap<Point, Integer> map = new HashMap<>();
         int x = 0;
         int y = 0;
-        int maxX = 0;
         long largestOut = 0;
         boolean mapSearched = false;
         while (!computer.hasHalted() || computer.hasOutput()) {
             Long lastOutput = computer.pollOutput(1);
 
-            if(lastOutput == null){
+            if (lastOutput == null) {
                 System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? "  " : (char) i.intValue() + " "));
-                if(!mapSearched){
-
-                    // A -> Left = 65
-                    // B -> Forward = 66
-                    // C -> Right = 67
-                    // commasepararated
+                if (!mapSearched) {
                     boolean reachedEnd = false;
                     int currentHeading = 0; // 0 is north, +1 turn right, -1 turn left
-                    StringBuilder builder = new StringBuilder();
                     ArrayList<Integer> inputs = new ArrayList<>();
-                    Set<Point> hasVisited = new HashSet<>();
                     Point current = map.entrySet().stream().filter(e -> e.getValue() == (int) '^').findAny().map(Map.Entry::getKey).get();
                     int range = 0;
-                    while (!reachedEnd){
+                    while (!reachedEnd) {
                         Point forth = vectors.get(getHeading(currentHeading));
                         Point pointForth = new Point(current.x + forth.x, current.y + forth.y);
                         Integer integer = map.get(pointForth);
-                        if(integer != null && integer == (int)'#'){
-                            if(range<9){
+                        if (integer != null && integer == (int) '#') {
+                            if (range < 9) {
                                 range++;
 
                             } else {
-                                inputs.add((int)'9');
-                                range=1;
+                                inputs.add((int) '9');
+                                range = 1;
                             }
                             current = pointForth;
                         } else {
@@ -134,12 +121,12 @@ public class Day17 {
                             Point left = vectors.get(headingLeft);
                             Point pointLeft = new Point(current.x + left.x, current.y + left.y);
                             Integer integerLeft = map.get(pointLeft);
-                            if(integerLeft != null && integerLeft == (int)'#'){
-                                if(range != 0){
-                                    inputs.add((int)(range+"").charAt(0));
-                                    range=0;
+                            if (integerLeft != null && integerLeft == (int) '#') {
+                                if (range != 0) {
+                                    inputs.add((int) (range + "").charAt(0));
+                                    range = 0;
                                 }
-                                inputs.add((int)'L');
+                                inputs.add((int) 'L');
                                 currentHeading = headingLeft;
 
                             } else {
@@ -147,32 +134,31 @@ public class Day17 {
                                 Point right = vectors.get(headingRight);
                                 Point pointRight = new Point(current.x + right.x, current.y + right.y);
                                 Integer integerRight = map.get(pointRight);
-                                if(integerRight != null && integerRight == (int)'#'){
-                                    if(range != 0){
-                                        inputs.add((int)(range+"").charAt(0));
-                                        range=0;
+                                if (integerRight != null && integerRight == (int) '#') {
+                                    if (range != 0) {
+                                        inputs.add((int) (range + "").charAt(0));
+                                        range = 0;
                                     }
-                                    inputs.add((int)'R');
+                                    inputs.add((int) 'R');
                                     currentHeading = headingRight;
                                 } else {
                                     reachedEnd = true;
                                 }
                             }
-
                         }
                     }
                     StringBuilder b = new StringBuilder();
-                    inputs.forEach(i-> b.append((char)i.intValue()));
+                    inputs.forEach(i -> b.append((char) i.intValue()));
                     System.out.println(b.toString());
 
-                    // Optimize input into subroutines.
+                    // TODO: perform zip algorithm.
                     List<Integer> mainRoutine = new ArrayList<>();
                     for (int i = 0; i < inputs.size(); i++) {
                         mainRoutine.add(inputs.get(i));
-                        if(i==inputs.size()-1){
-                            mainRoutine.add((int)'\n');
+                        if (i == inputs.size() - 1) {
+                            mainRoutine.add((int) '\n');
                         } else {
-                            mainRoutine.add((int)',');
+                            mainRoutine.add((int) ',');
                         }
                     }
                     mainRoutine = "A,B,A,B,A,C,B,C,A,C\n".chars().boxed().collect(Collectors.toList());
@@ -180,12 +166,12 @@ public class Day17 {
                     List<Integer> B = "R,9,3,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
                     List<Integer> C = "L,9,1,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
                     List<Integer> video = Arrays.asList((int) 'n', (int) '\n');
-                    System.out.println("main: "+(mainRoutine.size()-1)+", A: "+(A.size()-1)+", B: "+(B.size()-1)+", C: "+(C.size()-1));
-                    mainRoutine.forEach(i->computer.addInput(i.longValue()));
-                    A.forEach(i->computer.addInput(i.longValue()));
-                    B.forEach(i->computer.addInput(i.longValue()));
-                    C.forEach(i->computer.addInput(i.longValue()));
-                    video.forEach(i->computer.addInput(i.longValue()));
+                    System.out.println("main: " + (mainRoutine.size() - 1) + ", A: " + (A.size() - 1) + ", B: " + (B.size() - 1) + ", C: " + (C.size() - 1));
+                    mainRoutine.forEach(i -> computer.addInput(i.longValue()));
+                    A.forEach(i -> computer.addInput(i.longValue()));
+                    B.forEach(i -> computer.addInput(i.longValue()));
+                    C.forEach(i -> computer.addInput(i.longValue()));
+                    video.forEach(i -> computer.addInput(i.longValue()));
                     mapSearched = true;
                 }
 
@@ -196,7 +182,6 @@ public class Day17 {
                     y++;
                 } else {
                     map.put(new Point(x, y), lastOutput.intValue());
-                    maxX = Math.max(maxX, x);
                     x++;
                 }
             }
@@ -213,7 +198,7 @@ public class Day17 {
     }
 
     private int getHeading(int heading) {
-        return (heading+vectors.size())%vectors.size();
+        return (heading + vectors.size()) % vectors.size();
     }
 
     public void readInput(String inputPath) {
