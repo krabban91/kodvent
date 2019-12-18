@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -61,6 +62,12 @@ public class Day17 {
         int maxY = y - 1;
         System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : (char) i.intValue() + ""));
         int finalMaxX = maxX;
+        try {
+            executor.awaitTermination(2L, TimeUnit.SECONDS);
+            executor.shutdown();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return IntStream.range(1, maxY - 1).mapToObj(itY ->
                 IntStream.range(1, finalMaxX - 1)
                         .filter(itX -> map.get(new Point(itX, itY)) == 35)
@@ -119,7 +126,7 @@ public class Day17 {
 
                             } else {
                                 inputs.add((int)'9');
-                                range=0;
+                                range=1;
                             }
                             current = pointForth;
                         } else {
@@ -157,6 +164,7 @@ public class Day17 {
                     StringBuilder b = new StringBuilder();
                     inputs.forEach(i-> b.append((char)i.intValue()));
                     System.out.println(b.toString());
+
                     // Optimize input into subroutines.
                     List<Integer> mainRoutine = new ArrayList<>();
                     for (int i = 0; i < inputs.size(); i++) {
@@ -167,19 +175,11 @@ public class Day17 {
                             mainRoutine.add((int)',');
                         }
                     }
-                    List<Integer> A = Arrays.asList((int) 'L', (int) '\n');
-
-                    List<Integer> B = Arrays.asList((int) '1', (int) '\n');
-                    List<Integer> C = Arrays.asList((int) 'R', (int) '\n');
+                    mainRoutine = "A,B,A,B,A,C,B,C,A,C\n".chars().boxed().collect(Collectors.toList());
+                    List<Integer> A = "L,6,R,9,3,L,6\n".chars().boxed().collect(Collectors.toList());
+                    List<Integer> B = "R,9,3,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
+                    List<Integer> C = "L,9,1,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
                     List<Integer> video = Arrays.asList((int) 'n', (int) '\n');
-                    String m = "A,A,B,C,B\n";
-                    String a = "L,6,R,9,2,L,6,R,9,2,L,9,L,4,L,6\n";
-                    String bs = "L,6,R,9,2,L,6,L,9,L,9,L,4,L\n";
-                    String c = "6,R,9,2,L,9,L,4,L,6,L,9,L,9,L,4,L,6\n";
-                    mainRoutine = m.chars().boxed().collect(Collectors.toList());
-                    A = a.chars().boxed().collect(Collectors.toList());//.subList(a.length()-10,a.length());
-                    B = bs.chars().boxed().collect(Collectors.toList());
-                    C = c.chars().boxed().collect(Collectors.toList());
                     System.out.println("main: "+(mainRoutine.size()-1)+", A: "+(A.size()-1)+", B: "+(B.size()-1)+", C: "+(C.size()-1));
                     mainRoutine.forEach(i->computer.addInput(i.longValue()));
                     A.forEach(i->computer.addInput(i.longValue()));
@@ -203,7 +203,12 @@ public class Day17 {
 
         }
         System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? "  " : (char) i.intValue() + " "));
-
+        try {
+            executor.awaitTermination(2L, TimeUnit.SECONDS);
+            executor.shutdown();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return largestOut;
     }
 
