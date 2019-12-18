@@ -18,13 +18,12 @@ public class Day16Test {
     Day16 day16;
 
     @Test
-    public void patternForIndex() {
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 0).subList(0, 5)).isEqualTo(List.of(1, 0, -1, 0, 1));
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 1).subList(0, 5)).isEqualTo(List.of(0, 1, 1, 0, 0));
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 2).subList(0, 5)).isEqualTo(List.of(0, 0, 1, 1, 1));
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 3).subList(0, 5)).isEqualTo(List.of(0, 0, 0, 1, 1));
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 4).subList(0, 5)).isEqualTo(List.of(0, 0, 0, 0, 1));
-        assertThat(day16.patternForIndex(List.of(0, 1, 0, -1), 5).subList(0, 5)).isEqualTo(List.of(0, 0, 0, 0, 0));
+    public void getBasePatternIndex(){
+        assertThat(day16.getBasePatternIndex(0,1,List.of(0, 1, 0, -1))).isEqualTo(2);
+        assertThat(day16.getBasePatternIndex(0,0,List.of(0, 1, 0, -1))).isEqualTo(1);
+        assertThat(day16.getBasePatternIndex(1,0,List.of(0, 1, 0, -1))).isEqualTo(0);
+        assertThat(day16.getBasePatternIndex(1,1,List.of(0, 1, 0, -1))).isEqualTo(1);
+
     }
 
     @Test

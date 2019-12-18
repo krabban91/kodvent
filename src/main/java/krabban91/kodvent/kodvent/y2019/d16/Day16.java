@@ -32,45 +32,44 @@ public class Day16 {
     public String getPart1() {
         List<Integer> input = in.chars().mapToObj(c -> Integer.parseInt((char) c + "")).collect(Collectors.toList());
 
-        final Map<Integer, List<Integer>> patterns = generatePatterns(basePattern, input.size());
         for (int i = 0; i < 100; i++) {
-            input = FFT(input, patterns);
+            input = FFT(input, basePattern);
         }
         return input.subList(0,8).stream().reduce("", (a,b) -> a+""+b, (s1,s2)-> s1+s2);
     }
 
     public String getPart2() {
+
         final List<Integer> initialInput = in.chars().mapToObj(c -> Integer.parseInt((char) c + "")).collect(Collectors.toList());
+        // need to pass down the inputSize into the value function.
+        // iterating over an array of size <60000 is not very smart
         List<Integer> input = repeatTerms(initialInput,1000);
         final List<Integer> offSetList = initialInput.subList(0, 7);
         final int offSet = Integer.parseInt(offSetList.stream().reduce("", (a,b) -> a+""+b, (s1,s2)-> s1+s2));
 
-        final Map<Integer, List<Integer>> patterns = generatePatterns(basePattern, input.size());
         for (int i = 0; i < 100; i++) {
-            input = FFT(input, patterns);
+            input = FFT(input, basePattern);
         }
         return input.subList(offSet,offSet+8).stream().reduce("", (a,b) -> a+""+b, (s1,s2)-> s1+s2);
     }
 
-    public List<Integer> FFT(List<Integer> input, Map<Integer,List<Integer>> patterns) {
+    public List<Integer> FFT(List<Integer> input, List<Integer> basePattern) {
         List<Integer> output = new ArrayList<>();
         for (int i = 0; i <input.size(); i++) {
-            output.add(calculate(input, patterns.get(i)));
+            output.add(calculate(input, i, basePattern));
         }
         return output;
     }
 
-    public Map<Integer,List<Integer>> generatePatterns(List<Integer> basePattern, int inputSize){
-        return IntStream.range(0,inputSize)
-                .boxed()
-                .collect(Collectors.toMap(
-                        i->i,
-                        i->patternForIndex(basePattern,i)));
+    public int calculate(List<Integer> input, int inputIndex, List<Integer> basePattern){
+        return Math.abs(IntStream.range(0,input.size()).map(i-> input.get(i)*getPatternValue(inputIndex,i, basePattern)).sum())%10;
+    }
+    public int getPatternValue(int inputIndex, int patternIndex, List<Integer> basePattern){
+        return basePattern.get(getBasePatternIndex(inputIndex, patternIndex, basePattern));
     }
 
-    public List<Integer> patternForIndex(List<Integer> basePattern, int index) {
-        List<Integer> result = repeatTerms(basePattern, index+1);
-        return repeatAndShiftPattern(result);
+    public int getBasePatternIndex(int inputIndex, int patternIndex, List<Integer> basePattern) {
+        return (((patternIndex+1)/(inputIndex+1))+basePattern.size()) % basePattern.size();
     }
 
     public List<Integer> repeatTerms(List<Integer> terms, int times) {
@@ -80,16 +79,6 @@ public class Day16 {
                         .collect(Collectors.toList()))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-    }
-
-    private List<Integer> repeatAndShiftPattern(List<Integer> basePattern) {
-        return IntStream.rangeClosed(0, in.length()+1)
-                .mapToObj(i -> basePattern.get(i % basePattern.size()))
-                .collect(Collectors.toList()).subList(1,in.length()+1);
-    }
-
-    public int calculate(List<Integer> input, List<Integer> pattern){
-        return Math.abs(IntStream.range(0,input.size()).map(i-> input.get(i)*pattern.get(i)).sum())%10;
     }
 
     public void readInput(String inputPath) {
