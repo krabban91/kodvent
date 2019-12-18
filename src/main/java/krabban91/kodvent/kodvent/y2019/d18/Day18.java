@@ -69,11 +69,23 @@ public class Day18 {
                 .map(Map.Entry::getKey)
                 .get();
 
+
+        // For each key:
+        // - A* from start
+        //   gather the dependency graph (f-> d+e, d ->[], e-> [])
+
+        // goal: reach dependency with most deps.
+        // example above -> f needs d and e. get all with no dependencies
+        // take the one with shortest total path. (
+        // gives order d->e->f or e->d->f. which has least steps?
+
+
         int stepsTaken = 0;
         Point current = startLocation;
         // while keys left to find
         Map<Point, Integer> reachableMap = new HashMap<>();
-        Set<Point> visited = new HashSet<Point>();
+        keys.forEach(reachableMap::put);
+        Set<Point> visited = new HashSet<>();
         Set<Point> reachableKeys = new HashSet<>();
         Deque<Point> unVisited = new LinkedBlockingDeque<>();
         unVisited.addLast(current);
@@ -101,6 +113,7 @@ public class Day18 {
                         .filter(p -> !visited.contains(p))
                         .forEach(unVisited::addLast);
             }
+            // visualize the reachable surface
             System.out.println(new LogUtils<Integer>().mapToText(reachableMap, i-> i==null? " ": ((char)i.intValue()+"")));
 
 
@@ -128,7 +141,6 @@ public class Day18 {
                 collect.forEach(toVisit::addLast);
                 collect.forEach(p -> distances.put(p, distanceToHere + 1));
             }
-
             // move to key location
             map.put(current, DOT);
             reachableMap.put(current, DOT);
@@ -147,13 +159,8 @@ public class Day18 {
                 reachableMap.put(entry.getKey(), DOT);
                 unVisited.addLast(entry.getKey());
             });
-
-
         }
-
         // return number of steps taken
-
-
         return stepsTaken;
     }
 
