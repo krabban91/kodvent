@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 @Component
 public class Day19 {
     List<Long> in;
+    private boolean debug = false;
 
     public Day19() throws InterruptedException {
         System.out.println("::: Starting Day 19 :::");
@@ -39,10 +40,10 @@ public class Day19 {
         Map<Point, Boolean> map = new HashMap<>();
         for (int y = 0; y < 50; y++) {
             for (int x = 0; x < 50; x++) {
-                map.put(new Point(x, y), deployDrone(x,y,executor) == 1);
+                map.put(new Point(x, y), deployDrone(x, y, executor) == 1);
             }
         }
-        System.out.println(new LogUtils<Boolean>().mapToText(map, b -> b == null ? " " : (b ? "#" : ".")));
+        debug(map);
         try {
             executor.awaitTermination(2L, TimeUnit.SECONDS);
             executor.shutdown();
@@ -54,7 +55,7 @@ public class Day19 {
 
     public long getPart2() throws InterruptedException {
         Map<Point, Boolean> map = new HashMap<>();
-        Point closestOne = null;
+        Point closestOne = new Point(0, -1);
 
         for (int y = 0; y < 100000; y++) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10000);
@@ -64,11 +65,11 @@ public class Day19 {
             executor.shutdown();
             int finalY = y;
             long count = map.entrySet().stream()
-                    .filter(e -> e.getKey().y == finalY)
+                    .filter(e -> e.getKey().y == finalY - 99)
                     .filter(Map.Entry::getValue).count();
             if (count > 100) {
                 Optional<Point> first = map.entrySet().stream()
-                        .filter(e -> e.getKey().y == finalY-99)
+                        .filter(e -> e.getKey().y == finalY - 99)
                         .filter(Map.Entry::getValue)
                         .max(Comparator.comparingInt(e -> e.getKey().x))
                         .map(Map.Entry::getKey);
@@ -81,8 +82,8 @@ public class Day19 {
                     Boolean topLeft = map.get(tl);
                     Point bl = new Point(br.x - 99, br.y);
                     Boolean bottomLeft = map.get(bl);
-                    System.out.println(new LogUtils<Boolean>().mapToText(map, b -> b == null ? " " : (b ? "#" : ".")));
-                    if (topRight != null && topRight &&bottomRight != null && bottomRight && topLeft != null && topLeft && bottomLeft != null && bottomLeft) {
+                    debug(map);
+                    if (topRight != null && topRight && bottomRight != null && bottomRight && topLeft != null && topLeft && bottomLeft != null && bottomLeft) {
                         closestOne = tl;
                         break;
                     }
@@ -90,6 +91,12 @@ public class Day19 {
             }
         }
         return closestOne.x * 10000 + closestOne.y;
+    }
+
+    private void debug(Map<Point, Boolean> map) {
+        if (debug) {
+            System.out.println(new LogUtils<Boolean>().mapToText(map, b -> b == null ? " " : (b ? "#" : ".")));
+        }
     }
 
     private Long deployDrone(int x, int y, ThreadPoolExecutor executor) throws InterruptedException {
