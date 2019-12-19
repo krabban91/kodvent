@@ -39,11 +39,7 @@ public class Day19 {
         Map<Point, Boolean> map = new HashMap<>();
         for (int y = 0; y < 50; y++) {
             for (int x = 0; x < 50; x++) {
-                IntCodeComputer drone = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
-                executor.execute(drone);
-                drone.addInput(x);
-                drone.addInput(y);
-                map.put(new Point(x, y), drone.pollOutput(10) == 1);
+                map.put(new Point(x, y), deployDrone(x,y,executor) == 1);
             }
         }
         System.out.println(new LogUtils<Boolean>().mapToText(map, b -> b == null ? " " : (b ? "#" : ".")));
@@ -63,12 +59,7 @@ public class Day19 {
         for (int y = 0; y < 100000; y++) {
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10000);
             for (int x = y; x < 1.3 * y; x++) {
-                IntCodeComputer drone = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
-                executor.execute(drone);
-                drone.addInput(x);
-                drone.addInput(y);
-
-                map.put(new Point(x, y), drone.pollOutput(10) == 1);
+                map.put(new Point(x, y), deployDrone(x, y, executor) == 1);
             }
             executor.shutdown();
             int finalY = y;
@@ -77,29 +68,36 @@ public class Day19 {
                     .filter(Map.Entry::getValue).count();
             if (count > 100) {
                 Optional<Point> first = map.entrySet().stream()
-                        .filter(e -> e.getKey().y == finalY)
+                        .filter(e -> e.getKey().y == finalY-99)
                         .filter(Map.Entry::getValue)
                         .max(Comparator.comparingInt(e -> e.getKey().x))
                         .map(Map.Entry::getKey);
                 if (first.isPresent()) {
-                    Point br = first.get();
-                    Point tr = new Point(br.x, br.y - 99);
+                    Point tr = first.get();
+                    Point br = new Point(tr.x, tr.y + 99);
                     Boolean topRight = map.get(tr);
-                    Point tl = new Point(br.x - 99, br.y - 99);
+                    Boolean bottomRight = map.get(br);
+                    Point tl = new Point(tr.x - 99, tr.y);
                     Boolean topLeft = map.get(tl);
                     Point bl = new Point(br.x - 99, br.y);
-                    int width = 1 + (br.x - bl.x);
                     Boolean bottomLeft = map.get(bl);
                     System.out.println(new LogUtils<Boolean>().mapToText(map, b -> b == null ? " " : (b ? "#" : ".")));
-                    if (topRight != null && topRight && topLeft != null && topLeft && bottomLeft != null && bottomLeft) {
+                    if (topRight != null && topRight &&bottomRight != null && bottomRight && topLeft != null && topLeft && bottomLeft != null && bottomLeft) {
                         closestOne = tl;
                         break;
                     }
                 }
             }
         }
-        // 9490831 is wrong
         return closestOne.x * 10000 + closestOne.y;
+    }
+
+    private Long deployDrone(int x, int y, ThreadPoolExecutor executor) throws InterruptedException {
+        IntCodeComputer drone = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
+        executor.execute(drone);
+        drone.addInput(x);
+        drone.addInput(y);
+        return drone.pollOutput(10);
     }
 
     public void readInput(String inputPath) {
