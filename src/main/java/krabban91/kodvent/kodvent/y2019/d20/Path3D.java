@@ -5,21 +5,21 @@ import krabban91.kodvent.kodvent.utilities.search.Path;
 
 import java.util.concurrent.Callable;
 
-public class DistanceToPoint3D implements Path<Point3D> {
+public class Path3D implements Path<Point3D> {
     Point3D current;
     int distance;
     Point3D target;
-    DistanceToPoint3D previous;
+    Path3D previous;
     private Callable<Integer> heuristicFunction;
 
-    public DistanceToPoint3D(Point3D point, Point3D target) {
+    public Path3D(Point3D point, Point3D target) {
         this.current = point;
         this.distance = 0;
         this.target = target;
         heuristicFunction = () -> 0;
     }
 
-    public DistanceToPoint3D(DistanceToPoint3D previous, Step3D edge, Callable<Integer> heuristicFunction) {
+    public Path3D(Path3D previous, Edge3D edge, Callable<Integer> heuristicFunction) {
         this.previous = previous;
         this.current = edge.leadsTo(previous.destination());
         this.distance = edge.cost();

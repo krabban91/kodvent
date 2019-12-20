@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -38,16 +36,16 @@ public class Day20 {
     }
 
     public long getPart1() {
-        final DistanceToPoint3D path = getDistanceToPoint3D(false);
+        final Path3D path = getDistanceToPoint3D(false);
         return path.cost();
     }
 
     public long getPart2() {
-        final DistanceToPoint3D search = getDistanceToPoint3D(true);
+        final Path3D search = getDistanceToPoint3D(true);
         return search.cost();
     }
 
-    private DistanceToPoint3D getDistanceToPoint3D(boolean isRecursingMaze) {
+    private Path3D getDistanceToPoint3D(boolean isRecursingMaze) {
         //map the maze
         final Map<Point, Character> map = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).length())
                 .mapToObj(x -> Map.entry(new Point(x, y), in.get(y).charAt(x))).collect(Collectors.toList()))
@@ -59,11 +57,11 @@ public class Day20 {
         final Point3D start = findGate(portalGates, "AA");
         final Point3D target = findGate(portalGates, "ZZ");
 
-        PriorityQueue<DistanceToPoint3D> unchecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint3D::heuristic));
-        Map<Point3D, DistanceToPoint3D> checked = new HashMap<>();
-        unchecked.add(new DistanceToPoint3D(start, target));
-        Graph<DistanceToPoint3D, Step3D, Point3D> graph = new Graph<>();
-        Map<Point3D, Collection<Step3D>> network3D = getNetwork3DLayer(map, portalGates, 0, isRecursingMaze);
+        PriorityQueue<Path3D> unchecked = new PriorityQueue<>(Comparator.comparingInt(Path3D::heuristic));
+        Map<Point3D, Path3D> checked = new HashMap<>();
+        unchecked.add(new Path3D(start, target));
+        Graph<Path3D, Edge3D, Point3D> graph = new Graph<>();
+        Map<Point3D, Collection<Edge3D>> network3D = getNetwork3DLayer(map, portalGates, 0, isRecursingMaze);
         return graph.search(unchecked, (p, net) -> this.addNext3D(p, net, unchecked, checked, map, portalGates), network3D);
     }
 
@@ -92,7 +90,7 @@ public class Day20 {
                 .orElse(null);
     }
 
-    private Map<Point3D, Collection<Step3D>> getNetwork3DLayer(Map<Point, Character> map, Map<Point, String> portalGates, int layer, boolean multiLevel) {
+    private Map<Point3D, Collection<Edge3D>> getNetwork3DLayer(Map<Point, Character> map, Map<Point, String> portalGates, int layer, boolean multiLevel) {
         final Map<Point, Character> walkableArea = map.entrySet().stream().filter(e -> e.getValue().equals('.')).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         List<Point3D> walkableAreaIn3D = walkableArea.keySet().stream().map(p -> new Point3D(p.x, p.y, layer)).collect(Collectors.toList());
         // filter out portals first.
@@ -106,7 +104,7 @@ public class Day20 {
         List<Point3D> filteredPoints = filterWalkableArea(multiLevel, walkableAreaIn3D, outer);
 
         return filteredPoints.stream().collect(Collectors.toMap(point -> point, point -> {
-            final ArrayList<Step3D> steps = new ArrayList<>();
+            final ArrayList<Edge3D> steps = new ArrayList<>();
             Point flattened = new Point(point.getX(), point.getY());
             
             // normal paths
@@ -115,7 +113,7 @@ public class Day20 {
                     .map(p-> p.add(point))
                     .filter(p-> walkableArea.containsKey(new Point(p.getX(), p.getY())))
                     .filter(filteredPoints::contains)
-                    .forEach(p-> steps.add(new Step3D(point, p)));
+                    .forEach(p-> steps.add(new Edge3D(point, p)));
             // portals
             if (portalGates.containsKey(flattened)) {
                 final String s = portalGates.get(flattened);
@@ -126,7 +124,7 @@ public class Day20 {
                         .findAny()
                         .map(Map.Entry::getKey)
                         .map(portalExit -> new Point3D(portalExit.x, portalExit.y, point.getZ() + (multiLevel ? (isOuter ? -1 : 1) : 0)))
-                        .ifPresent(to -> steps.add(new Step3D(point, to)));
+                        .ifPresent(to -> steps.add(new Edge3D(point, to)));
 
             }
             
@@ -162,7 +160,7 @@ public class Day20 {
                 || (e.getKey().y >= 0 && e.getKey().y <= 2) || (e.getKey().y >= maxY - 2 && e.getKey().y <= maxY);
     }
 
-    private Collection<DistanceToPoint3D> addNext3D(DistanceToPoint3D distanceToPoint, Map<Point3D, Collection<Step3D>> network, PriorityQueue<DistanceToPoint3D> unchecked, Map<Point3D, DistanceToPoint3D> checked, Map<Point, Character> map, final Map<Point, String> portalGates) {
+    private Collection<Path3D> addNext3D(Path3D distanceToPoint, Map<Point3D, Collection<Edge3D>> network, PriorityQueue<Path3D> unchecked, Map<Point3D, Path3D> checked, Map<Point, Character> map, final Map<Point, String> portalGates) {
         checked.putIfAbsent(distanceToPoint.destination(), distanceToPoint);
         int z = distanceToPoint.destination().getZ();
         if (z < 0) {
@@ -171,14 +169,13 @@ public class Day20 {
         if (!network.containsKey(distanceToPoint.destination())) {
             network.putAll(getNetwork3DLayer(map, portalGates, z, true));
         }
-        List<DistanceToPoint3D> collect = network.get(distanceToPoint.destination())
+        return network.get(distanceToPoint.destination())
                 .stream()
-                .map(w -> new DistanceToPoint3D(distanceToPoint, w, () -> z * z))
+                .map(w -> new Path3D(distanceToPoint, w, () -> z * z))
                 .filter(d -> !distanceToPoint.hasVisited(d.destination()))
                 .filter(d -> !checked.containsKey(d.destination()))
                 .filter(d -> unchecked.stream().noneMatch(p -> p.destination().equals(d.destination())))
                 .collect(Collectors.toList());
-        return collect;
     }
 
     public boolean isUpperCase(Map.Entry<Point, Character> e) {

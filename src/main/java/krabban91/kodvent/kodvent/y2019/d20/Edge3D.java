@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Step3D implements Edge<Point3D> {
+public class Edge3D implements Edge<Point3D> {
 
     private Map<Point3D, Point3D> directions = new HashMap<>();
 
-    public Step3D(Point3D from, Point3D to){
+    public Edge3D(Point3D from, Point3D to){
         directions.put(from, to);
         directions.put(to, from);
     }
