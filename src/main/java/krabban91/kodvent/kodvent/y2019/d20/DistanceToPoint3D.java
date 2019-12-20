@@ -1,58 +1,40 @@
 package krabban91.kodvent.kodvent.y2019.d20;
 
-import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.search.Path;
 
-import java.awt.*;
+import java.util.concurrent.Callable;
 
 public class DistanceToPoint3D implements Path<Point3D> {
     Point3D current;
     int distance;
     Point3D target;
-    int heuristic;
-
     DistanceToPoint3D previous;
+    private Callable<Integer> heuristicFunction;
 
     public DistanceToPoint3D(Point3D point, Point3D target) {
         this.current = point;
         this.distance = 0;
         this.target = target;
-        this.heuristic = Distances.manhattan(current, target);
+        heuristicFunction = () -> 0;
     }
 
-    public DistanceToPoint3D(DistanceToPoint3D previous, Step3D edge) {
+    public DistanceToPoint3D(DistanceToPoint3D previous, Step3D edge, Callable<Integer> heuristicFunction) {
         this.previous = previous;
         this.current = edge.leadsTo(previous.destination());
         this.distance = edge.cost();
         this.target = previous.target;
-        this.heuristic = Distances.manhattan(current, target);
-    }
-    public DistanceToPoint3D(DistanceToPoint3D previous, Step3D edge, int heuristic) {
-        this.previous = previous;
-        this.current = edge.leadsTo(previous.destination());
-        this.distance = edge.cost();
-        this.target = previous.target;
-        this.heuristic = heuristic;
+        this.heuristicFunction = heuristicFunction;
     }
 
-    public int heuristic(){
+    public int heuristic() {
+        int heuristic = 0;
+        try {
+            heuristic = this.heuristicFunction.call();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return this.cost() + heuristic;
-    }
-
-    public static int compare(DistanceToPoint3D l, DistanceToPoint3D r){
-        if(l == null || r == null){
-            return 0;
-        }
-        int compare = Integer.compare(l.cost(), r.cost());
-        if(compare == 0){
-            int compare1 = Integer.compare(l.current.getY(), r.current.getY());
-            if(compare1 == 0){
-                return Integer.compare(l.current.getX(), r.current.getX());
-            }
-            return compare1;
-        }
-        return compare;
     }
 
     @Override
