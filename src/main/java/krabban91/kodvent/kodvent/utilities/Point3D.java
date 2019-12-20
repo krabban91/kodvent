@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.utilities;
 
 import java.awt.*;
+import java.util.Objects;
 
 public class Point3D {
 
@@ -23,6 +24,11 @@ public class Point3D {
             return xyEq;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(xy, z);
     }
 
     public int manhattanDistance(Point3D other) {

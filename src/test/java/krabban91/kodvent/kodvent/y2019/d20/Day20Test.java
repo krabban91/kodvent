@@ -20,6 +20,7 @@ public class Day20Test {
         day20.readInput("y2019/d20/input.txt");
         assertThat(day20.getPart1()).isEqualTo(516);
     }
+    @Test
     public void part1Examples(){
         day20.readInput("y2019/d20/example1.txt");
         assertThat(day20.getPart1()).isEqualTo(23);
@@ -27,9 +28,10 @@ public class Day20Test {
         assertThat(day20.getPart1()).isEqualTo(58);
 
     }
+    @Test
     public void part2Examples(){
         day20.readInput("y2019/d20/example1.txt");
-        assertThat(day20.getPart1()).isEqualTo(26);
+        assertThat(day20.getPart2()).isEqualTo(26);
         day20.readInput("y2019/d20/example3.txt");
         assertThat(day20.getPart2()).isEqualTo(396);
 
@@ -38,6 +40,6 @@ public class Day20Test {
     @Test
     public void getPart2() throws InterruptedException {
         day20.readInput("y2019/d20/input.txt");
-        assertThat(day20.getPart2()).isEqualTo(-1);
+        assertThat(day20.getPart2()).isEqualTo(5966);
     }
 }
