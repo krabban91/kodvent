@@ -4,7 +4,6 @@ import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day20 {
     List<String> in;
 
@@ -100,20 +98,20 @@ public class Day20 {
         Map<Point, String> outer = portalGates.entrySet().stream()
                 .filter(e -> isOuterRim(maxX, maxY, e))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        
+
         List<Point3D> filteredPoints = filterWalkableArea(multiLevel, walkableAreaIn3D, outer);
 
         return filteredPoints.stream().collect(Collectors.toMap(point -> point, point -> {
             final ArrayList<Edge3D> steps = new ArrayList<>();
             Point flattened = new Point(point.getX(), point.getY());
-            
+
             // normal paths
             Point3D.getDirections()
                     .stream()
-                    .map(p-> p.add(point))
-                    .filter(p-> walkableArea.containsKey(new Point(p.getX(), p.getY())))
+                    .map(p -> p.add(point))
+                    .filter(p -> walkableArea.containsKey(new Point(p.getX(), p.getY())))
                     .filter(filteredPoints::contains)
-                    .forEach(p-> steps.add(new Edge3D(point, p)));
+                    .forEach(p -> steps.add(new Edge3D(point, p)));
             // portals
             if (portalGates.containsKey(flattened)) {
                 final String s = portalGates.get(flattened);
@@ -127,7 +125,7 @@ public class Day20 {
                         .ifPresent(to -> steps.add(new Edge3D(point, to)));
 
             }
-            
+
             return steps;
         }));
     }
