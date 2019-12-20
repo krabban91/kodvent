@@ -3,6 +3,7 @@ package krabban91.kodvent.kodvent.utilities;
 import java.awt.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -52,6 +53,18 @@ public class Grid<V> {
                 .mapToObj(i -> IntStream
                         .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
                         .mapToObj(j -> (i == row && j == col) ? null : this.raw.get(i).get(j))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map.Entry<Point,V>> getSurroundingTilesWithPoints(int row, int col, boolean includeCenter) {
+        return IntStream
+                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .mapToObj(i -> IntStream
+                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
+                        .mapToObj(j -> (!includeCenter && (i == row && j == col)) ? null : Map.entry(new Point(j,i),this.raw.get(i).get(j)))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
@@ -114,4 +127,5 @@ public class Grid<V> {
     public int hashCode() {
         return raw.hashCode();
     }
+
 }

@@ -27,6 +27,13 @@ public class DistanceToPoint implements Path<Point> {
         this.target = previous.target;
         this.heuristic = Distances.manhattan(current, target);
     }
+    public DistanceToPoint(DistanceToPoint previous, Step edge, int heuristic) {
+        this.previous = previous;
+        this.current = edge.leadsTo(previous.destination());
+        this.distance = edge.cost();
+        this.target = previous.target;
+        this.heuristic = heuristic;
+    }
 
     public int heuristic(){
         return this.cost() + heuristic;
