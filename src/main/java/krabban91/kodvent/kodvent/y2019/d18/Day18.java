@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.y2019.d18;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 import krabban91.kodvent.kodvent.y2018.d15.DistanceToPoint;
 import krabban91.kodvent.kodvent.y2018.d15.Step;
@@ -14,12 +15,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Component
 public class Day18 {
@@ -37,6 +36,7 @@ public class Day18 {
     private static final Point VEC_WEST = new Point(-1, 0);
     private static final List<Point> VECTORS = Arrays.asList(VEC_NORTH, VEC_SOUTH, VEC_WEST, VEC_EAST);
     List<List<Integer>> in;
+    boolean debug = false;
 
     public Day18() {
         System.out.println("::: Starting Day 18 :::");
@@ -82,27 +82,17 @@ public class Day18 {
             return graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), network);
         }));
 
-        Map<Map.Entry<Point, Integer>, List<Integer>> passedDoors = pathsToKeys.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().allVisited().stream()
-                        .filter(doors::containsKey)
-                        .map(doors::get)
-                        .collect(Collectors.toList())));
-        Map<Map.Entry<Point, Integer>, List<Integer>> passedKeys = pathsToKeys.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().allVisited().stream()
-                        .filter(keys::containsKey)
-                        .map(keys::get)
-                        .collect(Collectors.toList())));
         Map<Integer, List<Integer>> dependencyKeys = pathsToKeys.entrySet().stream()
-                .collect(Collectors.toMap(e-> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
                         .filter(doors::containsKey)
                         .map(doors::get)
-                        .map(i-> i + UPPER_TO_LOWER)
+                        .map(i -> i + UPPER_TO_LOWER)
                         .collect(Collectors.toList())));
         Map<Integer, Set<Integer>> dependencyGraph = dependencyKeys.entrySet().stream()
-                .collect(Collectors.toMap(e-> e.getKey(), e -> {
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     Set<Integer> neededKeys = new HashSet<>();
                     List<Integer> other = e.getValue();
-                    while (!other.isEmpty()){
+                    while (!other.isEmpty()) {
                         neededKeys.addAll(other);
                         other = other.stream().map(dependencyKeys::get).flatMap(Collection::stream).collect(Collectors.toList());
                     }
@@ -113,25 +103,26 @@ public class Day18 {
         // - A* from start
         //   gather the dependency graph (f-> d+e, d ->[], e-> [])
         int stepsTaken = 0;
+        logMap(map);
         Point current = startLocation;
-        Map<Point, Collection<Step>> networkWithDoors = getNetwork(map, true); // ignored
-        while(!keys.isEmpty()){
+        while (!keys.isEmpty()) {
             // goal: reach dependency with most deps.
             // example above -> f needs d and e. get all with no dependencies
             // take the one with shortest total path. (
             // gives order d->e->f or e->d->f. which has least steps?
             Point target = dependencyGraph.entrySet().stream()
-                    .filter(e-> e.getValue().isEmpty())
+                    .filter(e -> e.getValue().isEmpty())
                     // Choosing the key needed to reach the most doors.
                     // TODO: Should test multiple paths
-                    .max(Comparator.comparingLong(e ->dependencyGraph.values().stream().filter(s->s.contains(e.getKey())).count()))
-                    .map(e->keyLookup.get(e.getKey()))
+                    .max(Comparator.comparingLong(e -> dependencyGraph.values().stream().filter(s -> s.contains(e.getKey())).count()))
+                    .map(e -> keyLookup.get(e.getKey()))
                     .get();
+            Map<Point, Collection<Step>> networkWithDoors = getNetwork(map, false); // ignored
             Map<Point, DistanceToPoint> checked = new HashMap<>();
             PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
             unChecked.add(new DistanceToPoint(current, target));
             Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
-            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors);
+            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> keys.containsKey(p.destination()));
 
             // move
             // move to key location
@@ -140,26 +131,34 @@ public class Day18 {
             current = search.destination();
             map.put(current, AT);
             // remove key from map
-            // Should pick up all keys that I pass by.
+            // pick up all keys that I pass by.
             List<Point> pickedUpKeys = search.allVisited().stream().filter(keys::containsKey)
                     .collect(Collectors.toList());
             List<Integer> keysInPath = pickedUpKeys.stream().map(keys::remove).collect(Collectors.toList());
-            keysInPath.forEach(removedKey ->{
+            keysInPath.forEach(removedKey -> {
                 dependencyGraph.remove(removedKey);
-                dependencyGraph.forEach((i,s) -> s.remove(removedKey));
+                dependencyGraph.forEach((i, s) -> s.remove(removedKey));
                 // unlock door connected to key
-                final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER).findFirst();
-                removedDoor.ifPresent(entry -> {
+                doors.entrySet().stream()
+                        .filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER)
+                        .findFirst().ifPresent(entry -> {
                     doors.remove(entry.getKey());
                     map.put(entry.getKey(), DOT);
                 });
 
             });
+            logMap(map);
         }
 
         // return number of steps taken
         // 6534 is too high.
         return stepsTaken;
+    }
+
+    private void logMap(Map<Point, Integer> map) {
+        if (debug) {
+            System.out.println(new LogUtils<Integer>().mapToText(map, v -> v == null ? " " : (char) v.intValue() + ""));
+        }
     }
 
     private Collection<DistanceToPoint> addNext(DistanceToPoint p, Map<Point, Collection<Step>> net, Map<Point, DistanceToPoint> checked, PriorityQueue<DistanceToPoint> unChecked) {
@@ -174,13 +173,13 @@ public class Day18 {
 
     private Map<Point, Collection<Step>> getNetwork(Map<Point, Integer> map, boolean ignoreDoors) {
         return map.entrySet().stream()
-                .filter(e -> e.getValue() != '#')
+                .filter(e -> e.getValue() != WALL)
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toMap(e -> e, (e -> Stream.of(new Point(1, 0), new Point(0, 1), new Point(-1, 0), new Point(0, -1))
+                .collect(Collectors.toMap(e -> e, (e -> VECTORS.stream()
                         .map(p -> new Point(p.x + e.x, p.y + e.y))
                         .filter(map::containsKey)
-                        .filter(p -> map.get(p) != '#')
-                        .filter(p-> (map.get(p) >= A  && map.get(p)<=Z) || ignoreDoors)
+                        .filter(p -> map.get(p) != WALL)
+                        .filter(p -> !(map.get(p) >= A && map.get(p) <= Z) || ignoreDoors)
                         .map(p -> new Step(e, p))
                         .collect(Collectors.toList()))));
     }

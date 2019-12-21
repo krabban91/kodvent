@@ -28,6 +28,7 @@ public class Day18Test {
     @Test
     public void getPart1Extra2() {
         day18.readInput("y2019/d18/extra2.txt");
+        day18.debug=true;
         assertThat(day18.getPart1()).isEqualTo(86);
     }
     @Test
