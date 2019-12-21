@@ -122,7 +122,7 @@ public class Day18 {
             PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
             unChecked.add(new DistanceToPoint(current, target));
             Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
-            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> keys.containsKey(p.destination()));
+            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> false);
 
             // move
             // move to key location
