@@ -1,9 +1,13 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import krabban91.kodvent.kodvent.utilities.Distances;
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.search.Path;
 
+import javax.print.attribute.standard.Destination;
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DistanceToPoint implements Path<Point> {
     Point current;
@@ -45,6 +49,16 @@ public class DistanceToPoint implements Path<Point> {
             return compare1;
         }
         return compare;
+    }
+
+    public Set<Point> allVisited(){
+        Set<Point> set = new HashSet<>();
+        DistanceToPoint iterator = this;
+        while (iterator != null){
+            set.add(iterator.current);
+            iterator = iterator.previous;
+        }
+        return set;
     }
 
     @Override
