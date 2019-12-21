@@ -33,6 +33,6 @@ public class Day16Test {
 
     @Test
     public void getPart2() {
-        assertThat(day16.getPart2()).isEqualTo(-1);
+        assertThat(day16.getPart2()).isEqualTo("91689380");
     }
 }

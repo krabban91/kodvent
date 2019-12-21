@@ -46,7 +46,7 @@ public class Day16 {
 
         List<Integer> input = initialInput;
         for (int i = 0; i < 100; i++) {
-            input = FFT(input, basePattern);
+            input = FFT2(input, offSet);
         }
         return input.subList(offSet, offSet + 8).stream().reduce("", (a, b) -> a + "" + b, (s1, s2) -> s1 + s2);
     }
@@ -55,6 +55,14 @@ public class Day16 {
         List<Integer> output = new ArrayList<>();
         for (int i = 0; i < input.size(); i++) {
             output.add(calculate(input, i, basePattern));
+        }
+        return output;
+    }
+
+    public List<Integer> FFT2(List<Integer> input, int offset) {
+        List<Integer> output = new ArrayList<>(input);
+        for (int i = input.size() - 2; i >= offset; i--) {
+            output.set(i, (output.get(i) + output.get(i + 1)) % 10);
         }
         return output;
     }
