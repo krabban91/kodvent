@@ -17,36 +17,11 @@ public class Day21Test {
 
     @Test
     public void getPart1() throws InterruptedException {
-        day21.readInput("y2019/d21/input.txt");
-        assertThat(day21.getPart1()).isEqualTo(-1);
+        assertThat(day21.getPart1()).isEqualTo(19362259);
     }
-
-    @Test
-    public void part1Examples() {
-        /*
-        day21.readInput("y2019/d21/example1.txt");
-        assertThat(day21.getPart1()).isEqualTo(-1);
-        day21.readInput("y2019/d21/example2.txt");
-        assertThat(day21.getPart1()).isEqualTo(-1);
-         */
-
-    }
-
-    @Test
-    public void part2Examples() {
-        /*
-        
-        day21.readInput("y2019/d21/example1.txt");
-        assertThat(day21.getPart2()).isEqualTo(-1);
-        day21.readInput("y2019/d21/example3.txt");
-        assertThat(day21.getPart2()).isEqualTo(-1);
-         */
-
-    }
-
+    
     @Test
     public void getPart2() throws InterruptedException {
-        day21.readInput("y2019/d21/input.txt");
         assertThat(day21.getPart2()).isEqualTo(-1);
     }
 }

@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.d21;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 import org.springframework.stereotype.Component;
@@ -34,55 +33,73 @@ public class Day21 {
     }
 
     public long getPart1() throws InterruptedException {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
-        IntCodeComputer computer = new SpringScriptComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
-        computer.setAddress(0, 2);
-        printProgram(in);
-        executor.execute(computer);
-        Map<Point, Long> output = new HashMap<>();
+        // !A || ((!B || !C) && D)
+        String input = "NOT B J\n" +
+                "NOT C T\n" +
+                "OR T J\n" +
+                "AND D J\n" +
+                "NOT A T\n" +
+                "OR T J\n" +
+                "WALK\n";
+        return inputJumpScript(input);
+    }
 
-        String jump_if_next_is_hole = "NOT A J\n";
-        while(computer.hasHalted() || computer.hasOutput()){
-            output.clear();
-            Point p = new Point(0,0);
-            while (computer.hasOutput()){
+    private Long inputJumpScript(String input) throws InterruptedException {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+        LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
+        IntCodeComputer computer = new SpringScriptComputer(in, inputs, new LinkedBlockingDeque<>());
+        computer.printProgram();
+        executor.execute(computer);
+        TimeUnit.SECONDS.sleep(1);
+        Long result = null;
+        Map<Point, Long> output = new HashMap<>();
+        boolean started = false;
+        Point p = new Point(0, 0);
+        while (!computer.hasHalted() || computer.hasOutput()) {
+            while (computer.hasOutput()) {
                 Long out = computer.pollOutput(2L);
-                if(out == (long)'\n'){
-                    p.translate(-p.x,1);
- 
+                if (out == (long) '\n') {
+                    p.translate(-p.x, 1);
+
+                } else if (out.compareTo(256L) > 0) {
+                    result = out;
                 } else {
-                    output.put(new Point(p),out);
-                    p.translate(1,0);
+                    output.put(new Point(p), out);
+                    p.translate(1, 0);
                 }
             }
-            System.out.println(new LogUtils<Long>().mapToText(output, v-> v== null? " ": (char)v.intValue() + ""));
-            
+
+            if (!started) {
+                System.out.println(new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + ""));
+                input.chars().boxed().collect(Collectors.toList()).forEach(i -> computer.addInput(i.longValue()));
+                started = true;
+                while (!inputs.isEmpty()) {
+                    TimeUnit.SECONDS.sleep(1);
+                }
+            }
         }
+        System.out.println(new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + ""));
         try {
             executor.awaitTermination(2L, TimeUnit.SECONDS);
             executor.shutdown();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return -1L;
+        return result;
     }
 
-    private void printProgram(List<Long> program) {
-        Map<Point, Long> output = new HashMap<>();
-        Point point = new Point(0, 0);
-        program.forEach(l->{
-            if(l == (long)'\n'){
-                point.translate(-point.x,1);
-            } else {
-                output.put(new Point(point),l);
-                point.translate(1,0);
-            }
-        });
-        System.out.println(new LogUtils<Long>().mapToText(output, v-> v== null? " ": (char)v.intValue() + ""));
-    }
-
-    public long getPart2() {
-        return -1;
+    public long getPart2() throws InterruptedException {
+        // E, F, G, H, I
+        // 
+        // !A || ((!B || !C) && D)
+        String input = "NOT B J\n" +
+                "NOT C T\n" +
+                "OR T J\n" +
+                "AND D J\n" +
+                "NOT A T\n" +
+                "OR T J\n" +
+                "RUN\n";
+        return inputJumpScript(input);
     }
 
     public void readInput(String inputPath) {
