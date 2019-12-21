@@ -46,7 +46,11 @@ public class Day16 {
 
         List<Integer> input = initialInput;
         for (int i = 0; i < 100; i++) {
-            input = FFT2(input, offSet);
+            if (basePattern.get(1) == 1 && offSet > input.size() / 2) {
+                input = FFT2(input, offSet);
+            } else {
+                input = FFT(input, basePattern);
+            }
         }
         return input.subList(offSet, offSet + 8).stream().reduce("", (a, b) -> a + "" + b, (s1, s2) -> s1 + s2);
     }
