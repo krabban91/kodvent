@@ -2,10 +2,9 @@ package krabban91.kodvent.kodvent.y2019.d21;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +15,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day21 {
     List<Long> in;
     private boolean verbose = false;
+
     public Day21() throws InterruptedException {
         System.out.println("::: Starting Day 21 :::");
         String inputPath = "y2019/d21/input.txt";
@@ -34,21 +33,25 @@ public class Day21 {
 
     public long getPart1() throws InterruptedException {
         // !A || ((!B || !C) && D)
-        String input = "NOT B J\n" +
-                "NOT C T\n" +
-                "OR T J\n" +
-                "AND D J\n" +
-                "NOT A T\n" +
-                "OR T J\n" +
-                "WALK\n";
-        return inputJumpScript(input);
+        List<String> rules = Arrays.asList("NOT B J", "NOT C T", "OR T J",
+                "AND D J", "NOT A T", "OR T J", "WALK");
+        return scanHullForHoles(rules);
     }
 
-    private Long inputJumpScript(String input) throws InterruptedException {
+    public long getPart2() throws InterruptedException {
+        // !A || ((!B || !C) && (D && (E || (!E && H))))
+        List<String> rules = Arrays.asList(
+                "NOT B J", "NOT C T", "OR T J", "NOT E T", "AND H T",
+                "OR E T", "AND D T", "AND T J", "NOT A T", "OR T J",
+                "RUN");
+        return scanHullForHoles(rules);
+    }
+
+    private Long scanHullForHoles(List<String> input) throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
         LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
-        IntCodeComputer computer = new SpringScriptComputer(in, inputs, new LinkedBlockingDeque<>());
-        if(verbose){
+        SpringScriptComputer computer = new SpringScriptComputer(in, inputs, new LinkedBlockingDeque<>());
+        if (verbose) {
             computer.printProgram();
         }
         executor.execute(computer);
@@ -72,7 +75,8 @@ public class Day21 {
 
             if (!started) {
                 System.out.println(new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + ""));
-                input.chars().boxed().collect(Collectors.toList()).forEach(i -> computer.addInput(i.longValue()));
+                input.forEach(computer::addSpringScriptInstructions);
+                computer.activateInstructions();
                 started = true;
                 while (!inputs.isEmpty()) {
                     TimeUnit.SECONDS.sleep(1);
@@ -87,22 +91,6 @@ public class Day21 {
             e.printStackTrace();
         }
         return result;
-    }
-
-    public long getPart2() throws InterruptedException {
-        // !A || ((!B || !C) && (D && (E || (!E && H))))
-        String input = "NOT B J\n" +
-                "NOT C T\n" +
-                "OR T J\n" +
-                "NOT E T\n" +
-                "AND H T\n" +
-                "OR E T\n" +
-                "AND D T\n" +
-                "AND T J\n" +
-                "NOT A T\n" +
-                "OR T J\n" +
-                "RUN\n";
-        return inputJumpScript(input);
     }
 
     public void readInput(String inputPath) {
