@@ -69,6 +69,10 @@ public class IntCodeComputer implements Runnable {
         TimeUnit.MICROSECONDS.sleep(1);
         return !this.outputs.isEmpty();
     }
+    public boolean hasOutput(long waitMicros) throws InterruptedException {
+        TimeUnit.MICROSECONDS.sleep(waitMicros);
+        return !this.outputs.isEmpty();
+    }
 
     @Override
     public void run() {

@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 @Component
 public class Day21 {
     List<Long> in;
-
+    private boolean verbose = false;
     public Day21() throws InterruptedException {
         System.out.println("::: Starting Day 21 :::");
         String inputPath = "y2019/d21/input.txt";
@@ -48,19 +48,20 @@ public class Day21 {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
         LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
         IntCodeComputer computer = new SpringScriptComputer(in, inputs, new LinkedBlockingDeque<>());
-        computer.printProgram();
+        if(verbose){
+            computer.printProgram();
+        }
         executor.execute(computer);
         TimeUnit.SECONDS.sleep(1);
         Long result = null;
         Map<Point, Long> output = new HashMap<>();
         boolean started = false;
         Point p = new Point(0, 0);
-        while (!computer.hasHalted() || computer.hasOutput()) {
+        while (!computer.hasHalted() || computer.hasOutput(1000)) {
             while (computer.hasOutput()) {
                 Long out = computer.pollOutput(2L);
                 if (out == (long) '\n') {
                     p.translate(-p.x, 1);
-
                 } else if (out.compareTo(256L) > 0) {
                     result = out;
                 } else {
@@ -89,13 +90,15 @@ public class Day21 {
     }
 
     public long getPart2() throws InterruptedException {
-        // E, F, G, H, I
-        // 
-        // !A || ((!B || !C) && D)
+        // !A || ((!B || !C) && (D && (E || (!E && H))))
         String input = "NOT B J\n" +
                 "NOT C T\n" +
                 "OR T J\n" +
-                "AND D J\n" +
+                "NOT E T\n" +
+                "AND H T\n" +
+                "OR E T\n" +
+                "AND D T\n" +
+                "AND T J\n" +
                 "NOT A T\n" +
                 "OR T J\n" +
                 "RUN\n";
