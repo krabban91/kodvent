@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.y2019.d19;
 
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 import org.springframework.stereotype.Component;
@@ -54,41 +55,30 @@ public class Day19 {
     }
 
     public long getPart2() throws InterruptedException {
-        Map<Point, Boolean> map = new HashMap<>();
         Point closestOne = new Point(0, -1);
-
+        int leftMostBeam = 0;
+        boolean foundMatch = false;
         for (int y = 0; y < 100000; y++) {
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10000);
-            for (int x = y; x < 1.3 * y; x++) {
-                map.put(new Point(x, y), deployDrone(x, y, executor) == 1);
+            if(foundMatch){
+                break;
             }
-            executor.shutdown();
-            int finalY = y;
-            long count = map.entrySet().stream()
-                    .filter(e -> e.getKey().y == finalY - 99)
-                    .filter(Map.Entry::getValue).count();
-            if (count > 100) {
-                Optional<Point> first = map.entrySet().stream()
-                        .filter(e -> e.getKey().y == finalY - 99)
-                        .filter(Map.Entry::getValue)
-                        .max(Comparator.comparingInt(e -> e.getKey().x))
-                        .map(Map.Entry::getKey);
-                if (first.isPresent()) {
-                    Point tr = first.get();
-                    Point br = new Point(tr.x, tr.y + 99);
-                    Boolean topRight = map.get(tr);
-                    Boolean bottomRight = map.get(br);
-                    Point tl = new Point(tr.x - 99, tr.y);
-                    Boolean topLeft = map.get(tl);
-                    Point bl = new Point(br.x - 99, br.y);
-                    Boolean bottomLeft = map.get(bl);
-                    debug(map);
-                    if (topRight != null && topRight && bottomRight != null && bottomRight && topLeft != null && topLeft && bottomLeft != null && bottomLeft) {
-                        closestOne = tl;
-                        break;
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10000);
+            for (int x = leftMostBeam; x < 1.3 * y; x++) {
+
+                boolean isBeam = deployDrone(x, y, executor) == 1;
+                if(isBeam){
+                    leftMostBeam = x;
+                    Point bl = new Point(x,y);
+                    Point tr = new Point(x+99, y-99);
+                    boolean santaFits = deployDrone(tr.x, tr.y, executor) == 1;
+                    if(santaFits){
+                        closestOne = new Point(bl.x, tr.y);
+                        foundMatch =true;
                     }
+                    break;
                 }
             }
+            executor.shutdown();
         }
         return closestOne.x * 10000 + closestOne.y;
     }
