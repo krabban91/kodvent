@@ -1,17 +1,14 @@
 package krabban91.kodvent.kodvent.y2019.d19;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -57,26 +54,21 @@ public class Day19 {
     public long getPart2() throws InterruptedException {
         Point closestOne = new Point(0, -1);
         int leftMostBeam = 0;
-        boolean foundMatch = false;
         for (int y = 0; y < 100000; y++) {
-            if(foundMatch){
-                break;
-            }
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10000);
-            for (int x = leftMostBeam; x < 1.3 * y; x++) {
-
+            for (int x = leftMostBeam; x < 10 * y; x++) {
                 boolean isBeam = deployDrone(x, y, executor) == 1;
-                if(isBeam){
+                if (isBeam) {
                     leftMostBeam = x;
-                    Point bl = new Point(x,y);
-                    Point tr = new Point(x+99, y-99);
-                    boolean santaFits = deployDrone(tr.x, tr.y, executor) == 1;
-                    if(santaFits){
-                        closestOne = new Point(bl.x, tr.y);
-                        foundMatch =true;
-                    }
                     break;
                 }
+            }
+            Point bl = new Point(leftMostBeam, y);
+            Point tr = new Point(leftMostBeam + 99, y - 99);
+            boolean santaFits = deployDrone(tr.x, tr.y, executor) == 1;
+            if (santaFits) {
+                closestOne = new Point(bl.x, tr.y);
+                break;
             }
             executor.shutdown();
         }
