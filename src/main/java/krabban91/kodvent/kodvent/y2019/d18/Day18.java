@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.d18;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 import krabban91.kodvent.kodvent.y2018.d15.DistanceToPoint;
 import krabban91.kodvent.kodvent.y2018.d15.Step;
@@ -11,7 +10,6 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -64,6 +61,8 @@ public class Day18 {
         final Map<Point, Integer> keys = map.entrySet().stream()
                 .filter(e -> e.getValue() >= a && e.getValue() <= z)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Map<Integer, Point> keyLookup = keys.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
         final Map<Point, Integer> doors = map.entrySet().stream()
                 .filter(e -> e.getValue() >= A && e.getValue() <= Z)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -74,7 +73,7 @@ public class Day18 {
                 .get();
 
 
-        Map<Point, Collection<Step>> network = getNetwork(map); // ignored
+        Map<Point, Collection<Step>> network = getNetwork(map, true); // ignored
         Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys = keys.entrySet().stream().collect(Collectors.toMap(e -> e, e -> {
             Map<Point, DistanceToPoint> checked = new HashMap<>();
             PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
@@ -93,98 +92,73 @@ public class Day18 {
                         .filter(keys::containsKey)
                         .map(keys::get)
                         .collect(Collectors.toList())));
+        Map<Integer, List<Integer>> dependencyKeys = pathsToKeys.entrySet().stream()
+                .collect(Collectors.toMap(e-> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(doors::containsKey)
+                        .map(doors::get)
+                        .map(i-> i + UPPER_TO_LOWER)
+                        .collect(Collectors.toList())));
+        Map<Integer, Set<Integer>> dependencyGraph = dependencyKeys.entrySet().stream()
+                .collect(Collectors.toMap(e-> e.getKey(), e -> {
+                    Set<Integer> neededKeys = new HashSet<>();
+                    List<Integer> other = e.getValue();
+                    while (!other.isEmpty()){
+                        neededKeys.addAll(other);
+                        other = other.stream().map(dependencyKeys::get).flatMap(Collection::stream).collect(Collectors.toList());
+                    }
+                    return neededKeys;
+                }));
 
         // For each key:
         // - A* from start
         //   gather the dependency graph (f-> d+e, d ->[], e-> [])
-
-        // goal: reach dependency with most deps.
-        // example above -> f needs d and e. get all with no dependencies
-        // take the one with shortest total path. (
-        // gives order d->e->f or e->d->f. which has least steps?
-
-
         int stepsTaken = 0;
         Point current = startLocation;
-        // while keys left to find
-        Map<Point, Integer> reachableMap = new HashMap<>();
-        keys.forEach(reachableMap::put);
-        Set<Point> visited = new HashSet<>();
-        Set<Point> reachableKeys = new HashSet<>();
-        Deque<Point> unVisited = new LinkedBlockingDeque<>();
-        unVisited.addLast(current);
-        while (!keys.isEmpty()) {
-            System.out.println(new LogUtils<Integer>().mapToText(map, i -> i == null ? " " : ((char) i.intValue() + "")));
-            // populate reachable map
-            while (!unVisited.isEmpty()) {
-                final Point point = unVisited.pollFirst();
-                //here
-                visited.add(point);
-                Integer type = map.get(point);
-                reachableMap.put(point, type);
-                if (type >= a && type <= z) {
-                    reachableKeys.add(point);
-                }
-                if (type >= A && type <= Z) {
-                    continue;
-                }
-                //next
-                VECTORS.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
-                        .filter(map::containsKey)
-                        .filter(p -> !map.get(p).equals(WALL))
-                        //.filter(p -> !(map.get(p) >= A && map.get(p)<=Z))
-                        .filter(p -> !unVisited.contains(p))
-                        .filter(p -> !visited.contains(p))
-                        .forEach(unVisited::addLast);
-            }
-            // visualize the reachable surface
-            System.out.println(new LogUtils<Integer>().mapToText(reachableMap, i -> i == null ? " " : ((char) i.intValue() + "")));
+        Map<Point, Collection<Step>> networkWithDoors = getNetwork(map, true); // ignored
+        while(!keys.isEmpty()){
+            // goal: reach dependency with most deps.
+            // example above -> f needs d and e. get all with no dependencies
+            // take the one with shortest total path. (
+            // gives order d->e->f or e->d->f. which has least steps?
+            Point target = dependencyGraph.entrySet().stream()
+                    .filter(e-> e.getValue().isEmpty())
+                    // Choosing the key needed to reach the most doors.
+                    // TODO: Should test multiple paths
+                    .max(Comparator.comparingLong(e ->dependencyGraph.values().stream().filter(s->s.contains(e.getKey())).count()))
+                    .map(e->keyLookup.get(e.getKey()))
+                    .get();
+            Map<Point, DistanceToPoint> checked = new HashMap<>();
+            PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
+            unChecked.add(new DistanceToPoint(current, target));
+            Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
+            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors);
 
-
-            // find location of closest key using bfs
-            Map<Point, Integer> distances = new HashMap<>();
-            Deque<Point> toVisit = new LinkedBlockingDeque<>();
-            toVisit.add(current);
-            distances.put(current, 0);
-            Point bfsPoint = current;
-            while (!toVisit.isEmpty()) {
-                final Point point = toVisit.pollFirst();
-                bfsPoint = point;
-                final Integer distanceToHere = distances.get(point);
-                //here
-                final Integer integer = map.get(point);
-                if (keys.values().stream().anyMatch(k -> k.equals(integer))) {
-                    break;
-                }
-                //next
-                final List<Point> collect = VECTORS.stream().map(p -> new Point(p.x + point.x, p.y + point.y))
-                        .filter(p -> map.containsKey(p) && !map.get(p).equals(WALL) && !(map.get(p) >= A && map.get(p) <= Z))
-                        .filter(p -> !distances.containsKey(p))
-                        .filter(p -> !toVisit.contains(p))
-                        .collect(Collectors.toList());
-                collect.forEach(toVisit::addLast);
-                collect.forEach(p -> distances.put(p, distanceToHere + 1));
-            }
+            // move
             // move to key location
             map.put(current, DOT);
-            reachableMap.put(current, DOT);
-            stepsTaken += distances.get(bfsPoint);
-            current = bfsPoint;
-            reachableMap.put(current, AT);
+            stepsTaken += search.cost();
+            current = search.destination();
             map.put(current, AT);
             // remove key from map
-            final Integer removedKey = keys.remove(bfsPoint);
-            reachableKeys.remove(bfsPoint);
-            // unlock door connected to key
-            final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER).findFirst();
-            removedDoor.ifPresent(entry -> {
-                doors.remove(entry.getKey());
-                map.put(entry.getKey(), DOT);
-                reachableMap.put(entry.getKey(), DOT);
-                unVisited.addLast(entry.getKey());
+            // Should pick up all keys that I pass by.
+            List<Point> pickedUpKeys = search.allVisited().stream().filter(keys::containsKey)
+                    .collect(Collectors.toList());
+            List<Integer> keysInPath = pickedUpKeys.stream().map(keys::remove).collect(Collectors.toList());
+            keysInPath.forEach(removedKey ->{
+                dependencyGraph.remove(removedKey);
+                dependencyGraph.forEach((i,s) -> s.remove(removedKey));
+                // unlock door connected to key
+                final Optional<Map.Entry<Point, Integer>> removedDoor = doors.entrySet().stream().filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER).findFirst();
+                removedDoor.ifPresent(entry -> {
+                    doors.remove(entry.getKey());
+                    map.put(entry.getKey(), DOT);
+                });
+
             });
         }
+
         // return number of steps taken
+        // 6534 is too high.
         return stepsTaken;
     }
 
@@ -198,7 +172,7 @@ public class Day18 {
                 .collect(Collectors.toSet());
     }
 
-    private Map<Point, Collection<Step>> getNetwork(Map<Point, Integer> map) {
+    private Map<Point, Collection<Step>> getNetwork(Map<Point, Integer> map, boolean ignoreDoors) {
         return map.entrySet().stream()
                 .filter(e -> e.getValue() != '#')
                 .map(Map.Entry::getKey)
@@ -206,6 +180,7 @@ public class Day18 {
                         .map(p -> new Point(p.x + e.x, p.y + e.y))
                         .filter(map::containsKey)
                         .filter(p -> map.get(p) != '#')
+                        .filter(p-> (map.get(p) >= A  && map.get(p)<=Z) || ignoreDoors)
                         .map(p -> new Step(e, p))
                         .collect(Collectors.toList()))));
     }
