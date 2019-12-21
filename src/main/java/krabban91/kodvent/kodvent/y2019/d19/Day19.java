@@ -3,7 +3,6 @@ package krabban91.kodvent.kodvent.y2019.d19;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
 public class Day19 {
     List<Long> in;
     private boolean debug = false;
