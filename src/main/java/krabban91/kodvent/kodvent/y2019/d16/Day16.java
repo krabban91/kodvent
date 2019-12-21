@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d16;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Strings;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day16 {
     String in;
     List<Integer> basePattern = Arrays.asList(0, 1, 0, -1);
@@ -39,8 +37,6 @@ public class Day16 {
     public String getPart2() {
 
         final List<Integer> initialInput = Strings.repeated(in, 10000).chars().mapToObj(c -> Integer.parseInt((char) c + "")).collect(Collectors.toList());
-        // need to pass down the inputSize into the value function.
-        // iterating over an array of size <60000 is not very smart
         final List<Integer> offSetList = initialInput.subList(0, 7);
         final int offSet = Integer.parseInt(offSetList.stream().reduce("", (a, b) -> a + "" + b, (s1, s2) -> s1 + s2));
 
@@ -55,7 +51,7 @@ public class Day16 {
         return input.subList(offSet, offSet + 8).stream().reduce("", (a, b) -> a + "" + b, (s1, s2) -> s1 + s2);
     }
 
-    public List<Integer> FFT(List<Integer> input, List<Integer> basePattern) {
+    private List<Integer> FFT(List<Integer> input, List<Integer> basePattern) {
         List<Integer> output = new ArrayList<>();
         for (int i = 0; i < input.size(); i++) {
             output.add(calculate(input, i, basePattern));
@@ -63,7 +59,7 @@ public class Day16 {
         return output;
     }
 
-    public List<Integer> FFT2(List<Integer> input, int offset) {
+    private List<Integer> FFT2(List<Integer> input, int offset) {
         List<Integer> output = new ArrayList<>(input);
         for (int i = input.size() - 2; i >= offset; i--) {
             output.set(i, (output.get(i) + output.get(i + 1)) % 10);
@@ -81,15 +77,6 @@ public class Day16 {
 
     public int getBasePatternIndex(int inputIndex, int patternIndex, List<Integer> basePattern) {
         return (((patternIndex + 1) / (inputIndex + 1)) + basePattern.size()) % basePattern.size();
-    }
-
-    public List<Integer> repeatTerms(List<Integer> terms, int times) {
-        return IntStream.range(0, terms.size())
-                .mapToObj(i -> IntStream.range(0, times)
-                        .mapToObj(t -> terms.get(i))
-                        .collect(Collectors.toList()))
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
     }
 
     public void readInput(String inputPath) {
