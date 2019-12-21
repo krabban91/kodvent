@@ -1,5 +1,8 @@
 package krabban91.kodvent.kodvent.y2019.shared;
 
+import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +67,10 @@ public class IntCodeComputer implements Runnable {
 
     public boolean hasOutput() throws InterruptedException {
         TimeUnit.MICROSECONDS.sleep(1);
+        return !this.outputs.isEmpty();
+    }
+    public boolean hasOutput(long waitMicros) throws InterruptedException {
+        TimeUnit.MICROSECONDS.sleep(waitMicros);
         return !this.outputs.isEmpty();
     }
 
@@ -258,5 +265,19 @@ public class IntCodeComputer implements Runnable {
             throw new RuntimeException("Invalid Mode in get: " + mode);
         }
         return getAddress(index);
+    }
+
+    public void printProgram() {
+        Map<Point, Long> output = new HashMap<>();
+        Point point = new Point(0, 0);
+        program.forEach(l -> {
+            if (l == (long) '\n') {
+                point.translate(-point.x, 1);
+            } else {
+                output.put(new Point(point), l);
+                point.translate(1, 0);
+            }
+        });
+        System.out.println(new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + ""));
     }
 }
