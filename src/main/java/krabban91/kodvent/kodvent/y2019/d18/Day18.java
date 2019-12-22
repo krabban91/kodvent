@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -105,54 +107,120 @@ public class Day18 {
         int stepsTaken = 0;
         logMap(map);
         Point current = startLocation;
-        while (!keys.isEmpty()) {
+        Map<Set<Integer>, LinkedList<DistanceToPoint>> differentPaths = new HashMap<>();
+        differentPaths.put(Collections.emptySet(), new LinkedList<>(Collections.singletonList(new DistanceToPoint(startLocation, startLocation))));
+        Map<Set<Integer>, Map<Point, Integer>> differentMaps = new HashMap<>();
+        differentMaps.put(Collections.emptySet(), new HashMap<>(map));
+        Map<Set<Integer>, Map<Integer, Set<Integer>>> differentDependencies = new HashMap<>();
+        differentDependencies.put(Collections.emptySet(), deepCopyDependencies(dependencyGraph));
+        Map<Set<Integer>, Map<Point, Integer>> differentKeys = new HashMap<>();
+        Map<Set<Integer>, Map<Point, Integer>> differentDoors = new HashMap<>();
+        differentKeys.put(Collections.emptySet(), new HashMap<>(keys));
+        differentDoors.put(Collections.emptySet(), new HashMap<>(doors));
+
+
+        while (differentKeys.values().stream().anyMatch(m -> !m.isEmpty())) {
             // goal: reach dependency with most deps.
             // example above -> f needs d and e. get all with no dependencies
-            // take the one with shortest total path. (
-            // gives order d->e->f or e->d->f. which has least steps?
-            Point target = dependencyGraph.entrySet().stream()
+            Map<Set<Integer>, LinkedList<DistanceToPoint>> finalDifferentPaths = differentPaths;
+
+            Set<Integer> mapKey = differentMaps.keySet().stream().max(Comparator.comparingLong(s -> s.size())).get();
+            //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
+            Set<Integer> localishMapKey = new HashSet<>(mapKey);
+            Map<Point, Integer> localishKeys = differentKeys.get(localishMapKey);
+            if (localishKeys.isEmpty()) {
+                int sum = finalDifferentPaths.get(mapKey).stream().mapToInt(DistanceToPoint::cost).sum();
+                return sum;
+            }
+
+            Map<Integer, Set<Integer>> localishDependencies = deepCopyDependencies(differentDependencies.get(localishMapKey));
+
+
+            List<Point> targets = localishDependencies.entrySet().stream()
                     .filter(e -> e.getValue().isEmpty())
-                    // Choosing the key needed to reach the most doors.
-                    // TODO: Should test multiple paths
-                    .max(Comparator.comparingLong(e -> dependencyGraph.values().stream().filter(s -> s.contains(e.getKey())).count()))
                     .map(e -> keyLookup.get(e.getKey()))
-                    .get();
-            Map<Point, Collection<Step>> networkWithDoors = getNetwork(map, false); // ignored
-            Map<Point, DistanceToPoint> checked = new HashMap<>();
-            PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
-            unChecked.add(new DistanceToPoint(current, target));
-            Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
-            DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> false);
-
-            // move
-            // move to key location
-            map.put(current, DOT);
-            stepsTaken += search.cost();
-            current = search.destination();
-            map.put(current, AT);
-            // remove key from map
-            // pick up all keys that I pass by.
-            List<Point> pickedUpKeys = search.allVisited().stream().filter(keys::containsKey)
                     .collect(Collectors.toList());
-            List<Integer> keysInPath = pickedUpKeys.stream().map(keys::remove).collect(Collectors.toList());
-            keysInPath.forEach(removedKey -> {
-                dependencyGraph.remove(removedKey);
-                dependencyGraph.forEach((i, s) -> s.remove(removedKey));
-                // unlock door connected to key
-                doors.entrySet().stream()
-                        .filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER)
-                        .findFirst().ifPresent(entry -> {
-                    doors.remove(entry.getKey());
-                    map.put(entry.getKey(), DOT);
-                });
+            LinkedList<DistanceToPoint> distanceToPoints = differentPaths.get(localishMapKey);
+            Map<Point, Integer> pointIntegerMap = differentMaps.get(localishMapKey);
+            Map<Point, Integer> pointIntegerMap1 = differentDoors.get(localishMapKey);
+            for (Point target : targets) {
 
-            });
-            logMap(map);
+                Map<Integer, Set<Integer>> localDependencies = deepCopyDependencies(localishDependencies);
+                Set<Integer> localMapKey = new HashSet<>(localishMapKey);
+                HashMap<Point, Integer> localKeys = new HashMap<>(localishKeys);
+                LinkedList<DistanceToPoint> localPaths = new LinkedList<>(distanceToPoints);
+                current = localPaths.getLast().destination();
+                Map<Point, Integer> localDoors = new HashMap<>(pointIntegerMap1);
+
+                Map<Point, Integer> localMap = new HashMap<>(pointIntegerMap);
+                // take the one with shortest total path. (
+                // gives order d->e->f or e->d->f. which has least steps?
+
+
+                Map<Point, Collection<Step>> networkWithDoors = getNetwork(localMap, false); // ignored
+                Map<Point, DistanceToPoint> checked = new HashMap<>();
+                PriorityQueue<DistanceToPoint> unChecked = new PriorityQueue<>(Comparator.comparingInt(DistanceToPoint::heuristic));
+                unChecked.add(new DistanceToPoint(localPaths.getLast().destination(), target));
+                Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
+                DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> false);
+
+                // move
+                // move to key location
+                localPaths.addLast(search);
+                localMap.put(current, DOT);
+                current = search.destination();
+                localMap.put(current, AT);
+                // remove key from map
+                // pick up all keys that I pass by.
+                List<Point> pickedUpKeys = search.allVisited().stream().filter(localKeys::containsKey)
+                        .collect(Collectors.toList());
+                List<Integer> keysInPath = pickedUpKeys.stream().map(localKeys::remove).collect(Collectors.toList());
+                keysInPath.forEach(removedKey -> {
+                    localDependencies.remove(removedKey);
+                    localDependencies.forEach((i, s) -> s.remove(removedKey));
+                    // unlock door connected to key
+                    localDoors.entrySet().stream()
+                            .filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER)
+                            .findFirst().ifPresent(entry -> {
+                        localDoors.remove(entry.getKey());
+                        localMap.put(entry.getKey(), DOT);
+                    });
+                });
+                localMapKey.addAll(keysInPath);
+                if (differentMaps.containsKey(localMapKey)) {
+                    List<DistanceToPoint> other = differentPaths.get(localMapKey);
+                    int otherCost = other.stream().mapToInt(DistanceToPoint::cost).sum();
+                    int localCost = localPaths.stream().mapToInt(DistanceToPoint::cost).sum();
+                    if (localCost > otherCost) {
+                        System.out.println("strange");
+                        continue;
+                    }
+                }
+                differentDependencies.remove(mapKey);
+                differentDependencies.put(localMapKey, localDependencies);
+
+                differentDoors.remove(mapKey);
+                differentDoors.put(localMapKey, localDoors);
+                differentKeys.remove(mapKey);
+                differentKeys.put(localMapKey, localKeys);
+                differentPaths.remove(mapKey);
+                differentPaths.put(localMapKey, localPaths);
+                differentMaps.remove(mapKey);
+                differentMaps.put(localMapKey, localMap);
+                logMap(localMap);
+            }
+            //int maxCollectedKeys = newKeys.keySet().stream().mapToInt(List::size).max().orElse(0);
+
+
         }
 
         // return number of steps taken
         // 6534 is too high.
-        return stepsTaken;
+        return differentPaths.values().stream().mapToLong(l -> l.stream().mapToInt(DistanceToPoint::cost).sum()).min().orElse(-1);
+    }
+
+    private Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
+        return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
     }
 
     private void logMap(Map<Point, Integer> map) {
