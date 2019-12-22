@@ -118,19 +118,29 @@ public class Day18 {
         differentKeys.put(Collections.emptySet(), new HashMap<>(keys));
         differentDoors.put(Collections.emptySet(), new HashMap<>(doors));
 
-
+        stepsTaken = Integer.MAX_VALUE;
+        int timesSinceChange = 0;
         while (differentKeys.values().stream().anyMatch(m -> !m.isEmpty())) {
             // goal: reach dependency with most deps.
             // example above -> f needs d and e. get all with no dependencies
             Map<Set<Integer>, LinkedList<DistanceToPoint>> finalDifferentPaths = differentPaths;
 
             Set<Integer> mapKey = differentMaps.keySet().stream().max(Comparator.comparingLong(s -> s.size())).get();
+            //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> differentKeys.get(s).size()).thenComparing(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
             //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
             Set<Integer> localishMapKey = new HashSet<>(mapKey);
             Map<Point, Integer> localishKeys = differentKeys.get(localishMapKey);
             if (localishKeys.isEmpty()) {
                 int sum = finalDifferentPaths.get(mapKey).stream().mapToInt(DistanceToPoint::cost).sum();
-                return sum;
+                if(stepsTaken<=sum){
+                    if(++timesSinceChange>100){
+                        return stepsTaken;
+                    }
+                }
+                else {
+                    stepsTaken = sum;
+                    timesSinceChange =0;
+                }
             }
 
             Map<Integer, Set<Integer>> localishDependencies = deepCopyDependencies(differentDependencies.get(localishMapKey));
@@ -164,16 +174,17 @@ public class Day18 {
                 Graph<DistanceToPoint, Step, Point> graph = new Graph<>();
                 DistanceToPoint search = graph.search(unChecked, (p, net) -> this.addNext(p, net, checked, unChecked), networkWithDoors, p -> false);
 
+                // remove key from map
+                // pick up all keys that I pass by.
+                List<Point> pickedUpKeys = search.allVisited().stream().filter(localKeys::containsKey)
+                        .collect(Collectors.toList());
+                pickedUpKeys.forEach(p->  localMap.put(p, DOT));
                 // move
                 // move to key location
                 localPaths.addLast(search);
                 localMap.put(current, DOT);
                 current = search.destination();
                 localMap.put(current, AT);
-                // remove key from map
-                // pick up all keys that I pass by.
-                List<Point> pickedUpKeys = search.allVisited().stream().filter(localKeys::containsKey)
-                        .collect(Collectors.toList());
                 List<Integer> keysInPath = pickedUpKeys.stream().map(localKeys::remove).collect(Collectors.toList());
                 keysInPath.forEach(removedKey -> {
                     localDependencies.remove(removedKey);
