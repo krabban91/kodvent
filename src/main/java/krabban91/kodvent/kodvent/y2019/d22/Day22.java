@@ -4,10 +4,12 @@ import krabban91.kodvent.kodvent.utilities.Input;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 public class Day22 {
-    List<String> in;
+    List<DealingAction> in;
 
     public Day22() {
         System.out.println("::: Starting Day 22 :::");
@@ -22,7 +24,12 @@ public class Day22 {
     }
 
     public long getPart1() {
-        return -1L;
+        List<Integer> deck = IntStream.range(0, 10007).boxed().collect(Collectors.toList());
+        for(DealingAction action : in){
+            deck = action.handle(deck);
+        }
+        //1388L is wrong
+        return deck.indexOf(2019);
     }
 
     public long getPart2() {
@@ -30,6 +37,6 @@ public class Day22 {
     }
 
     public void readInput(String inputPath) {
-        in = Input.getLines(inputPath);
+        in = Input.getLines(inputPath).stream().map(DealingAction::new).collect(Collectors.toList());
     }
 }
