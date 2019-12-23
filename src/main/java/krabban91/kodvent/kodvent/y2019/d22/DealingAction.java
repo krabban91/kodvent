@@ -36,14 +36,14 @@ public class DealingAction {
 
     }
 
-    public List<Integer> handle(List<Integer> deck) {
+    public List<Long> handle(List<Long> deck) {
         switch (type) {
             case NEW_STACK:
-                ArrayList<Integer> integers = new ArrayList<>(deck);
-                Collections.reverse(integers);
-                return integers;
+                ArrayList<Long> cards = new ArrayList<>(deck);
+                Collections.reverse(cards);
+                return cards;
             case CUT:
-                ArrayList<Integer> cutOut = new ArrayList<>();
+                ArrayList<Long> cutOut = new ArrayList<>();
                 if(parameter>0){
                     cutOut.addAll(deck.subList(parameter, deck.size()));
                     cutOut.addAll(deck.subList(0, parameter));
@@ -54,13 +54,12 @@ public class DealingAction {
                     return cutOut;
                 }
             case INCREMENT:
-                Map<Integer, Integer> incrementOut = new HashMap<>();
+                Map<Integer, Long> incrementOut = new HashMap<>();
                 for (int i = 0; i < deck.size(); i++) {
                     incrementOut.put((i*parameter)%deck.size(), deck.get(i));
                 }
                 return new ArrayList<>(incrementOut.values());
         }
-
         return deck;
     }
 }

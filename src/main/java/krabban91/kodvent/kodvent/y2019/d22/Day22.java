@@ -3,7 +3,9 @@ package krabban91.kodvent.kodvent.y2019.d22;
 import krabban91.kodvent.kodvent.utilities.Input;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -25,16 +27,26 @@ public class Day22 {
     }
 
     public long getPart1() {
-        List<Integer> deck = IntStream.range(0, 10007).boxed().collect(Collectors.toList());
+        List<Long> deck = LongStream.range(0, 10007).boxed().collect(Collectors.toList());
         for (DealingAction action : in) {
             deck = action.handle(deck);
         }
-        return deck.indexOf(2019);
+        return deck.indexOf(2019L);
     }
 
     public long getPart2() {
-        List<Integer> deck = LongStream.range(0, 119315717514047L).mapToInt(l->(int)l).boxed().collect(Collectors.toList());
-        for (long i = 0; i < 101741582076661L; i++) {
+        long cardCount = 119315717514047L;
+        long shuffleCount = 101741582076661L;
+        Set<Long> history = new HashSet<>();
+
+        List<Long> deck = LongStream.range(0, cardCount).boxed().collect(Collectors.toList());
+        for (long i = 0; i < shuffleCount; i++) {
+            Long x = deck.get(2020);
+            if(history.contains(x)){
+                System.out.println("WOW");
+            }
+            history.add(x);
+            System.out.println(x);
             for (DealingAction action : in) {
                 deck = action.handle(deck);
             }
