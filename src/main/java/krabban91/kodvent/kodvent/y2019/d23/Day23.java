@@ -36,33 +36,38 @@ public class Day23 {
 
     public long getPart1() throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
-        Map<Integer, IntCodeComputer> collect = StartNetwork(executor);
+        Map<Integer, IntCodeComputer> network = StartNetwork(executor);
         Map<Integer, LinkedBlockingDeque<List<Long>>> packets = new HashMap<>();
-        runUntilIdle(collect, packets);
+        runUntilIdle(network, packets, false);
         stopNetwork(executor);
         return packets.get(255).peekFirst().get(1);
     }
 
     public long getPart2() throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
-        Map<Integer, IntCodeComputer> collect = StartNetwork(executor);
+
+        Map<Integer, IntCodeComputer> network = StartNetwork(executor);
         Set<Long> natYHistory = new HashSet<>();
         Long natDoubleValue = null;
+        boolean initiated = false;
         Map<Integer, LinkedBlockingDeque<List<Long>>> packets = new HashMap<>();
         while (natDoubleValue == null) {
-            runUntilIdle(collect, packets);
+            runUntilIdle(network, packets, initiated);
+            initiated = true;
             LinkedBlockingDeque<List<Long>> points = packets.get(255);
             List<Long> longs = points.peekLast();
+            Long x = longs.get(0);
             Long y = longs.get(1);
             if (natYHistory.contains(y)) {
                 natDoubleValue = y;
             } else {
                 natYHistory.add(y);
-                IntCodeComputer current = collect.get(0);
-                current.addInput(longs.get(0));
-                current.addInput(longs.get(1));
+                IntCodeComputer current = network.get(0);
+                current.addInput(x);
+                current.addInput(y);
             }
         }
+
         stopNetwork(executor);
         return natDoubleValue;
     }
@@ -86,16 +91,13 @@ public class Day23 {
         }
     }
 
-    private void runUntilIdle(Map<Integer, IntCodeComputer> collect, Map<Integer, LinkedBlockingDeque<List<Long>>> packets) throws InterruptedException {
-        boolean initiated = false;
-        while (!initiated || packets.entrySet().stream().filter(e -> e.getKey() != 255).anyMatch(l -> !l.getValue().isEmpty()) || collect.values().stream().anyMatch(c -> {
-            try {
-                return c.hasOutput();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return false;
-        })) {
+    private void runUntilIdle(Map<Integer, IntCodeComputer> collect, Map<Integer, LinkedBlockingDeque<List<Long>>> packets, boolean initiated) throws InterruptedException {
+        while (!initiated ||
+                packets.entrySet().stream()
+                        .filter(e -> e.getKey() != 255)
+                        .anyMatch(l -> !l.getValue().isEmpty()) ||
+                collect.values().stream()
+                        .anyMatch(IntCodeComputer::safeHasOutput)) {
             initiated = true;
             for (int i = 0; i < 50; i++) {
                 IntCodeComputer current = collect.get(i);
