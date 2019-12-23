@@ -17,11 +17,11 @@ public class Day23Test {
 
     @Test
     public void getPart1() throws InterruptedException {
-        assertThat(day23.getPart1()).isEqualTo(-1);
+        assertThat(day23.getPart1()).isEqualTo(24268);
     }
 
     @Test
     public void getPart2() throws InterruptedException {
-        assertThat(day23.getPart2()).isEqualTo(-1);
+        assertThat(day23.getPart2()).isEqualTo(19316);
     }
 }
