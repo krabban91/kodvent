@@ -65,6 +65,15 @@ public class IntCodeComputer implements Runnable {
         return this.program.get(pointer) == HALT_CODE;
     }
 
+    public boolean safeHasOutput(){
+        try {
+            return this.hasOutput();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean hasOutput() throws InterruptedException {
         TimeUnit.MICROSECONDS.sleep(1);
         return !this.outputs.isEmpty();
