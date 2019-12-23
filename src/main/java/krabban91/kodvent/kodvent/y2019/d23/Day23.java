@@ -36,7 +36,7 @@ public class Day23 {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
         Map<Integer, IntCodeComputer> network = StartNetwork(executor);
         Map<Integer, LinkedBlockingDeque<List<Long>>> packets = new HashMap<>();
-        runUntilIdle(network, packets, false);
+        runUntilIdle(network, packets);
         stopNetwork(executor);
         return packets.get(255).peekFirst().get(1);
     }
@@ -47,11 +47,9 @@ public class Day23 {
         Map<Integer, IntCodeComputer> network = StartNetwork(executor);
         Set<Long> historyNatY = new HashSet<>();
         Long repeatedNatY = null;
-        boolean initiated = false;
         Map<Integer, LinkedBlockingDeque<List<Long>>> packets = new HashMap<>();
         while (repeatedNatY == null) {
-            runUntilIdle(network, packets, initiated);
-            initiated = true;
+            runUntilIdle(network, packets);
             LinkedBlockingDeque<List<Long>> points = packets.get(255);
             List<Long> longs = points.peekLast();
             Long x = longs.get(0);
@@ -89,11 +87,9 @@ public class Day23 {
         }
     }
 
-    private void runUntilIdle(Map<Integer, IntCodeComputer> collect, Map<Integer, LinkedBlockingDeque<List<Long>>> packets, boolean initiated) throws InterruptedException {
+    private void runUntilIdle(Map<Integer, IntCodeComputer> collect, Map<Integer, LinkedBlockingDeque<List<Long>>> packets) throws InterruptedException {
+        boolean initiated = false;
         while (!initiated ||
-                packets.entrySet().stream()
-                        .filter(e -> e.getKey() != 255)
-                        .anyMatch(l -> !l.getValue().isEmpty()) ||
                 collect.values().stream()
                         .anyMatch(IntCodeComputer::safeHasOutput)) {
             initiated = true;
@@ -103,7 +99,6 @@ public class Day23 {
                     Long address = current.pollOutput(1);
                     Long x = current.pollOutput(1);
                     Long y = current.pollOutput(1);
-
                     packets.putIfAbsent(address.intValue(), new LinkedBlockingDeque<>());
                     packets.get(address.intValue()).addLast(Arrays.asList(x, y));
                 }
