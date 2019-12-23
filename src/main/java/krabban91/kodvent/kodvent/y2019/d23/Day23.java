@@ -2,7 +2,6 @@ package krabban91.kodvent.kodvent.y2019.d23;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-@Component
 public class Day23 {
     List<Long> in;
 
