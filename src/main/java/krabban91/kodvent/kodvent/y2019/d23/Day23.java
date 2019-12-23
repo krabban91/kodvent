@@ -45,21 +45,21 @@ public class Day23 {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
 
         Map<Integer, IntCodeComputer> network = StartNetwork(executor);
-        Set<Long> natYHistory = new HashSet<>();
-        Long natDoubleValue = null;
+        Set<Long> historyNatY = new HashSet<>();
+        Long repeatedNatY = null;
         boolean initiated = false;
         Map<Integer, LinkedBlockingDeque<List<Long>>> packets = new HashMap<>();
-        while (natDoubleValue == null) {
+        while (repeatedNatY == null) {
             runUntilIdle(network, packets, initiated);
             initiated = true;
             LinkedBlockingDeque<List<Long>> points = packets.get(255);
             List<Long> longs = points.peekLast();
             Long x = longs.get(0);
             Long y = longs.get(1);
-            if (natYHistory.contains(y)) {
-                natDoubleValue = y;
+            if (historyNatY.contains(y)) {
+                repeatedNatY = y;
             } else {
-                natYHistory.add(y);
+                historyNatY.add(y);
                 IntCodeComputer current = network.get(0);
                 current.addInput(x);
                 current.addInput(y);
@@ -67,7 +67,7 @@ public class Day23 {
         }
 
         stopNetwork(executor);
-        return natDoubleValue;
+        return repeatedNatY;
     }
 
     private Map<Integer, IntCodeComputer> StartNetwork(ThreadPoolExecutor executor) {
