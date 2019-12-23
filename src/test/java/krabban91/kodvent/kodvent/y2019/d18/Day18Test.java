@@ -22,13 +22,13 @@ public class Day18Test {
     }
     @Test
     public void getPart1Extra1() {
+        day18.debug = true;
         day18.readInput("y2019/d18/extra.txt");
         assertThat(day18.getPart1()).isEqualTo(8);
     }
     @Test
     public void getPart1Extra2() {
         day18.readInput("y2019/d18/extra2.txt");
-        day18.debug=true;
         assertThat(day18.getPart1()).isEqualTo(86);
     }
     @Test
@@ -38,6 +38,7 @@ public class Day18Test {
     }
     @Test
     public void getPart1Extra4() {
+        day18.debug = true;
         day18.readInput("y2019/d18/extra4.txt");
         assertThat(day18.getPart1()).isEqualTo(136);
     }

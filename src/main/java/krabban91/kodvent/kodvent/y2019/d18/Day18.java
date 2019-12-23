@@ -44,10 +44,10 @@ public class Day18 {
         System.out.println("::: Starting Day 18 :::");
         String inputPath = "y2019/d18/input.txt";
         readInput(inputPath);
-        long part1 = getPart1();
+        long part1 = -1;//getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
+        long part2 = -1;//getPart2();
         System.out.println(": answer to part 2 :");
         System.out.println(part2);
     }
@@ -141,6 +141,12 @@ public class Day18 {
                     stepsTaken = sum;
                     timesSinceChange =0;
                 }
+                differentMaps.remove(mapKey);
+                differentPaths.remove(mapKey);
+                differentDependencies.remove(mapKey);
+                differentDoors.remove(mapKey);
+                differentKeys.remove(mapKey);
+                continue;
             }
 
             Map<Integer, Set<Integer>> localishDependencies = deepCopyDependencies(differentDependencies.get(localishMapKey));
@@ -225,9 +231,12 @@ public class Day18 {
 
         }
 
+        if(stepsTaken ==Integer.MAX_VALUE){
+            return differentPaths.values().stream().mapToLong(l -> l.stream().mapToInt(DistanceToPoint::cost).sum()).min().orElse(-1);
+        }
         // return number of steps taken
-        // 6534 is too high.
-        return differentPaths.values().stream().mapToLong(l -> l.stream().mapToInt(DistanceToPoint::cost).sum()).min().orElse(-1);
+        // 6534 is too high. 5680 is wrong, 5636 is wrong
+        return stepsTaken;
     }
 
     private Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
