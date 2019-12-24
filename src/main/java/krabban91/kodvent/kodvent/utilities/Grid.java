@@ -58,6 +58,17 @@ public class Grid<V> {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
+    public List<V> getAdjacentTiles(int row, int col) {
+        return IntStream
+                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .mapToObj(i -> IntStream
+                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
+                        .mapToObj(j -> (i == row && j == col) ? null : (i == row || j == col) ? this.raw.get(i).get(j):null)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
 
     public List<Map.Entry<Point,V>> getSurroundingTilesWithPoints(int row, int col, boolean includeCenter) {
         return IntStream
