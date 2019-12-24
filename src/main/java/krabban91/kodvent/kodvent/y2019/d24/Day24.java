@@ -45,7 +45,8 @@ public class Day24 {
         List<? extends List<BugTile>> finalCurrent1 = current.getRaw();
         return IntStream.range(0, finalCurrent1.size())
                 .mapToLong(y -> IntStream.range(0, finalCurrent1.get(y).size())
-                        .mapToLong(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x))))
+                        .filter(x -> (finalCurrent1.get(y).get(x).isBug()))
+                        .mapToLong(x -> (long) Math.pow(2, (y * finalCurrent1.size() + x)))
                         .sum())
                 .sum();
     }
@@ -64,7 +65,12 @@ public class Day24 {
     }
 
     public long bugsAfter(long minutes) {
-        Map<Point3D, BugTile> current = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, 0), in.get(y).get(x))).collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Point3D, BugTile> current = IntStream.range(0, in.size())
+                .mapToObj(y -> IntStream.range(0, in.get(y).size())
+                        .mapToObj(x -> Map.entry(new Point3D(x, y, 0), in.get(y).get(x)))
+                        .collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         long minute = 0;
         while (minute < minutes) {
             minute++;
@@ -74,9 +80,13 @@ public class Day24 {
     }
 
     private Map<Point3D, BugTile> freshTile(int level) {
-        return IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, level), new BugTile(false)))
-                .filter(e -> nonCenterTile(e.getKey().getY(), e.getKey().getX()))
-                .collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return IntStream.range(0, in.size())
+                .mapToObj(y -> IntStream.range(0, in.get(y).size())
+                        .mapToObj(x -> Map.entry(new Point3D(x, y, level), new BugTile(false)))
+                        .filter(e -> nonCenterTile(e.getKey().getY(), e.getKey().getX()))
+                        .collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private Grid<BugTile> nextState(Grid<BugTile> grid) {
@@ -183,6 +193,9 @@ public class Day24 {
     }
 
     public void readInput(String inputPath) {
-        in = Input.getLines(inputPath).stream().map(s -> s.chars().mapToObj(c -> new BugTile((char) c == '#')).collect(Collectors.toList())).collect(Collectors.toList());
+        in = Input.getLines(inputPath).stream()
+                .map(s -> s.chars().mapToObj(c -> new BugTile((char) c == '#'))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
     }
 }
