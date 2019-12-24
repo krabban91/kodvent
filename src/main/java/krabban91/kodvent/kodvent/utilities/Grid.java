@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,15 +19,15 @@ public class Grid<V> {
 
     private List<? extends List<V>> raw;
 
-    public Grid(){
+    public Grid() {
 
     }
 
-    public Grid(List<? extends List<V>> grid){
+    public Grid(List<? extends List<V>> grid) {
         this.raw = grid;
     }
 
-    public Set<Point> indicesMatching(Predicate<V> filter){
+    public Set<Point> indicesMatching(Predicate<V> filter) {
         return IntStream.range(0, raw.size()).mapToObj(y ->
                 IntStream.range(0, raw.get(y).size())
                         .filter(x -> filter.test(raw.get(y).get(x)))
@@ -47,6 +48,7 @@ public class Grid<V> {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
+
     public List<V> getSurroundingTiles(int row, int col) {
         return IntStream
                 .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
@@ -59,12 +61,24 @@ public class Grid<V> {
                 .collect(Collectors.toList());
     }
 
-    public List<Map.Entry<Point,V>> getSurroundingTilesWithPoints(int row, int col, boolean includeCenter) {
+    public List<V> getAdjacentTiles(int row, int col) {
         return IntStream
                 .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
                 .mapToObj(i -> IntStream
                         .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
-                        .mapToObj(j -> (!includeCenter && (i == row && j == col)) ? null : Map.entry(new Point(j,i),this.raw.get(i).get(j)))
+                        .mapToObj(j -> (i == row && j == col) ? null : (i == row || j == col) ? this.raw.get(i).get(j) : null)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(int row, int col, boolean includeCenter) {
+        return IntStream
+                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .mapToObj(i -> IntStream
+                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
+                        .mapToObj(j -> (!includeCenter && (i == row && j == col)) ? null : Map.entry(new Point(j, i), this.raw.get(i).get(j)))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
@@ -89,19 +103,27 @@ public class Grid<V> {
                         .forEach(col -> action.accept(col, row)));
     }
 
+    public Grid<V> map(BiFunction<V, Point, V> function) {
+        return new Grid<>(IntStream.range(0, raw.size())
+                .mapToObj(y -> IntStream.range(0, raw.get(0).size())
+                        .mapToObj(x -> function.apply(this.raw.get(y).get(x), new Point(x, y)))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList()));
+    }
+
     public void forEach(Consumer<V> action) {
         this.raw.forEach(l -> l.forEach(action));
     }
 
-    public V get(int x, int y){
+    public V get(int x, int y) {
         return this.raw.get(y).get(x);
     }
 
-    public long sum(ToLongFunction<V> valueMethod){
-        return this.raw.stream().mapToLong(l-> l.stream().mapToLong(valueMethod).sum()).sum();
+    public long sum(ToLongFunction<V> valueMethod) {
+        return this.raw.stream().mapToLong(l -> l.stream().mapToLong(valueMethod).sum()).sum();
     }
 
-    public Grid<V> clone(Function<V, V> cloneMethod){
+    public Grid<V> clone(Function<V, V> cloneMethod) {
         return new Grid<>(raw.stream()
                 .map(l -> l.stream()
                         .map(cloneMethod)
