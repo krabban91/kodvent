@@ -5,9 +5,8 @@ import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,35 +28,39 @@ public class Day24 {
     }
 
     public long getPart1() {
-        Map<List<List<BugTile>>, Long> history = new HashMap<>();
+        Set<List<List<BugTile>>> history = new HashSet<>();
         List<List<BugTile>> current = in;
         long minute = 0;
-        while (!history.containsKey(current)){
-            System.out.println("Minute "+minute);
+        while (!history.contains(current)) {
+            System.out.println("Minute " + minute);
 
             System.out.println(LogUtils.tiles(current));
-            history.put(current, minute);
+            history.add(current);
             minute++;
-            current = nextState(current, minute);
+            current = nextState(current);
         }
         System.out.println("Match");
         System.out.println(LogUtils.tiles(current));
 
         List<List<BugTile>> finalCurrent1 = current;
         List<List<Long>> collect = IntStream.range(0, current.size()).mapToObj(y -> IntStream.range(0, finalCurrent1.get(y).size()).mapToObj(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x)))).collect(Collectors.toList())).collect(Collectors.toList());
-        return collect.stream().mapToLong(l-> l.stream().mapToLong(e->e).sum()).sum();
-    }
-
-    private List<List<BugTile>> nextState(List<List<BugTile>> current, long minute) {
-        Grid<BugTile> grid = new Grid<>(current);
-        return IntStream.range(0,current.size()).mapToObj(y-> IntStream.range(0, current.get(y).size()).mapToObj(x-> current.get(y).get(x).nextState(x,y, minute,  grid.getAdjacentTiles(y,x))).collect(Collectors.toList())).collect(Collectors.toList());
+        return collect.stream().mapToLong(l -> l.stream().mapToLong(e -> e).sum()).sum();
     }
 
     public long getPart2() {
         return -1;
     }
 
+    private List<List<BugTile>> nextState(List<List<BugTile>> current) {
+        Grid<BugTile> grid = new Grid<>(current);
+        return IntStream.range(0, current.size())
+                .mapToObj(y -> IntStream.range(0, current.get(y).size())
+                        .mapToObj(x -> current.get(y).get(x).nextState(grid.getAdjacentTiles(y, x)))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList());
+    }
+
     public void readInput(String inputPath) {
-        in = Input.getLines(inputPath).stream().map(s->s.chars().mapToObj(c-> new BugTile((char)c =='#')).collect(Collectors.toList())).collect(Collectors.toList());
+        in = Input.getLines(inputPath).stream().map(s -> s.chars().mapToObj(c -> new BugTile((char) c == '#')).collect(Collectors.toList())).collect(Collectors.toList());
     }
 }

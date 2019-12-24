@@ -17,8 +17,7 @@ public class Day24Test {
 
     @Test
     public void getPart1() throws InterruptedException {
-        day24.readInput("y2019/d24/example1.txt");
-        assertThat(day24.getPart1()).isEqualTo(-1);
+        assertThat(day24.getPart1()).isEqualTo(32506911);
     }
 
     @Test
