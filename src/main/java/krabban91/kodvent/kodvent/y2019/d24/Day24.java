@@ -4,9 +4,7 @@ import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day24 {
     List<List<BugTile>> in;
     boolean debug;
@@ -43,7 +40,7 @@ public class Day24 {
             minute++;
             current = nextState(current);
         }
-        logState(current,minute);
+        logState(current, minute);
 
         List<List<BugTile>> finalCurrent1 = current;
         return IntStream.range(0, finalCurrent1.size())
@@ -54,25 +51,31 @@ public class Day24 {
     }
 
     private void logState(List<List<BugTile>> current, long minute) {
-        if(debug){
+        if (debug) {
             System.out.println("Minute " + minute);
             System.out.println(LogUtils.tiles(current));
         }
     }
 
     public long getPart2() {
+        long limit = 200;
+        return bugsAfter(limit);
+
+    }
+
+    public long bugsAfter(long minutes) {
         Map<Point3D, BugTile> current = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, 0), in.get(y).get(x))).collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         long minute = 0;
-        while (minute < 200) {
+        while (minute < minutes) {
             minute++;
             current = nextState(current);
         }
-        return current.entrySet().stream().filter(e->e.getValue().isBug()).count();
+        return current.entrySet().stream().filter(e -> e.getValue().isBug()).count();
     }
 
     private Map<Point3D, BugTile> freshTile(int level) {
         return IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, level), new BugTile(false)))
-                .filter(e-> nonCenterTile(e.getKey().getY(), e.getKey().getX()))
+                .filter(e -> nonCenterTile(e.getKey().getY(), e.getKey().getX()))
                 .collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
@@ -116,7 +119,7 @@ public class Day24 {
             next.putAll(down);
         }
         if (addLayerUpwards) {
-            maxZ = maxZ+1;
+            maxZ = maxZ + 1;
             Map<Point3D, BugTile> up = freshTile(maxZ);
             next.putAll(up);
         }
@@ -154,14 +157,14 @@ public class Day24 {
             if (key.getY() == 2 && key.getX() == 3) {
                 keys.add(new Point3D(4, 0, key.getZ() - 1));
                 keys.add(new Point3D(4, 1, key.getZ() - 1));
-                keys.add( new Point3D(4, 2, key.getZ() - 1));
+                keys.add(new Point3D(4, 2, key.getZ() - 1));
                 keys.add(new Point3D(4, 3, key.getZ() - 1));
                 keys.add(new Point3D(4, 4, key.getZ() - 1));
             }
             if (key.getY() == 1 && key.getX() == 2) {
                 keys.add(new Point3D(0, 0, key.getZ() - 1));
                 keys.add(new Point3D(1, 0, key.getZ() - 1));
-                keys.add( new Point3D(2, 0, key.getZ() - 1));
+                keys.add(new Point3D(2, 0, key.getZ() - 1));
                 keys.add(new Point3D(3, 0, key.getZ() - 1));
                 keys.add(new Point3D(4, 0, key.getZ() - 1));
 

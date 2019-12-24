@@ -16,12 +16,27 @@ public class Day24Test {
     Day24 day24;
 
     @Test
+    public void getPart1Example() throws InterruptedException {
+        day24.readInput("y2019/d24/example1.txt");
+        assertThat(day24.getPart1()).isEqualTo(2129920);
+    }
+    @Test
     public void getPart1() throws InterruptedException {
+        day24.readInput("y2019/d24/input.txt");
         assertThat(day24.getPart1()).isEqualTo(32506911);
     }
 
     @Test
     public void getPart2() throws InterruptedException {
+        day24.readInput("y2019/d24/input.txt");
         assertThat(day24.getPart2()).isEqualTo(2025);
+    }
+
+    @Test
+    public void getPart2Example() throws InterruptedException {
+        day24.readInput("y2019/d24/example1.txt");
+        assertThat(day24.bugsAfter(10)).isEqualTo(99);
+        assertThat(day24.getPart2()).isEqualTo(1922);
+
     }
 }
