@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 @Component
 public class Day24 {
     List<List<BugTile>> in;
+    boolean debug;
 
     public Day24() {
         System.out.println("::: Starting Day 24 :::");
@@ -37,15 +38,12 @@ public class Day24 {
         List<List<BugTile>> current = in;
         long minute = 0;
         while (!history.contains(current)) {
-            System.out.println("Minute " + minute);
-
-            System.out.println(LogUtils.tiles(current));
+            logState(current, minute);
             history.add(current);
             minute++;
             current = nextState(current);
         }
-        System.out.println("Match");
-        System.out.println(LogUtils.tiles(current));
+        logState(current,minute);
 
         List<List<BugTile>> finalCurrent1 = current;
         return IntStream.range(0, finalCurrent1.size())
@@ -53,6 +51,13 @@ public class Day24 {
                         .mapToLong(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x))))
                         .sum())
                 .sum();
+    }
+
+    private void logState(List<List<BugTile>> current, long minute) {
+        if(debug){
+            System.out.println("Minute " + minute);
+            System.out.println(LogUtils.tiles(current));
+        }
     }
 
     public long getPart2() {
