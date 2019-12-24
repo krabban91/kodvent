@@ -4,6 +4,7 @@ import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Component
 public class Day24 {
     List<List<BugTile>> in;
     boolean debug;
@@ -31,8 +33,8 @@ public class Day24 {
     }
 
     public long getPart1() {
-        Set<List<List<BugTile>>> history = new HashSet<>();
-        List<List<BugTile>> current = in;
+        Set<Grid<BugTile>> history = new HashSet<>();
+        Grid<BugTile> current = new Grid<>(in);
         long minute = 0;
         while (!history.contains(current)) {
             logState(current, minute);
@@ -42,7 +44,7 @@ public class Day24 {
         }
         logState(current, minute);
 
-        List<List<BugTile>> finalCurrent1 = current;
+        List<? extends List<BugTile>> finalCurrent1 = current.getRaw();
         return IntStream.range(0, finalCurrent1.size())
                 .mapToLong(y -> IntStream.range(0, finalCurrent1.get(y).size())
                         .mapToLong(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x))))
@@ -50,10 +52,10 @@ public class Day24 {
                 .sum();
     }
 
-    private void logState(List<List<BugTile>> current, long minute) {
+    private void logState(Grid<BugTile> current, long minute) {
         if (debug) {
             System.out.println("Minute " + minute);
-            System.out.println(LogUtils.tiles(current));
+            System.out.println(LogUtils.tiles(current.getRaw()));
         }
     }
 
@@ -79,16 +81,8 @@ public class Day24 {
                 .collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private List<List<BugTile>> nextState(List<List<BugTile>> current) {
-        Grid<BugTile> grid = new Grid<>(current);
-        return IntStream.range(0, current.size())
-                .mapToObj(y -> IntStream.range(0, current.get(y).size())
-                        .mapToObj(x -> {
-                            List<BugTile> adjacentTiles = grid.getAdjacentTiles(y, x);
-                            return current.get(y).get(x).nextState(adjacentTiles);
-                        })
-                        .collect(Collectors.toList()))
-                .collect(Collectors.toList());
+    private Grid<BugTile> nextState(Grid<BugTile> grid) {
+        return grid.map((b, p) -> b.nextState(grid.getAdjacentTiles(p.y, p.x)));
     }
 
     private Map<Point3D, BugTile> nextState(Map<Point3D, BugTile> current) {
