@@ -2,11 +2,18 @@ package krabban91.kodvent.kodvent.y2019.d24;
 
 import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
+import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -43,21 +50,160 @@ public class Day24 {
         System.out.println(LogUtils.tiles(current));
 
         List<List<BugTile>> finalCurrent1 = current;
-        List<List<Long>> collect = IntStream.range(0, current.size()).mapToObj(y -> IntStream.range(0, finalCurrent1.get(y).size()).mapToObj(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x)))).collect(Collectors.toList())).collect(Collectors.toList());
-        return collect.stream().mapToLong(l -> l.stream().mapToLong(e -> e).sum()).sum();
+        return IntStream.range(0, finalCurrent1.size())
+                .mapToLong(y -> IntStream.range(0, finalCurrent1.get(y).size())
+                        .mapToLong(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x))))
+                        .sum())
+                .sum();
     }
 
     public long getPart2() {
-        return -1;
+        Map<Point3D, BugTile> current = IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, 0), in.get(y).get(x))).collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        long minute = 0;
+        while (minute < 200) {
+            minute++;
+            current = nextState(current);
+        }
+        // 2090 is too high
+        return current.entrySet().stream().filter(e->!(e.getKey().getY()==2 && e.getKey().getX()==2)).filter(e->e.getValue().isBug()).count();
+    }
+
+    private Map<Point3D, BugTile> freshTile(int level) {
+        return IntStream.range(0, in.size()).mapToObj(y -> IntStream.range(0, in.get(y).size()).mapToObj(x -> Map.entry(new Point3D(x, y, level), new BugTile(false))).collect(Collectors.toList())).flatMap(Collection::stream).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private List<List<BugTile>> nextState(List<List<BugTile>> current) {
         Grid<BugTile> grid = new Grid<>(current);
         return IntStream.range(0, current.size())
                 .mapToObj(y -> IntStream.range(0, current.get(y).size())
-                        .mapToObj(x -> current.get(y).get(x).nextState(grid.getAdjacentTiles(y, x)))
+                        .mapToObj(x -> {
+                            List<BugTile> adjacentTiles = grid.getAdjacentTiles(y, x);
+                            return current.get(y).get(x).nextState(adjacentTiles);
+                        })
                         .collect(Collectors.toList()))
                 .collect(Collectors.toList());
+    }
+
+    private Map<Point3D, BugTile> nextState(Map<Point3D, BugTile> current) {
+        HashMap<Point3D, BugTile> next = new HashMap<>(current);
+        int maxZ = current.keySet().stream().mapToInt(Point3D::getZ).max().orElse(0);
+        int minZ = current.keySet().stream().mapToInt(Point3D::getZ).min().orElse(0);
+        int finalMaxZ = maxZ;
+        boolean addLayerUpwards = current.entrySet().stream()
+                .filter(e -> e.getKey().getZ() == finalMaxZ)
+                .filter(e -> e.getValue().isBug())
+                .anyMatch(e -> e.getKey().getX() == 0 || e.getKey().getY() == 0 || e.getKey().getX() == 4 || e.getKey().getY() == 4);
+        int finalMinZ = minZ;
+        boolean addLayerDownwards = current.entrySet().stream()
+                .filter(e -> e.getKey().getZ() == finalMinZ)
+                .filter(e -> e.getValue().isBug())
+                .anyMatch(e -> e.getKey().getX() == 1 || e.getKey().getY() == 1 || e.getKey().getX() == 3 || e.getKey().getY() == 3);
+        if (addLayerDownwards) {
+            minZ = minZ - 1;
+            Map<Point3D, BugTile> down = freshTile(minZ);
+            next.putAll(down);
+        }
+        if (addLayerUpwards) {
+            maxZ = maxZ+1;
+            Map<Point3D, BugTile> up = freshTile(maxZ);
+            next.putAll(up);
+        }
+
+        int finalMaxZ1 = maxZ;
+        int finalMinZ1 = minZ;
+        return next.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().nextState(getAdjacentTiles(next, e.getKey(), e.getValue().isBug(), finalMaxZ1, finalMinZ1))));
+    }
+
+    private Collection<BugTile> getAdjacentTiles(HashMap<Point3D, BugTile> next, Point3D key, boolean isBug, int maxZ, int minZ) {
+        Map<Point3D, BugTile> adjacent = new HashMap<>();
+        if (key.getX() == 0 || key.getY() == 0 || key.getX() == 4 || key.getY() == 4) {
+            if (key.getZ() == maxZ) {
+
+            } else {
+                if (key.getX() == 0) {
+                    Point3D key1 = new Point3D(1, 2, key.getZ() + 1);
+                    adjacent.put(key1, next.get(key1));
+                }
+                if (key.getX() == 4) {
+                    Point3D key1 = new Point3D(3, 2, key.getZ() + 1);
+                    adjacent.put(key1, next.get(key1));
+                }
+                if (key.getY() == 0) {
+                    Point3D key1 = new Point3D(2, 1, key.getZ() + 1);
+                    adjacent.put(key1, next.get(key1));
+                }
+                if (key.getY() == 4) {
+                    Point3D key1 = new Point3D(2, 3, key.getZ() + 1);
+                    adjacent.put(key1, next.get(key1));
+                }
+            }
+        }
+        if (key.getX() == 1 || key.getY() == 1 || key.getX() == 3 || key.getY() == 3) {
+            if (key.getZ() == minZ) {
+
+            } else {
+                if (key.getY() == 2 && key.getX() == 1) {
+                    Point3D key1 = new Point3D(0, 0, key.getZ() - 1);
+                    adjacent.put(key1, next.get(key1));
+                    Point3D key2 = new Point3D(0, 1, key.getZ() - 1);
+                    adjacent.put(key2, next.get(key2));
+                    Point3D key3 = new Point3D(0, 2, key.getZ() - 1);
+                    adjacent.put(key3, next.get(key3));
+                    Point3D key4 = new Point3D(0, 3, key.getZ() - 1);
+                    adjacent.put(key4, next.get(key4));
+                    Point3D key5 = new Point3D(0, 4, key.getZ() - 1);
+                    adjacent.put(key5, next.get(key5));
+                }
+            }
+            if (key.getY() == 2 && key.getX() == 3) {
+                Point3D key1 = new Point3D(4, 0, key.getZ() - 1);
+                Point3D key2 = new Point3D(4, 1, key.getZ() - 1);
+                Point3D key3 = new Point3D(4, 2, key.getZ() - 1);
+                Point3D key4 = new Point3D(4, 3, key.getZ() - 1);
+                Point3D key5 = new Point3D(4, 4, key.getZ() - 1);
+                adjacent.put(key1, next.get(key1));
+                adjacent.put(key2, next.get(key2));
+                adjacent.put(key3, next.get(key3));
+                adjacent.put(key4, next.get(key4));
+                adjacent.put(key5, next.get(key5));
+            }
+            if (key.getY() == 1 && key.getX() == 2) {
+
+                Point3D key1 = new Point3D(0, 0, key.getZ() - 1);
+                adjacent.put(key1, next.get(key1));
+                Point3D key2 = new Point3D(1, 0, key.getZ() - 1);
+                adjacent.put(key2, next.get(key2));
+                Point3D key3 = new Point3D(2, 0, key.getZ() - 1);
+                adjacent.put(key3, next.get(key3));
+                Point3D key4 = new Point3D(3, 0, key.getZ() - 1);
+                adjacent.put(key4, next.get(key4));
+                Point3D key5 = new Point3D(4, 0, key.getZ() - 1);
+                adjacent.put(key5, next.get(key5));
+
+            }
+            if (key.getY() == 3 && key.getX() == 2) {
+                Point3D key1 = new Point3D(0, 4, key.getZ() - 1);
+                adjacent.put(key1, next.get(key1));
+                Point3D key2 = new Point3D(1, 4, key.getZ() - 1);
+                adjacent.put(key2, next.get(key2));
+                Point3D key3 = new Point3D(2, 4, key.getZ() - 1);
+                adjacent.put(key3, next.get(key3));
+                Point3D key4 = new Point3D(3, 4, key.getZ() - 1);
+                adjacent.put(key4, next.get(key4));
+                Point3D key5 = new Point3D(4, 4, key.getZ() - 1);
+                adjacent.put(key5, next.get(key5));
+            }
+        }
+        Point3D key1 = new Point3D(key.getX() - 1, key.getY(), key.getZ());
+        adjacent.put(key1, next.get(key1));
+        Point3D key2 = new Point3D(key.getX() + 1, key.getY(), key.getZ());
+        adjacent.put(key2, next.get(key2));
+        Point3D key3 = new Point3D(key.getX(), key.getY() - 1, key.getZ());
+        adjacent.put(key3, next.get(key3));
+        Point3D key4 = new Point3D(key.getX(), key.getY() + 1, key.getZ());
+        adjacent.put(key4, next.get(key4));
+        return adjacent.entrySet().stream().filter(e-> e.getValue() != null).filter(e->!(e.getKey().getX()==2 && e.getKey().getY()==2)).map(Map.Entry::getValue).collect(Collectors.toList());
     }
 
     public void readInput(String inputPath) {
