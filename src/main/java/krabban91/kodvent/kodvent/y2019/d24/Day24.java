@@ -38,9 +38,7 @@ public class Day24 {
             System.out.println(LogUtils.tiles(current));
             history.put(current, minute);
             minute++;
-            List<List<BugTile>> finalCurrent = current;
-            Grid<BugTile> grid = new Grid<>(current);
-            current = IntStream.range(0,current.size()).mapToObj(y-> IntStream.range(0, finalCurrent.get(y).size()).mapToObj(x-> in.get(y).get(x).nextState(x,y, grid.getAdjacentTiles(y,x))).collect(Collectors.toList())).collect(Collectors.toList());
+            current = nextState(current, minute);
         }
         System.out.println("Match");
         System.out.println(LogUtils.tiles(current));
@@ -48,7 +46,11 @@ public class Day24 {
         List<List<BugTile>> finalCurrent1 = current;
         List<List<Long>> collect = IntStream.range(0, current.size()).mapToObj(y -> IntStream.range(0, finalCurrent1.get(y).size()).mapToObj(x -> (long) ((finalCurrent1.get(y).get(x).isBug() ? 1 : 0) * Math.pow(2, (y * finalCurrent1.size() + x)))).collect(Collectors.toList())).collect(Collectors.toList());
         return collect.stream().mapToLong(l-> l.stream().mapToLong(e->e).sum()).sum();
-        // 17219285L is wrong
+    }
+
+    private List<List<BugTile>> nextState(List<List<BugTile>> current, long minute) {
+        Grid<BugTile> grid = new Grid<>(current);
+        return IntStream.range(0,current.size()).mapToObj(y-> IntStream.range(0, current.get(y).size()).mapToObj(x-> current.get(y).get(x).nextState(x,y, minute,  grid.getAdjacentTiles(y,x))).collect(Collectors.toList())).collect(Collectors.toList());
     }
 
     public long getPart2() {

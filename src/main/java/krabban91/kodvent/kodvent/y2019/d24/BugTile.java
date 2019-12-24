@@ -17,12 +17,12 @@ public class BugTile implements Loggable {
         return bug;
     }
 
-    public BugTile nextState(int x, int y, Collection<BugTile> adjacent){
+    public BugTile nextState(int x, int y, long minute, Collection<BugTile> adjacent){
         long count = adjacent.stream().filter(BugTile::isBug).count();
         if(this.isBug()){
             return new BugTile(count == 1L);
         } else {
-            return new BugTile(count >=1 && count<=2);
+            return new BugTile(count ==1 || count==2);
         }
     }
 
