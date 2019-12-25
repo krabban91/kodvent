@@ -115,7 +115,7 @@ public class Day18 {
         logMap(map);
         Map<List<Integer>, Map<Integer, Set<Integer>>> differentDependencies = new HashMap<>();
         Map<List<Integer>, LinkedList<DistanceToPoint>> differentPaths = new HashMap<>();
-        PriorityQueue<Map.Entry<List<Integer>, LinkedList<DistanceToPoint>>> priorityQueuePaths = new PriorityQueue<>(Comparator.comparingInt(e -> -1*e.getValue().size()));
+        PriorityQueue<Map.Entry<List<Integer>, LinkedList<DistanceToPoint>>> priorityQueuePaths = new PriorityQueue<>(Comparator.comparingInt(e -> e.getValue().stream().mapToInt(DistanceToPoint::cost).sum() + e.getValue().getLast().heuristic()));
 
         Map<List<Integer>, Map<Point, Integer>> differentMaps = new HashMap<>();
         Map<List<Integer>, Map<Point, Integer>> differentKeys = new HashMap<>();
@@ -140,7 +140,7 @@ public class Day18 {
             List<Integer> mapKey = poll.getKey();
             //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> differentKeys.get(s).size()).thenComparing(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
             //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
-            List<Integer> localishMapKey = new ArrayList<>(mapKey);
+             List<Integer> localishMapKey = new ArrayList<>(mapKey);
             int stepsTakenSoFar = poll.getValue().stream().mapToInt(DistanceToPoint::cost).sum();
             Map<Point, Integer> localishKeys = differentKeys.get(localishMapKey);
             if (stepsTakenSoFar > stepsTaken) {
@@ -251,7 +251,6 @@ public class Day18 {
                 differentPaths.remove(mapKey);
                 differentMaps.remove(mapKey);
                 localPaths.addLast(searchCopy);
-                if(stepsTakenSoFar + searchCopy.cost()<stepsTaken){
                     differentDependencies.put(localMapKey, localDependencies);
                     differentDoors.put(localMapKey, localDoors);
                     differentKeys.put(localMapKey, localKeys);
@@ -260,7 +259,6 @@ public class Day18 {
                         differentPaths.put(localMapKey, localPaths);
                         priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
                     }
-                }
                 logMap(localMap);
             }
             //int maxCollectedKeys = newKeys.keySet().stream().mapToInt(List::size).max().orElse(0);
