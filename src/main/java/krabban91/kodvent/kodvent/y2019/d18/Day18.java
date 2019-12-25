@@ -130,50 +130,15 @@ public class Day18 {
         Map<Set<Integer>, Map<Point, Collection<Step>>> differentNetworks = new HashMap<>();
 
         stepsTaken = Integer.MAX_VALUE;
-        while (differentKeys.values().stream().anyMatch(m -> !m.isEmpty())) {
+        while (!priorityQueuePaths.isEmpty()) {
             // goal: reach dependency with most deps.
             // example above -> f needs d and e. get all with no dependencies
-            if (priorityQueuePaths.isEmpty()) {
-                break;
-            }
             Map.Entry<List<Integer>, LinkedList<DistanceToPoint>> poll = priorityQueuePaths.poll();
             List<Integer> mapKey = poll.getKey();
             //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> differentKeys.get(s).size()).thenComparing(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
             //Set<Integer> mapKey = differentMaps.keySet().stream().min(Comparator.comparingLong(s -> finalDifferentPaths.get(s).stream().mapToInt(DistanceToPoint::cost).sum())).get();
-             List<Integer> localishMapKey = new ArrayList<>(mapKey);
-            int stepsTakenSoFar = poll.getValue().stream().mapToInt(DistanceToPoint::cost).sum();
+            List<Integer> localishMapKey = new ArrayList<>(mapKey);
             Map<Point, Integer> localishKeys = differentKeys.get(localishMapKey);
-            if (stepsTakenSoFar > stepsTaken) {
-                differentMaps.remove(mapKey);
-                differentPaths.remove(mapKey);
-                differentDependencies.remove(mapKey);
-                differentDoors.remove(mapKey);
-                differentKeys.remove(mapKey);
-
-                continue;
-            }
-            if (localishKeys.isEmpty()) {
-                if (stepsTaken > stepsTakenSoFar) {
-                    stepsTaken = stepsTakenSoFar;
-                    int finalStepsTaken = stepsTaken;
-                    List<List<Integer>> keysToRemove = priorityQueuePaths.stream().filter(e -> e.getValue().getLast().heuristic() >= finalStepsTaken).map(Map.Entry::getKey).collect(Collectors.toList());
-                    priorityQueuePaths.removeIf(e -> keysToRemove.contains(e.getKey()));
-                    keysToRemove.forEach(k->{
-                        differentMaps.remove(k);
-                        differentPaths.remove(k);
-                        differentDependencies.remove(k);
-                        differentDoors.remove(k);
-                        differentKeys.remove(k);
-                    });
-
-                }
-                differentMaps.remove(mapKey);
-                differentPaths.remove(mapKey);
-                differentDependencies.remove(mapKey);
-                differentDoors.remove(mapKey);
-                differentKeys.remove(mapKey);
-                continue;
-            }
 
             Map<Integer, Set<Integer>> localishDependencies = deepCopyDependencies(differentDependencies.get(localishMapKey));
 
@@ -223,7 +188,7 @@ public class Day18 {
                 List<Integer> keysInPath = pickedUpKeys.stream().map(localKeys::remove).collect(Collectors.toList());
                 // TODO: Setup a heuristic that is useful
                 DistanceToPoint searchCopy = new DistanceToPoint(search,
-                        () -> localKeys.values().stream().map(keyLookup::get).mapToInt(p-> Distances.manhattan(p, search.destination())).sum());
+                        () -> localKeys.values().stream().map(keyLookup::get).mapToInt(p -> Distances.manhattan(p, search.destination())).sum());
                 keysInPath.forEach(removedKey -> {
                     localDependencies.remove(removedKey);
                     localDependencies.forEach((i, s) -> s.remove(removedKey));
@@ -250,25 +215,45 @@ public class Day18 {
                 differentKeys.remove(mapKey);
                 differentPaths.remove(mapKey);
                 differentMaps.remove(mapKey);
-                localPaths.addLast(searchCopy);
-                    differentDependencies.put(localMapKey, localDependencies);
-                    differentDoors.put(localMapKey, localDoors);
-                    differentKeys.put(localMapKey, localKeys);
-                    differentMaps.put(localMapKey, localMap);
-                    if (!differentPaths.containsKey(localMapKey)) {
-                        differentPaths.put(localMapKey, localPaths);
-                        priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
-                    }
                 logMap(localMap);
+
+                localPaths.addLast(searchCopy);
+                int stepsTakenSoFar = localPaths.stream().mapToInt(DistanceToPoint::cost).sum();
+                if (localKeys.isEmpty()) {
+                    if (stepsTaken > stepsTakenSoFar) {
+                        stepsTaken = stepsTakenSoFar;
+                        int finalStepsTaken = stepsTaken;
+                        List<List<Integer>> keysToRemove = priorityQueuePaths.stream().filter(e -> e.getValue().getLast().heuristic() >= finalStepsTaken).map(Map.Entry::getKey).collect(Collectors.toList());
+                        priorityQueuePaths.removeIf(e -> keysToRemove.contains(e.getKey()));
+                        keysToRemove.forEach(k -> {
+                            differentMaps.remove(k);
+                            differentPaths.remove(k);
+                            differentDependencies.remove(k);
+                            differentDoors.remove(k);
+                            differentKeys.remove(k);
+                        });
+
+                    }
+                    differentMaps.remove(mapKey);
+                    differentPaths.remove(mapKey);
+                    differentDependencies.remove(mapKey);
+                    differentDoors.remove(mapKey);
+                    differentKeys.remove(mapKey);
+                } else {
+                    if (stepsTakenSoFar < stepsTaken) {
+                        differentDependencies.put(localMapKey, localDependencies);
+                        differentDoors.put(localMapKey, localDoors);
+                        differentKeys.put(localMapKey, localKeys);
+                        differentMaps.put(localMapKey, localMap);
+                        if (!differentPaths.containsKey(localMapKey)) {
+                            differentPaths.put(localMapKey, localPaths);
+                            priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
+                        }
+                    }
+                }
             }
-            //int maxCollectedKeys = newKeys.keySet().stream().mapToInt(List::size).max().orElse(0);
-
-
         }
 
-        if (stepsTaken == Integer.MAX_VALUE) {
-            return differentPaths.values().stream().mapToLong(l -> l.stream().mapToInt(DistanceToPoint::cost).sum()).min().orElse(-1);
-        }
         // return number of steps taken
         // 6534 is too high. 5680 is wrong, 5636 is wrong
         return stepsTaken;
