@@ -8,12 +8,13 @@ import javax.print.attribute.standard.Destination;
 import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class DistanceToPoint implements Path<Point> {
     Point current;
     int distance;
     Point target;
-    int heuristic;
+    Callable<Integer> heuristicFunction;
 
     DistanceToPoint previous;
 
@@ -21,7 +22,7 @@ public class DistanceToPoint implements Path<Point> {
         this.current = point;
         this.distance = 0;
         this.target = target;
-        this.heuristic = Distances.manhattan(current, target);
+        this.heuristicFunction = () -> Distances.manhattan(current, target);
     }
 
     public DistanceToPoint(DistanceToPoint previous, Step edge) {
@@ -29,10 +30,24 @@ public class DistanceToPoint implements Path<Point> {
         this.current = edge.leadsTo(previous.destination());
         this.distance = edge.cost();
         this.target = previous.target;
-        this.heuristic = Distances.manhattan(current, target);
+        this.heuristicFunction = () -> Distances.manhattan(current, target);
+    }
+
+    public DistanceToPoint(DistanceToPoint other,  Callable<Integer> heuristicFunction) {
+        this.previous = other.previous;
+        this.current = other.current;
+        this.distance = other.distance;
+        this.target = other.target;
+        this.heuristicFunction = heuristicFunction;
     }
 
     public int heuristic(){
+        int heuristic = 0;
+        try {
+            heuristic = heuristicFunction.call();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return this.cost() + heuristic;
     }
 
