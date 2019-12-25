@@ -115,7 +115,7 @@ public class Day18 {
         logMap(map);
         Map<List<Integer>, Map<Integer, Set<Integer>>> differentDependencies = new HashMap<>();
         Map<List<Integer>, LinkedList<DistanceToPoint>> differentPaths = new HashMap<>();
-        PriorityQueue<Map.Entry<List<Integer>, LinkedList<DistanceToPoint>>> priorityQueuePaths = new PriorityQueue<>(Comparator.comparingInt(e -> e.getValue().getLast().heuristic()));
+        PriorityQueue<Map.Entry<List<Integer>, LinkedList<DistanceToPoint>>> priorityQueuePaths = new PriorityQueue<>(Comparator.comparingInt(e -> -1*e.getValue().size()));
 
         Map<List<Integer>, Map<Point, Integer>> differentMaps = new HashMap<>();
         Map<List<Integer>, Map<Point, Integer>> differentKeys = new HashMap<>();
@@ -130,7 +130,6 @@ public class Day18 {
         Map<Set<Integer>, Map<Point, Collection<Step>>> differentNetworks = new HashMap<>();
 
         stepsTaken = Integer.MAX_VALUE;
-        int timesSinceChange = 0;
         while (differentKeys.values().stream().anyMatch(m -> !m.isEmpty())) {
             // goal: reach dependency with most deps.
             // example above -> f needs d and e. get all with no dependencies
@@ -150,19 +149,12 @@ public class Day18 {
                 differentDependencies.remove(mapKey);
                 differentDoors.remove(mapKey);
                 differentKeys.remove(mapKey);
-                if (++timesSinceChange > 100000) {
-                    return stepsTaken;
-                }
+
                 continue;
             }
             if (localishKeys.isEmpty()) {
-                if (stepsTaken <= stepsTakenSoFar) {
-                    if (++timesSinceChange > 100000) {
-                        return stepsTaken;
-                    }
-                } else {
+                if (stepsTaken > stepsTakenSoFar) {
                     stepsTaken = stepsTakenSoFar;
-                    timesSinceChange = 0;
                     int finalStepsTaken = stepsTaken;
                     List<List<Integer>> keysToRemove = priorityQueuePaths.stream().filter(e -> e.getValue().getLast().heuristic() >= finalStepsTaken).map(Map.Entry::getKey).collect(Collectors.toList());
                     priorityQueuePaths.removeIf(e -> keysToRemove.contains(e.getKey()));
@@ -259,15 +251,15 @@ public class Day18 {
                 differentPaths.remove(mapKey);
                 differentMaps.remove(mapKey);
                 localPaths.addLast(searchCopy);
-                differentDependencies.put(localMapKey, localDependencies);
-                differentDoors.put(localMapKey, localDoors);
-                differentKeys.put(localMapKey, localKeys);
-                differentMaps.put(localMapKey, localMap);
-                if (!differentPaths.containsKey(localMapKey)) {
-                    differentPaths.put(localMapKey, localPaths);
-                    priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
-                }
-                if(searchCopy.heuristic()<stepsTaken){
+                if(stepsTakenSoFar + searchCopy.cost()<stepsTaken){
+                    differentDependencies.put(localMapKey, localDependencies);
+                    differentDoors.put(localMapKey, localDoors);
+                    differentKeys.put(localMapKey, localKeys);
+                    differentMaps.put(localMapKey, localMap);
+                    if (!differentPaths.containsKey(localMapKey)) {
+                        differentPaths.put(localMapKey, localPaths);
+                        priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
+                    }
                 }
                 logMap(localMap);
             }
