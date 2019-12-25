@@ -62,4 +62,30 @@ public class DealingAction {
         }
         return deck;
     }
+    public List<Long> reverse(List<Long> deck) {
+        switch (type) {
+            case NEW_STACK:
+                ArrayList<Long> cards = new ArrayList<>(deck);
+                Collections.reverse(cards);
+                return cards;
+            case CUT:
+                ArrayList<Long> cutOut = new ArrayList<>();
+                if(parameter>0){
+                    cutOut.addAll(deck.subList(deck.size() - parameter, deck.size()));
+                    cutOut.addAll(deck.subList(0,deck.size() - parameter));
+                    return cutOut;
+                } else {
+                    cutOut.addAll(deck.subList(-parameter, deck.size()));
+                    cutOut.addAll(deck.subList(0, -parameter));
+                    return cutOut;
+                }
+            case INCREMENT:
+                Map<Integer, Long> incrementOut = new HashMap<>();
+                for (int i = 0; i < deck.size(); i++) {
+                    incrementOut.put(i, deck.get((i*parameter + deck.size())%deck.size()));
+                }
+                return new ArrayList<>(incrementOut.values());
+        }
+        return deck;
+    }
 }

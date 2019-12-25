@@ -35,11 +35,16 @@ public class Day22 {
     }
 
     public long getPart2() {
-        long cardCount = 119315717514047L;
+        long cardCount = 20011;//119315717514047L;
         long shuffleCount = 101741582076661L;
         Set<Long> history = new HashSet<>();
-
         List<Long> deck = LongStream.range(0, cardCount).boxed().collect(Collectors.toList());
+        for (int i = in.size()-1; i>=0; i--){
+            // https://en.wikipedia.org/wiki/Linear_congruential_generator
+            // The idea is that if I know cycle size, Go backwards cycle-size - shuffle-count
+            deck = in.get(i).reverse(deck);
+        }
+        /*
         for (long i = 0; i < shuffleCount; i++) {
             Long x = deck.get(2020);
             if(history.contains(x)){
@@ -50,7 +55,7 @@ public class Day22 {
             for (DealingAction action : in) {
                 deck = action.handle(deck);
             }
-        }
+        }*/
         return deck.get(2020);
     }
 
