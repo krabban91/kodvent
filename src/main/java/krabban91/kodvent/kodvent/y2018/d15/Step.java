@@ -9,11 +9,17 @@ import java.util.Set;
 
 public class Step implements Edge<Point> {
 
+    private final int cost;
     private Map<Point, Point> directions = new HashMap<>();
 
     public Step(Point from, Point to){
+        this(from, to, 1);
+    }
+
+    public Step(Point from, Point to, int cost){
         directions.put(from, to);
         directions.put(to, from);
+        this.cost = cost;
     }
 
     @Override
@@ -33,6 +39,6 @@ public class Step implements Edge<Point> {
 
     @Override
     public int cost() {
-        return 1;
+        return cost;
     }
 }
