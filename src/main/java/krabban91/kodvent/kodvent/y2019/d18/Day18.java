@@ -146,9 +146,6 @@ public class Day18 {
                 }
             }
         }
-        // return number of steps taken
-        // 6534 is too high. 5680 is wrong, 5636 is wrong, 5594 is wrong, 5350 is wrong
-        // test 4954
         return stepsTaken;
     }
 
@@ -209,6 +206,140 @@ public class Day18 {
     }
 
     public long getPart2() {
+        final Map<Point, Integer> map = IntStream.range(0, in.size())
+                .mapToObj(y -> IntStream.range(0, in.get(y).size())
+                        .boxed()
+                        .collect(Collectors.toMap(e -> new Point(e, y), e -> in.get(y).get(e)))
+                        .entrySet())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Point startLocation = map.entrySet().stream()
+                .filter(e -> e.getValue() == AT)
+                .findFirst()
+                .map(Map.Entry::getKey)
+                .get();
+        Point start1 = new Point(startLocation.x - 1, startLocation.y - 1);
+        Point start2 = new Point(startLocation.x + 1, startLocation.y - 1);
+        Point start3 = new Point(startLocation.x - 1, startLocation.y + 1);
+        Point start4 = new Point(startLocation.x + 1, startLocation.y + 1);
+        map.put(start1, AT);
+        map.put(new Point(startLocation.x, startLocation.y-1), WALL);
+        map.put(start2, AT);
+        map.put(new Point(startLocation.x-1, startLocation.y), WALL);
+        map.put(new Point(startLocation.x, startLocation.y), WALL);
+        map.put(new Point(startLocation.x+1, startLocation.y), WALL);
+        map.put(start3, AT);
+        map.put(new Point(startLocation.x, startLocation.y+1), WALL);
+        map.put(start4, AT);
+
+        Map<Point, Integer> map1 = map.entrySet().stream().filter(e -> e.getKey().y <= startLocation.y && e.getKey().x <= startLocation.x)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Point, Integer> map2 = map.entrySet().stream().filter(e -> e.getKey().y <= startLocation.y && e.getKey().x >= startLocation.x)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Point, Integer> map3 = map.entrySet().stream().filter(e -> e.getKey().y >= startLocation.y && e.getKey().x <= startLocation.x)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<Point, Integer> map4 = map.entrySet().stream().filter(e -> e.getKey().y >= startLocation.y && e.getKey().x >= startLocation.x)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        logMap(map1);
+        logMap(map2);
+        logMap(map3);
+        logMap(map4);
+        final Map<Point, Integer> keys = map.entrySet().stream()
+                .filter(e -> e.getValue() >= a && e.getValue() <= z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Map<Integer, Point> keyLookup = keys.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+
+        final Map<Point, Integer> keys1 = map1.entrySet().stream()
+                .filter(e -> e.getValue() >= a && e.getValue() <= z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        final Map<Point, Integer> keys2 = map2.entrySet().stream()
+                .filter(e -> e.getValue() >= a && e.getValue() <= z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        final Map<Point, Integer> keys3 = map3.entrySet().stream()
+                .filter(e -> e.getValue() >= a && e.getValue() <= z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        final Map<Point, Integer> keys4 = map4.entrySet().stream()
+                .filter(e -> e.getValue() >= a && e.getValue() <= z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Map<Point, Integer> doors = map.entrySet().stream()
+                .filter(e -> e.getValue() >= A && e.getValue() <= Z)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+
+        Map<Point, Collection<Step>> network1 = getNetwork(map1, true);
+        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys1 = keys1.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start1, e.getKey(), network1)));
+        Map<Point, Collection<Step>> network2 = getNetwork(map2, true);
+        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys2 = keys2.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start2, e.getKey(), network2)));
+        Map<Point, Collection<Step>> network3 = getNetwork(map3, true);
+        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys3 = keys3.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start3, e.getKey(), network3)));
+        Map<Point, Collection<Step>> network4 = getNetwork(map4, true);
+        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys4 = keys4.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start4, e.getKey(), network4)));
+
+
+        Map<Integer, Set<Integer>> passedKeys1 = pathsToKeys1.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(keys::containsKey)
+                        .map(keys::get)
+                        .filter(i -> !i.equals(e.getKey().getValue()))
+                        .collect(Collectors.toSet())));
+        Map<Integer, List<Integer>> dependencyKeys1 = pathsToKeys1.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(doors::containsKey)
+                        .map(doors::get)
+                        .map(i -> i + UPPER_TO_LOWER)
+                        .collect(Collectors.toList())));
+
+
+        Map<Integer, Set<Integer>> passedKeys2 = pathsToKeys2.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(keys::containsKey)
+                        .map(keys::get)
+                        .filter(i -> !i.equals(e.getKey().getValue()))
+                        .collect(Collectors.toSet())));
+        Map<Integer, List<Integer>> dependencyKeys2 = pathsToKeys2.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(doors::containsKey)
+                        .map(doors::get)
+                        .map(i -> i + UPPER_TO_LOWER)
+                        .collect(Collectors.toList())));
+
+
+
+
+        Map<Integer, Set<Integer>> passedKeys3 = pathsToKeys3.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(keys::containsKey)
+                        .map(keys::get)
+                        .filter(i -> !i.equals(e.getKey().getValue()))
+                        .collect(Collectors.toSet())));
+        Map<Integer, List<Integer>> dependencyKeys3 = pathsToKeys3.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(doors::containsKey)
+                        .map(doors::get)
+                        .map(i -> i + UPPER_TO_LOWER)
+                        .collect(Collectors.toList())));
+        Map<Integer, Set<Integer>> passedKeys4 = pathsToKeys4.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(keys::containsKey)
+                        .map(keys::get)
+                        .filter(i -> !i.equals(e.getKey().getValue()))
+                        .collect(Collectors.toSet())));
+        Map<Integer, List<Integer>> dependencyKeys4 = pathsToKeys4.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
+                        .filter(doors::containsKey)
+                        .map(doors::get)
+                        .map(i -> i + UPPER_TO_LOWER)
+                        .collect(Collectors.toList())));
+
+        long count1 = dependencyKeys1.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys1::containsKey)).count();
+        long count2 = dependencyKeys2.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys2::containsKey)).count();
+        long count3 = dependencyKeys3.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys3::containsKey)).count();
+        long count4 = dependencyKeys4.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys4::containsKey)).count();
+        //Don't start with 2. 1 is half ready.
         return -1;
     }
 

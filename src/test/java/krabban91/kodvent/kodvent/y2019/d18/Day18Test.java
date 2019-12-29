@@ -18,7 +18,7 @@ public class Day18Test {
     @Test
     public void getPart1() {
         day18.readInput("y2019/d18/input.txt");
-        assertThat(day18.getPart1()).isEqualTo(-1);
+        assertThat(day18.getPart1()).isEqualTo(4954);
     }
     @Test
     public void getPart1Extra1() {
@@ -50,6 +50,7 @@ public class Day18Test {
 
     @Test
     public void getPart2() {
+        day18.debug = true;
         day18.readInput("y2019/d18/input.txt");
         assertThat(day18.getPart2()).isEqualTo(-1);
     }
