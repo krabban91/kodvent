@@ -30,7 +30,7 @@ public class Day18 {
     private static final int WALL = 35;
     private static final int A = 65;
     private static final int a = 97;
-    private static final int UPPER_TO_LOWER = a - A;
+    public static final int UPPER_TO_LOWER = a - A;
     private static final int Z = 90;
     private static final int z = 122;
     private static final int AT = 64;
@@ -110,103 +110,29 @@ public class Day18 {
 
         int stepsTaken = Integer.MAX_VALUE;
         logMap(map);
-        Map<List<Integer>, Map<Integer, Set<Integer>>> differentDependencies = new HashMap<>();
-        Map<List<Integer>, Map<Integer, Set<Integer>>> differentPassedKeys = new HashMap<>();
-        PriorityQueue<Map.Entry<List<Integer>, LinkedList<DistanceToPoint>>> priorityQueuePaths = new PriorityQueue<>(Comparator.comparingInt(e -> e.getValue().stream().mapToInt(DistanceToPoint::cost).sum()));
-
-        Map<List<Integer>, Map<Point, Integer>> differentKeys = new HashMap<>();
-        Map<List<Integer>, Map<Point, Integer>> differentDoors = new HashMap<>();
-
-        differentDependencies.put(Collections.emptyList(), deepCopyDependencies(dependencyGraph));
-        differentPassedKeys.put(Collections.emptyList(), deepCopyDependencies(passedKeys));
-        priorityQueuePaths.add(Map.entry(Collections.emptyList(), new LinkedList<>(Collections.singletonList(new DistanceToPoint(startLocation, startLocation)))));
-        differentKeys.put(Collections.emptyList(), new HashMap<>(keys));
-        differentDoors.put(Collections.emptyList(), new HashMap<>(doors));
-
-        while (!priorityQueuePaths.isEmpty()) {
-            Map.Entry<List<Integer>, LinkedList<DistanceToPoint>> poll = priorityQueuePaths.poll();
-            List<Integer> mapKey = poll.getKey();
-            int stepsTakenSoFar = poll.getValue().stream().mapToInt(DistanceToPoint::cost).sum();
-
-
-            List<Integer> localishMapKey = new ArrayList<>(mapKey);
-            Map<Point, Integer> localishKeys = differentKeys.get(localishMapKey);
-            if (localishKeys.isEmpty()) {
+        Set<List<Integer>> visitedStates = new HashSet<>();
+        // TODO: Setup a heuristic that is useful
+        PriorityQueue<TSPState> priorityQueueStates = new PriorityQueue<>(Comparator.comparingInt(TSPState::cost));
+        priorityQueueStates.add(new TSPState(Collections.emptyList(), Collections.singletonList(new DistanceToPoint(startLocation, startLocation)), dependencyGraph, passedKeys, keys, doors));
+        while (!priorityQueueStates.isEmpty()) {
+            TSPState poll = priorityQueueStates.poll().copy();
+            int stepsTakenSoFar = poll.cost();
+            if (poll.getKeys().isEmpty()) {
                 if (stepsTaken > stepsTakenSoFar) {
                     stepsTaken = stepsTakenSoFar;
                     break;
                 }
-
             }
-
-            Map<Integer, Set<Integer>> localishDependencies = deepCopyDependencies(differentDependencies.get(localishMapKey));
-            Map<Integer, Set<Integer>> localishPassedKeys = deepCopyDependencies(differentPassedKeys.get(localishMapKey));
-
-            // TODO : This generated a heap space overflow for more possible paths than 8 and using BFS
-            List<Point> targets = localishDependencies.entrySet().stream()
-                    .filter(e -> e.getValue().isEmpty())
-                    .filter(e -> !mapKey.contains(e.getKey()))
-                    .filter(e -> localishPassedKeys.get(e.getKey()).isEmpty())
-                    .map(e -> keyLookup.get(e.getKey()))
-                    .collect(Collectors.toList());
-            Map<Point, Integer> pointIntegerMap1 = differentDoors.get(localishMapKey);
+            List<Point> targets = poll.targets(keyLookup, visitedStates);
             for (Point target : targets) {
-                //TODO: Build information about localPassedKeys and add to differentPassedKeys
-                Map<Integer, Set<Integer>> localDependencies = deepCopyDependencies(localishDependencies);
-                Map<Integer, Set<Integer>> localPassedKeys = deepCopyDependencies(localishPassedKeys);
-                List<Integer> localMapKey = new ArrayList<>(localishMapKey);
-                HashMap<Point, Integer> localKeys = new HashMap<>(localishKeys);
-                LinkedList<DistanceToPoint> localPaths = new LinkedList<>(poll.getValue());
-                distancesFromTo.putIfAbsent(localPaths.getLast().destination(), new HashMap<>());
-                Map<Point, Integer> localDoors = new HashMap<>(pointIntegerMap1);
-
-                if (!distancesFromTo.get(localPaths.getLast().destination()).containsKey(target)) {
-                    // should never happen because we looked up distances in beginning
-                    return -1;
-                }
-
-                DistanceToPoint search = distancesFromTo.get(localPaths.getLast().destination()).get(target);
-
-                // remove key from map
-                // pick up all keys that I pass by.
-                List<Point> pickedUpKeys = search.allVisited().stream().filter(localKeys::containsKey)
-                        .collect(Collectors.toList());
-                List<Integer> keysInPath = pickedUpKeys.stream().map(localKeys::remove).collect(Collectors.toList());
-                // TODO: Setup a heuristic that is useful
-                DistanceToPoint searchCopy = new DistanceToPoint(search,
-                        () -> localKeys.values().stream().map(keyLookup::get).mapToInt(p -> Distances.manhattan(p, search.destination())).sum());
-                //() -> 0);
-
-                // TODO: Replace with only destination
-                keysInPath.forEach(removedKey -> {
-                    localDependencies.remove(removedKey);
-                    localDependencies.forEach((i, s) -> s.remove(removedKey));
-                    localPassedKeys.remove(removedKey);
-                    localPassedKeys.forEach((i, s) -> s.remove(removedKey));
-                    // unlock door connected to key
-                    localDoors.entrySet().stream()
-                            .filter(i -> removedKey == i.getValue() + UPPER_TO_LOWER)
-                            .findFirst().ifPresent(entry -> {
-                        localDoors.remove(entry.getKey());
-                    });
-                });
-                localMapKey.addAll(keysInPath);
-                if (differentKeys.containsKey(localMapKey)) {
-                    System.out.println("should never happen");
-                    return -1;
-
-                }
-                localPaths.addLast(searchCopy);
-                int stepsTakenSoFarIsh = localPaths.stream().mapToInt(DistanceToPoint::cost).sum();
-                if (stepsTakenSoFarIsh < stepsTaken) {
-                    if (!differentDependencies.containsKey(localMapKey)) {
-                        priorityQueuePaths.add(Map.entry(localMapKey, localPaths));
+                TSPState copy = poll.copy();
+                DistanceToPoint search = distancesFromTo.get(copy.currentLocation()).get(target);
+                copy.walkTo(search, keyLookup);
+                if(visitedStates.add(copy.getKey())){
+                    int stepsTakenSoFarIsh = copy.cost();
+                    if (stepsTakenSoFarIsh < stepsTaken) {
+                        priorityQueueStates.add(copy);
                     }
-                    differentDependencies.put(localMapKey, localDependencies);
-                    differentPassedKeys.put(localMapKey, localPassedKeys);
-                    differentDoors.put(localMapKey, localDoors);
-                    differentKeys.put(localMapKey, localKeys);
-                    //differentMaps.put(localMapKey, localMap);
                 }
 
             }
@@ -241,10 +167,6 @@ public class Day18 {
                 .map(d -> new Step(start, d.destination(), d.cost()))
                 .map(s -> new DistanceToPoint(new DistanceToPoint(start, s.leadsTo(start)), s))
                 .collect(Collectors.toMap(DistanceToPoint::destination, e -> e));
-    }
-
-    private Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
-        return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
     }
 
     private void logMap(Map<Point, Integer> map) {
