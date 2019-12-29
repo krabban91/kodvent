@@ -1,6 +1,5 @@
 package krabban91.kodvent.kodvent.y2019.d18;
 
-import krabban91.kodvent.kodvent.utilities.Distances;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
@@ -9,16 +8,15 @@ import krabban91.kodvent.kodvent.y2018.d15.Step;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -110,7 +108,7 @@ public class Day18 {
 
         int stepsTaken = Integer.MAX_VALUE;
         logMap(map);
-        Set<List<Integer>> visitedStates = new HashSet<>();
+        Map<List<Integer>, Integer> visitedStates = new HashMap<>();
         // TODO: Setup a heuristic that is useful
         PriorityQueue<TSPState> priorityQueueStates = new PriorityQueue<>(Comparator.comparingInt(TSPState::cost));
         priorityQueueStates.add(new TSPState(Collections.emptyList(), Collections.singletonList(new DistanceToPoint(startLocation, startLocation)), dependencyGraph, passedKeys, keys, doors));
@@ -123,22 +121,34 @@ public class Day18 {
                     break;
                 }
             }
-            List<Point> targets = poll.targets(keyLookup, visitedStates);
+            List<Point> targets = poll.targets(keyLookup);
             for (Point target : targets) {
                 TSPState copy = poll.copy();
                 DistanceToPoint search = distancesFromTo.get(copy.currentLocation()).get(target);
                 copy.walkTo(search, keyLookup);
-                if(visitedStates.add(copy.getKey())){
-                    int stepsTakenSoFarIsh = copy.cost();
-                    if (stepsTakenSoFarIsh < stepsTaken) {
+
+                Optional<Map.Entry<List<Integer>, Integer>> any = visitedStates.entrySet().stream().filter(l -> TSPState.isSameState(l.getKey(), copy.getKey())).findAny();
+                int stepsTakenSoFarIsh = copy.cost();
+                if (stepsTakenSoFarIsh < stepsTaken) {
+                    if (any.isPresent()) {
+                        if(any.get().getValue() > stepsTakenSoFarIsh){
+                            List<Integer> previousKey = any.get().getKey();
+                            priorityQueueStates.removeIf(s -> s.getKey().equals(previousKey));
+                            visitedStates.remove(previousKey);
+                            visitedStates.put(copy.getKey(), stepsTakenSoFarIsh);
+                            priorityQueueStates.add(copy);
+                        }
+                    } else {
+                        visitedStates.put(copy.getKey(), stepsTakenSoFarIsh);
                         priorityQueueStates.add(copy);
                     }
-                }
 
+                }
             }
         }
         // return number of steps taken
-        // 6534 is too high. 5680 is wrong, 5636 is wrong, 5594 is wrong
+        // 6534 is too high. 5680 is wrong, 5636 is wrong, 5594 is wrong, 5350 is wrong
+        // test 4954
         return stepsTaken;
     }
 

@@ -36,6 +36,11 @@ public class TSPState {
         return new TSPState(this.takenKeys, this.path, this.dependencies, this.passedKeys, this.keys, this.doors);
     }
 
+    public int dummyHeuristic(){
+        int cost = this.cost();
+        return cost + cost * (this.keys.size()+1)/2;
+    }
+
     public int cost() {
         return this.path.stream().mapToInt(DistanceToPoint::cost).sum();
     }
@@ -55,7 +60,7 @@ public class TSPState {
         this.path.addLast(searchCopy);
     }
 
-    public List<Point> targets(Map<Integer, Point> keyLookup, Set<List<Integer>> visited){
+    public List<Point> targets(Map<Integer, Point> keyLookup){
         // TODO : This generated a heap space overflow for more possible paths than 8 and using BFS
         return dependencies.entrySet().stream()
                 .filter(e -> e.getValue().isEmpty())
@@ -81,6 +86,18 @@ public class TSPState {
 
     private static Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
         return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+    }
+
+    public static boolean isSameState(List<Integer> one, List<Integer> another){
+        boolean sizeMatch = one.size() == another.size();
+        if(sizeMatch){
+            boolean lastMatch = one.get(one.size() - 1).equals(another.get(another.size() - 1));
+            if(lastMatch){
+                boolean sameSet = new HashSet<>(one).equals(new HashSet<>(another));
+                return sameSet;
+            }
+        }
+        return false;
     }
 
 }
