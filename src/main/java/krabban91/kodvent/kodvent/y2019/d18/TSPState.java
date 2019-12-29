@@ -1,7 +1,5 @@
 package krabban91.kodvent.kodvent.y2019.d18;
 
-import krabban91.kodvent.kodvent.utilities.Distances;
-import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.y2018.d15.DistanceToPoint;
 
 import java.awt.*;
@@ -17,55 +15,43 @@ import java.util.stream.Collectors;
 public class TSPState {
     private final List<Integer> takenKeys;
     private final LinkedList<DistanceToPoint> path;
-    private final Map<Integer, Set<Integer>> dependencies;
-    private final Map<Integer, Set<Integer>> passedKeys;
+    private final Map<Integer, Set<Integer>> neededKeysBefore;
+    private final Map<Integer, Set<Integer>> keysInTheWay;
     private final Map<Point, Integer> keys;
-    private final Map<Point, Integer> doors;
 
-    public TSPState(List<Integer> takenKeys, List<DistanceToPoint> path, Map<Integer, Set<Integer>> dependencies, Map<Integer, Set<Integer>> passedKeys, Map<Point, Integer> keys, Map<Point, Integer> doors) {
+    public TSPState(List<Integer> takenKeys, List<DistanceToPoint> path, Map<Integer, Set<Integer>> neededKeysBefore, Map<Integer, Set<Integer>> keysInTheWay, Map<Point, Integer> keys) {
         this.takenKeys = new ArrayList<>(takenKeys);
         this.path = new LinkedList<>(path);
-        this.dependencies = deepCopyDependencies(dependencies);
-        this.passedKeys = deepCopyDependencies(passedKeys);
+        this.neededKeysBefore = deepCopyDependencies(neededKeysBefore);
+        this.keysInTheWay = deepCopyDependencies(keysInTheWay);
         this.keys = new HashMap<>(keys);
-        this.doors = new HashMap<>(doors);
     }
 
 
     public TSPState copy() {
-        return new TSPState(this.takenKeys, this.path, this.dependencies, this.passedKeys, this.keys, this.doors);
-    }
-
-    public int dummyHeuristic(){
-        int cost = this.cost();
-        return cost + cost * (this.keys.size()+1)/2;
+        return new TSPState(this.takenKeys, this.path, this.neededKeysBefore, this.keysInTheWay, this.keys);
     }
 
     public int cost() {
         return this.path.stream().mapToInt(DistanceToPoint::cost).sum();
     }
 
-    public void walkTo(DistanceToPoint next, Map<Integer, Point> keyLookup) {
+    public void walkTo(DistanceToPoint next) {
         Integer removedKey = this.keys.remove(next.destination());
-        DistanceToPoint searchCopy = new DistanceToPoint(next,
-                () -> keys.values().stream().map(keyLookup::get).mapToInt(p -> Distances.manhattan(p, next.destination())).sum());
-        dependencies.remove(removedKey);
-        passedKeys.remove(removedKey);
-        dependencies.forEach((i, s) -> s.remove(removedKey));
-        passedKeys.forEach((i, s) -> s.remove(removedKey));
-        doors.entrySet().stream()
-                .filter(i -> removedKey == i.getValue() + Day18.UPPER_TO_LOWER)
-                .findFirst().ifPresent(entry -> doors.remove(entry.getKey()));
+        neededKeysBefore.remove(removedKey);
+        keysInTheWay.remove(removedKey);
+        neededKeysBefore.forEach((i, s) -> s.remove(removedKey));
+        keysInTheWay.forEach((i, s) -> s.remove(removedKey));
         this.takenKeys.add(removedKey);
-        this.path.addLast(searchCopy);
+        this.path.addLast(next);
     }
 
     public List<Point> targets(Map<Integer, Point> keyLookup){
         // TODO : This generated a heap space overflow for more possible paths than 8 and using BFS
-        return dependencies.entrySet().stream()
+        return neededKeysBefore.entrySet().stream()
                 .filter(e -> e.getValue().isEmpty())
                 .filter(e -> !takenKeys.contains(e.getKey()))
-                .filter(e -> passedKeys.get(e.getKey()).isEmpty())
+                .filter(e -> keysInTheWay.get(e.getKey()).isEmpty())
                 .map(e -> keyLookup.get(e.getKey()))
                 .collect(Collectors.toList());
 
