@@ -52,6 +52,6 @@ public class Day18Test {
     public void getPart2() {
         day18.debug = true;
         day18.readInput("y2019/d18/input.txt");
-        assertThat(day18.getPart2()).isEqualTo(-1);
+        assertThat(day18.getPart2()).isEqualTo(2334);
     }
 }
