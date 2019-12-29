@@ -77,7 +77,7 @@ public class Day18 {
 
         Map<Point, Map<Point, DistanceToPoint>> distancesFromTo = getDistancesFromTo(startLocation, map, keys);
         logMap(map);
-        Map<List<Integer>, Integer> visitedStates = new HashMap<>();
+        Map<TSPState, Integer> visitedStates = new HashMap<>();
         PriorityQueue<TSPState> priorityQueueStates = new PriorityQueue<>(Comparator.comparingInt(TSPState::cost));
         priorityQueueStates.add(initialState);
         while (!priorityQueueStates.isEmpty()) {
@@ -91,20 +91,20 @@ public class Day18 {
                 DistanceToPoint search = distancesFromTo.get(next.currentLocation()).get(target);
                 next.walkTo(search);
 
-                Optional<Map.Entry<List<Integer>, Integer>> any = visitedStates.entrySet().stream()
-                        .filter(l -> TSPState.isSameState(l.getKey(), next.getKey()))
+                Optional<Map.Entry<TSPState, Integer>> any = visitedStates.entrySet().stream()
+                        .filter(l -> TSPState.isSameState(l.getKey(), next))
                         .findAny();
                 int cost = next.cost();
                 if (any.isPresent()) {
                     if (any.get().getValue() > cost) {
-                        List<Integer> previousKey = any.get().getKey();
-                        priorityQueueStates.removeIf(s -> s.getKey().equals(previousKey));
+                        TSPState previousKey = any.get().getKey();
+                        priorityQueueStates.removeIf(s -> s.equals(previousKey));
                         visitedStates.remove(previousKey);
-                        visitedStates.put(next.getKey(), cost);
+                        visitedStates.put(next, cost);
                         priorityQueueStates.add(next);
                     }
                 } else {
-                    visitedStates.put(next.getKey(), cost);
+                    visitedStates.put(next, cost);
                     priorityQueueStates.add(next);
                 }
             }
@@ -252,52 +252,56 @@ public class Day18 {
         final Map<Point, Integer> doors = map.entrySet().stream()
                 .filter(e -> e.getValue() >= A && e.getValue() <= Z)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        RobotTSPState initialState = new RobotTSPState(
+                startLocation,
+                getStartingState(map1, keys1, start1),
+                getStartingState(map2, keys2, start2),
+                getStartingState(map3, keys3, start3),
+                getStartingState(map4, keys4, start4)
+        );
+        Map<Point, Map<Point, DistanceToPoint>> distancesFromTo = new HashMap<>();
+        distancesFromTo.putAll(getDistancesFromTo(start1, map1, keys1));
+        distancesFromTo.putAll(getDistancesFromTo(start2, map2, keys2));
+        distancesFromTo.putAll(getDistancesFromTo(start3, map3, keys3));
+        distancesFromTo.putAll(getDistancesFromTo(start4, map4, keys4));
 
 
-        Map<Point, Collection<Step>> network1 = getNetwork(map1);
-        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys1 = keys1.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start1, e.getKey(), network1)));
-        Map<Point, Collection<Step>> network2 = getNetwork(map2);
-        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys2 = keys2.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start2, e.getKey(), network2)));
-        Map<Point, Collection<Step>> network3 = getNetwork(map3);
-        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys3 = keys3.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start3, e.getKey(), network3)));
-        Map<Point, Collection<Step>> network4 = getNetwork(map4);
-        Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys4 = keys4.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start4, e.getKey(), network4)));
+        Map<RobotTSPState, Integer> visitedStates = new HashMap<>();
+        PriorityQueue<RobotTSPState> priorityQueueStates = new PriorityQueue<>(Comparator.comparingInt(RobotTSPState::cost));
+        priorityQueueStates.add(initialState);
+        while (!priorityQueueStates.isEmpty()) {
+            RobotTSPState poll = priorityQueueStates.poll();
+            if (poll.getKeys().isEmpty()) {
+                return poll.cost();
+            }
+            Map<Point, List<Point>> targets = poll.targets(keyLookup);
+            for (Map.Entry<Point, List<Point>> targetPair : targets.entrySet()) {
+                for (Point target : targetPair.getValue()){
 
+                    RobotTSPState next = poll.copy();
+                    DistanceToPoint search = distancesFromTo.get(targetPair.getKey()).get(target);
+                    next.walkTo(search);
 
-        Map<Integer, List<Integer>> dependencyKeys1 = pathsToKeys1.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(doors::containsKey)
-                        .map(doors::get)
-                        .map(i -> i + UPPER_TO_LOWER)
-                        .collect(Collectors.toList())));
-
-
-        Map<Integer, List<Integer>> dependencyKeys2 = pathsToKeys2.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(doors::containsKey)
-                        .map(doors::get)
-                        .map(i -> i + UPPER_TO_LOWER)
-                        .collect(Collectors.toList())));
-
-
-        Map<Integer, List<Integer>> dependencyKeys3 = pathsToKeys3.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(doors::containsKey)
-                        .map(doors::get)
-                        .map(i -> i + UPPER_TO_LOWER)
-                        .collect(Collectors.toList())));
-        Map<Integer, List<Integer>> dependencyKeys4 = pathsToKeys4.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(doors::containsKey)
-                        .map(doors::get)
-                        .map(i -> i + UPPER_TO_LOWER)
-                        .collect(Collectors.toList())));
-
-        long count1 = dependencyKeys1.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys1::containsKey)).count();
-        long count2 = dependencyKeys2.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys2::containsKey)).count();
-        long count3 = dependencyKeys3.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys3::containsKey)).count();
-        long count4 = dependencyKeys4.entrySet().stream().filter(e -> e.getValue().stream().allMatch(dependencyKeys4::containsKey)).count();
-        //Don't start with 2. 1 is half ready.
+                    Optional<Map.Entry<RobotTSPState, Integer>> any = visitedStates.entrySet().stream()
+                            .filter(l -> RobotTSPState.isSameState(l.getKey(), next))
+                            .findAny();
+                    int cost = next.cost();
+                    if (any.isPresent()) {
+                        if (any.get().getValue() > cost) {
+                            RobotTSPState previousKey = any.get().getKey();
+                            priorityQueueStates.removeIf(s -> s.equals(previousKey));
+                            visitedStates.remove(previousKey);
+                            visitedStates.put(next, cost);
+                            priorityQueueStates.add(next);
+                        }
+                    } else {
+                        visitedStates.put(next, cost);
+                        priorityQueueStates.add(next);
+                    }
+                }
+            }
+        }
+        // 2458L is too high
         return -1;
     }
 

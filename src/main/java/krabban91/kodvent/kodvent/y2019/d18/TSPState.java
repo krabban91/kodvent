@@ -36,14 +36,20 @@ public class TSPState {
         return this.path.stream().mapToInt(DistanceToPoint::cost).sum();
     }
 
-    public void walkTo(DistanceToPoint next) {
+    public int walkTo(DistanceToPoint next) {
         Integer removedKey = this.keys.remove(next.destination());
-        neededKeysBefore.remove(removedKey);
-        keysInTheWay.remove(removedKey);
-        neededKeysBefore.forEach((i, s) -> s.remove(removedKey));
-        keysInTheWay.forEach((i, s) -> s.remove(removedKey));
+        unlockKey(removedKey);
         this.takenKeys.add(removedKey);
         this.path.addLast(next);
+        return removedKey;
+    }
+
+    public void unlockKey(int key){
+        neededKeysBefore.remove(key);
+        keysInTheWay.remove(key);
+        neededKeysBefore.forEach((i, s) -> s.remove(key));
+        keysInTheWay.forEach((i, s) -> s.remove(key));
+
     }
 
     public List<Point> targets(Map<Integer, Point> keyLookup){
@@ -74,12 +80,15 @@ public class TSPState {
         return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
     }
 
-    public static boolean isSameState(List<Integer> one, List<Integer> another){
-        boolean sizeMatch = one.size() == another.size();
+    public static boolean isSameState(TSPState one, TSPState another){
+        boolean sizeMatch = one.takenKeys.size() == another.takenKeys.size();
         if(sizeMatch){
-            boolean lastMatch = one.get(one.size() - 1).equals(another.get(another.size() - 1));
+            if(one.takenKeys.size() == 0){
+                return true;
+            }
+            boolean lastMatch = one.takenKeys.get(one.takenKeys.size() - 1).equals(another.takenKeys.get(another.takenKeys.size() - 1));
             if(lastMatch){
-                boolean sameSet = new HashSet<>(one).equals(new HashSet<>(another));
+                boolean sameSet = new HashSet<>(one.takenKeys).equals(new HashSet<>(another.takenKeys));
                 return sameSet;
             }
         }
