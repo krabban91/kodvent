@@ -5,7 +5,6 @@ import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 import krabban91.kodvent.kodvent.y2018.d15.DistanceToPoint;
 import krabban91.kodvent.kodvent.y2018.d15.Step;
-import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -22,7 +21,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Component
 public class Day18 {
     private static final int WALL = '#';
     private static final int A = 'A';

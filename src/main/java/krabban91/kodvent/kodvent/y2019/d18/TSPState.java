@@ -27,6 +27,24 @@ public class TSPState {
         this.keys = new HashMap<>(keys);
     }
 
+    private static Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
+        return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+    }
+
+    public static boolean isSameState(TSPState one, TSPState another) {
+        boolean sizeMatch = one.takenKeys.size() == another.takenKeys.size();
+        if (sizeMatch) {
+            if (one.takenKeys.size() == 0) {
+                return true;
+            }
+            boolean lastMatch = one.takenKeys.get(one.takenKeys.size() - 1).equals(another.takenKeys.get(another.takenKeys.size() - 1));
+            if (lastMatch) {
+                boolean sameSet = new HashSet<>(one.takenKeys).equals(new HashSet<>(another.takenKeys));
+                return sameSet;
+            }
+        }
+        return false;
+    }
 
     public TSPState copy() {
         return new TSPState(this.takenKeys, this.path, this.neededKeysBefore, this.keysInTheWay, this.keys);
@@ -44,26 +62,23 @@ public class TSPState {
         return removedKey;
     }
 
-    public void unlockKey(int key){
+    public void unlockKey(int key) {
         neededKeysBefore.remove(key);
         keysInTheWay.remove(key);
         neededKeysBefore.forEach((i, s) -> s.remove(key));
         keysInTheWay.forEach((i, s) -> s.remove(key));
-
     }
 
-    public List<Point> targets(Map<Integer, Point> keyLookup){
-        // TODO : This generated a heap space overflow for more possible paths than 8 and using BFS
+    public List<Point> targets(Map<Integer, Point> keyLookup) {
         return neededKeysBefore.entrySet().stream()
                 .filter(e -> e.getValue().isEmpty())
                 .filter(e -> !takenKeys.contains(e.getKey()))
                 .filter(e -> keysInTheWay.get(e.getKey()).isEmpty())
                 .map(e -> keyLookup.get(e.getKey()))
                 .collect(Collectors.toList());
-
     }
 
-    public Point currentLocation(){
+    public Point currentLocation() {
         return this.path.getLast().destination();
     }
 
@@ -73,26 +88,6 @@ public class TSPState {
 
     public Map<Point, Integer> getKeys() {
         return keys;
-    }
-
-
-    private static Map<Integer, Set<Integer>> deepCopyDependencies(Map<Integer, Set<Integer>> dependencies) {
-        return dependencies.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
-    }
-
-    public static boolean isSameState(TSPState one, TSPState another){
-        boolean sizeMatch = one.takenKeys.size() == another.takenKeys.size();
-        if(sizeMatch){
-            if(one.takenKeys.size() == 0){
-                return true;
-            }
-            boolean lastMatch = one.takenKeys.get(one.takenKeys.size() - 1).equals(another.takenKeys.get(another.takenKeys.size() - 1));
-            if(lastMatch){
-                boolean sameSet = new HashSet<>(one.takenKeys).equals(new HashSet<>(another.takenKeys));
-                return sameSet;
-            }
-        }
-        return false;
     }
 
 }
