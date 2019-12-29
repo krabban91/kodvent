@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class Day13 {
     List<Long> in;
-    private boolean debug = false;
+    private boolean debug = true;
 
     public Day13() throws InterruptedException {
         System.out.println("::: Starting Day 13 :::");
@@ -80,6 +80,7 @@ public class Day13 {
                 map.put(key, tile);
                 if (map.size() == 740 && !computer.hasOutput()) {
                     if (debug) {
+                        System.out.println("Score: " + score);
                         System.out.println(new LogUtils<Tile>().mapToText(map, t -> t == null ? " " : t.toString()));
                     }
                     Point ball = map.entrySet().stream()
