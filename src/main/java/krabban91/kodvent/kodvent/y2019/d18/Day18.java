@@ -264,12 +264,6 @@ public class Day18 {
         Map<Map.Entry<Point, Integer>, DistanceToPoint> pathsToKeys4 = keys4.entrySet().stream().collect(Collectors.toMap(e -> e, e -> getDistanceToPoint(start4, e.getKey(), network4)));
 
 
-        Map<Integer, Set<Integer>> passedKeys1 = pathsToKeys1.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(keys::containsKey)
-                        .map(keys::get)
-                        .filter(i -> !i.equals(e.getKey().getValue()))
-                        .collect(Collectors.toSet())));
         Map<Integer, List<Integer>> dependencyKeys1 = pathsToKeys1.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
                         .filter(doors::containsKey)
@@ -278,12 +272,6 @@ public class Day18 {
                         .collect(Collectors.toList())));
 
 
-        Map<Integer, Set<Integer>> passedKeys2 = pathsToKeys2.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(keys::containsKey)
-                        .map(keys::get)
-                        .filter(i -> !i.equals(e.getKey().getValue()))
-                        .collect(Collectors.toSet())));
         Map<Integer, List<Integer>> dependencyKeys2 = pathsToKeys2.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
                         .filter(doors::containsKey)
@@ -292,24 +280,12 @@ public class Day18 {
                         .collect(Collectors.toList())));
 
 
-        Map<Integer, Set<Integer>> passedKeys3 = pathsToKeys3.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(keys::containsKey)
-                        .map(keys::get)
-                        .filter(i -> !i.equals(e.getKey().getValue()))
-                        .collect(Collectors.toSet())));
         Map<Integer, List<Integer>> dependencyKeys3 = pathsToKeys3.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
                         .filter(doors::containsKey)
                         .map(doors::get)
                         .map(i -> i + UPPER_TO_LOWER)
                         .collect(Collectors.toList())));
-        Map<Integer, Set<Integer>> passedKeys4 = pathsToKeys4.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
-                        .filter(keys::containsKey)
-                        .map(keys::get)
-                        .filter(i -> !i.equals(e.getKey().getValue()))
-                        .collect(Collectors.toSet())));
         Map<Integer, List<Integer>> dependencyKeys4 = pathsToKeys4.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey().getValue(), e -> e.getValue().allVisited().stream()
                         .filter(doors::containsKey)
