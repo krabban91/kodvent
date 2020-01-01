@@ -1,7 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.d22;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-@Component
 public class Day22 {
     List<DealingAction> in;
 
@@ -27,22 +25,15 @@ public class Day22 {
         System.out.println(part2);
     }
 
-    /**
-     * Use what was learnt in part 2 but with shuffle in normal order
-     */
     public long getPart1() {
-        BigInteger L = BigInteger.valueOf(10007);
-        BigInteger m = BigInteger.valueOf(1);
-        BigInteger x = BigInteger.valueOf(2019);
-        Map.Entry<BigInteger, BigInteger> parameters = calculatePolynomialParameters(L, false);
-        BigInteger a = parameters.getKey();
-        BigInteger b = parameters.getValue();
-
-        Map.Entry<BigInteger, BigInteger> polypow = DealingAction.polypow(a, b, m, L);
-        return polypow.getKey().multiply(x).add(polypow.getValue()).mod(L).longValue();
+        return calculateCard(BigInteger.valueOf(10007), BigInteger.valueOf(1), BigInteger.valueOf(2019), false);
     }
 
-    public long oldGetPart1(){
+    public long getPart2() {
+        return calculateCard(BigInteger.valueOf(119315717514047L), BigInteger.valueOf(101741582076661L), BigInteger.valueOf(2020), true);
+    }
+
+    public long oldGetPart1() {
         List<Long> deck = LongStream.range(0, 10007).boxed().collect(Collectors.toList());
         deck = DealingAction.shuffle(deck, in);
         return deck.indexOf(2019L);
@@ -50,41 +41,32 @@ public class Day22 {
 
     /**
      * Compose the rules of how shuffling is done into a polynomial ax + b % L.
-     *  - done by applying the rules in reverse (to know what is on index x after complete)
+     * - done by applying the rules in reverse (to know what is on index x after complete)
      * Update the parameters to correspond to shuffling m times (ax + b )^m % L.
-     *  - Parameters updated first using quadratic rules (not gotten a hang of this yet)
+     * - Parameters updated first using quadratic rules (not gotten a hang of this yet)
      * Apply generic polynomial for initial index ax + b % L
      */
-    public long getPart2() {
-        BigInteger L = BigInteger.valueOf(119315717514047L);
-        BigInteger m = BigInteger.valueOf(101741582076661L);
-        BigInteger x = BigInteger.valueOf(2020);
-        Map.Entry<BigInteger, BigInteger> parameters = calculatePolynomialParameters(L, true);
+    private long calculateCard(BigInteger l, BigInteger m, BigInteger x, boolean reverse) {
+        Map.Entry<BigInteger, BigInteger> parameters = calculatePolynomialParameters(l, reverse);
         BigInteger a = parameters.getKey();
         BigInteger b = parameters.getValue();
-        Map.Entry<BigInteger, BigInteger> polypow = DealingAction.polypow(a, b, m, L);
-        return polypow.getKey().multiply(x).add(polypow.getValue()).mod(L).longValue();
+        Map.Entry<BigInteger, BigInteger> polypow = DealingAction.polypow(a, b, m, l);
+        return polypow.getKey().multiply(x).add(polypow.getValue()).mod(l).longValue();
     }
-
 
     private Map.Entry<BigInteger, BigInteger> calculatePolynomialParameters(BigInteger size, boolean reverse) {
         BigInteger a = BigInteger.ONE;
         BigInteger b = BigInteger.ZERO;
         Map.Entry<BigInteger, BigInteger> pair = Map.entry(a, b);
         ArrayList<DealingAction> dealingActions = new ArrayList<>(in);
-        if(reverse){
+        if (reverse) {
             Collections.reverse(dealingActions);
-            for (DealingAction action : dealingActions) {
-                pair = action.adjustInversePolynomialParameters(pair, size);
-            }
-        } else {
-            for (DealingAction action : dealingActions) {
-                pair = action.adjustPolynomialParameters(pair, size);
-            }
+        }
+        for (DealingAction action : dealingActions) {
+            pair = action.adjustInversePolynomialParameters(pair, size, reverse);
         }
         return pair;
     }
-
 
     public void readInput(String inputPath) {
         in = Input.getLines(inputPath).stream().map(DealingAction::new).collect(Collectors.toList());
