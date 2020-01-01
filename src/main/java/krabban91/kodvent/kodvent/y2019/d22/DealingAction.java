@@ -64,7 +64,7 @@ public class DealingAction {
     }
 
     // polynomial (a*x + b)^n % L
-    public Map.Entry<BigInteger, BigInteger> adjustPolynomialParameters(Map.Entry<BigInteger, BigInteger> parameters, BigInteger size){
+    public Map.Entry<BigInteger, BigInteger> adjustInversePolynomialParameters(Map.Entry<BigInteger, BigInteger> parameters, BigInteger size){
         BigInteger a = parameters.getKey();
         BigInteger b = parameters.getValue();
         switch (type) {
@@ -74,12 +74,29 @@ public class DealingAction {
             case CUT:
                 // ax + b + param % size
                 return Map.entry(a, b.add(BigInteger.valueOf(parameter)).mod(size));
-            case INCREMENT:
+            default: // INCREMENT
                 // (a*modinv(param, size))x + b*modinv(param, size) % size
                 BigInteger z = BigInteger.valueOf(parameter).modInverse(size);
                 return Map.entry(a.multiply(z).mod(size),b.multiply(z).mod(size));
         }
-        return parameters;
+    }
+
+    // polynomial (a*x + b)^n % L
+    public Map.Entry<BigInteger, BigInteger> adjustPolynomialParameters(Map.Entry<BigInteger, BigInteger> parameters, BigInteger size){
+        BigInteger a = parameters.getKey();
+        BigInteger b = parameters.getValue();
+        switch (type) {
+            case NEW_STACK:
+                // -ax + (size - b - 1) % size
+                return Map.entry(a.negate(),size.subtract(b).subtract(BigInteger.ONE));
+            case CUT:
+                // ax + (b + size - param) % size
+                return Map.entry(a, b.add(size).subtract(BigInteger.valueOf(parameter)).mod(size));
+            default: // INCREMENT
+                // (a*param)x + b * param % size
+                BigInteger z = BigInteger.valueOf(parameter);
+                return Map.entry(a.multiply(z).mod(size),b.multiply(z).mod(size));
+        }
     }
 
     /*
@@ -88,7 +105,6 @@ public class DealingAction {
     # g(x) = cx+d
     # f^2(x) = a(ax+b)+b = aax + ab+b
     # f(g(x)) = a(cx+d)+b = acx + ad+b
-
      */
     public static Map.Entry<BigInteger, BigInteger> polypow(BigInteger a, BigInteger b, BigInteger m, BigInteger n) {
         if (m.equals(BigInteger.ZERO)) {
