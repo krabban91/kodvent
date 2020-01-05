@@ -21,17 +21,9 @@ import java.util.stream.Stream;
 
 @Component
 public class Day25 {
-    private static final Point VEC_NORTH = new Point(0, -1);
-    private static final Point VEC_EAST = new Point(1, 0);
-    private static final Point VEC_SOUTH = new Point(0, 1);
-    private static final Point VEC_WEST = new Point(-1, 0);
-    private static final Map<String, Point> VECTORS = Map.of("north", VEC_NORTH, "south", VEC_SOUTH, "west", VEC_WEST, "east", VEC_EAST);
-    private static final Map<Point, String> COMMANDS = Map.of(VEC_NORTH, "north\n", VEC_SOUTH, "south\n", VEC_WEST, "west\n", VEC_EAST, "east\n");
-    private static final Map<Point, Point> VECTORS_BACK = Map.of(
-            VEC_NORTH, VEC_SOUTH,
-            VEC_SOUTH, VEC_NORTH,
-            VEC_WEST, VEC_EAST,
-            VEC_EAST, VEC_WEST);
+    private static final List<String> wantedItems = Arrays.asList("wreath", "asterisk", "monolith", "astrolabe");
+    private static final Deque<String> movingOrder = new LinkedBlockingDeque<>(Arrays.asList("south", "east", "west", "north", "north","north", "west", "west","west", "east", "south", "east", "north", "north"));
+
     List<Long> in;
 
 
@@ -52,17 +44,8 @@ public class Day25 {
         LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
         IntCodeComputer computer = new IntCodeComputer(in, inputs, new LinkedBlockingDeque<>());
         executor.execute(computer);
-
-        int x = 0;
-        int y = 0;
-        Map<Point, Long> output = new HashMap<>();
-        boolean started = false;
-        Point p = new Point(0, 0);
         StringBuilder previousOutput = new StringBuilder();
 
-        HashMap<Point, Integer> map = new HashMap<>();
-        Point location = new Point(0, 0);
-        Deque<Point> pathBackToStart = new LinkedBlockingDeque<>();
 
         while (!computer.hasHalted() || computer.hasOutput(1000)) {
             if (computer.hasOutput()) {
@@ -70,57 +53,33 @@ public class Day25 {
                 while (computer.hasOutput()) {
                     Long out = computer.pollOutput(2L);
                     previousOutput.append((char) out.intValue());
-
-                    if (out == (long) '\n') {
-                        p.translate(-p.x, 1);
-                    } else {
-                        output.put(new Point(p), out);
-                        p.translate(1, 0);
-
-
-                    }
                 }
             }
-            String s = new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + "");
+
             System.out.println(previousOutput);
             String s1 = previousOutput.toString();
-            if(s1.contains("Analysis complete! You may proceed.")){
-                return s1.split("typing ")[1].split(" on")[0];
+            if (s1.contains("Analysis complete! You may proceed.")) {
+                return s1.split("typing")[1].split("on")[0].trim();
+            }
+            if (s1.contains("Items here:")) {
+                Stream.of(s1.split("Items here:")[1].split("\n\n")[0].split("\n"))
+                        .map(e -> e.replace("-", "").trim())
+                        .filter(wantedItems::contains)
+                        .map(e -> "take " + e+"\n")
+                        .forEach(s2 -> s2.chars().boxed().forEachOrdered(computer::addInput));
             }
             if (s1.endsWith("Command?\n")) {
-                Scanner scanner = new Scanner(System.in);
-                String s2 = scanner.nextLine();
-                System.out.print("input: " + s2);
+                String s2;
+                if(movingOrder.isEmpty()){
+
+                    Scanner scanner = new Scanner(System.in);
+                    s2 = scanner.nextLine();
+                } else {
+                    s2 = movingOrder.pollFirst();
+                }
+                System.out.println("input: " + s2);
                 s2.chars().boxed().forEachOrdered(computer::addInput);
-                computer.addInput((long)'\n');
-                /*if (s1.contains("Doors here lead")) {
-                    List<Point> options = Arrays.stream(s1.split("\n")).filter(r -> r.startsWith("-"))
-                            .map(r -> r.split(" ")[1])
-                            .map(VECTORS::get)
-                            .collect(Collectors.toList());
-                    List<Point> notBeen = options.stream().map(r -> new Point(r.x + location.x, r.y + location.y)).filter(r -> !map.containsKey(r)).collect(Collectors.toList());
-                    if (notBeen.isEmpty()) {
-                        if (pathBackToStart.isEmpty()) {
-                            //back at start
-                            break;
-                        }
-                        Point point = pathBackToStart.pollLast();
-                        location.translate(point.x, point.y);
-                        String s2 = COMMANDS.get(point);
-                        System.out.print("input: " + s2);
-                        s2.chars().boxed().forEachOrdered(computer::addInput);
-
-                    } else {
-                        Point point = notBeen.get(0);
-                        location.translate(point.x, point.y);
-                        pathBackToStart.addLast(VECTORS_BACK.get(point));
-                        String s2 = COMMANDS.get(point);
-                        System.out.print("input: " + s2);
-                        s2.chars().boxed().forEachOrdered(computer::addInput);
-
-                    }
-                    System.out.println(previousOutput);
-                }*/
+                computer.addInput((long) '\n');
             }
         }
         try {
