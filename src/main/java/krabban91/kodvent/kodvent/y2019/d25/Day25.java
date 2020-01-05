@@ -1,16 +1,12 @@
 package krabban91.kodvent.kodvent.y2019.d25;
 
 import krabban91.kodvent.kodvent.utilities.Input;
-import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
-import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
+import krabban91.kodvent.kodvent.y2019.shared.AsciiComputer;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -21,8 +17,6 @@ import java.util.stream.Stream;
 
 @Component
 public class Day25 {
-    private static final List<String> wantedItems = Arrays.asList("wreath", "asterisk", "monolith", "astrolabe");
-    private static final Deque<String> movingOrder = new LinkedBlockingDeque<>(Arrays.asList("south", "east", "west", "north", "north","north", "west", "west","west", "east", "south", "east", "north", "north"));
 
     List<Long> in;
 
@@ -34,15 +28,14 @@ public class Day25 {
         String part1 = getPart1();
         System.out.println(": answer to part 1 :");
         System.out.println(part1);
-        long part2 = getPart2();
-        System.out.println(": answer to part 2 :");
-        System.out.println(part2);
     }
 
     public String getPart1() throws InterruptedException {
+        List<String> wantedItems = Arrays.asList("wreath", "asterisk", "monolith", "astrolabe");
+        Deque<String> movingOrder = new LinkedBlockingDeque<>(Arrays.asList("south", "east", "west", "north", "north", "north", "west", "west", "west", "east", "south", "east", "north", "north"));
+
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
-        LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
-        IntCodeComputer computer = new IntCodeComputer(in, inputs, new LinkedBlockingDeque<>());
+        AsciiComputer computer = new AsciiComputer(in);
         executor.execute(computer);
         StringBuilder previousOutput = new StringBuilder();
 
@@ -65,21 +58,20 @@ public class Day25 {
                 Stream.of(s1.split("Items here:")[1].split("\n\n")[0].split("\n"))
                         .map(e -> e.replace("-", "").trim())
                         .filter(wantedItems::contains)
-                        .map(e -> "take " + e+"\n")
-                        .forEach(s2 -> s2.chars().boxed().forEachOrdered(computer::addInput));
+                        .map(e -> "take " + e)
+                        .forEach(computer::inputAscii);
             }
             if (s1.endsWith("Command?\n")) {
-                String s2;
-                if(movingOrder.isEmpty()){
+                String input;
+                if (movingOrder.isEmpty()) {
 
                     Scanner scanner = new Scanner(System.in);
-                    s2 = scanner.nextLine();
+                    input = scanner.nextLine();
                 } else {
-                    s2 = movingOrder.pollFirst();
+                    input = movingOrder.pollFirst();
                 }
-                System.out.println("input: " + s2);
-                s2.chars().boxed().forEachOrdered(computer::addInput);
-                computer.addInput((long) '\n');
+                System.out.println("input: " + input);
+                computer.inputAscii(input);
             }
         }
         try {
@@ -89,10 +81,6 @@ public class Day25 {
             e.printStackTrace();
         }
         return "-1L";
-    }
-
-    public long getPart2() {
-        return -1;
     }
 
     public void readInput(String inputPath) {

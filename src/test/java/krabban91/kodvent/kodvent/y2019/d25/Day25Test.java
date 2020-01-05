@@ -19,9 +19,4 @@ public class Day25Test {
     public void getPart1() throws InterruptedException {
         assertThat(day25.getPart1()).isEqualTo("2155873288");
     }
-
-    @Test
-    public void getPart2() throws InterruptedException {
-        assertThat(day25.getPart2()).isEqualTo(-1);
-    }
 }
