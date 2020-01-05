@@ -49,8 +49,7 @@ public class Day21 {
 
     private Long scanHullForHoles(List<String> input) throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
-        LinkedBlockingDeque<Long> inputs = new LinkedBlockingDeque<>();
-        SpringScriptComputer computer = new SpringScriptComputer(in, inputs, new LinkedBlockingDeque<>());
+        SpringScriptComputer computer = new SpringScriptComputer(in);
         if (verbose) {
             computer.printProgram();
         }
@@ -78,7 +77,7 @@ public class Day21 {
                 input.forEach(computer::addSpringScriptInstructions);
                 computer.activateInstructions();
                 started = true;
-                while (!inputs.isEmpty()) {
+                while (!computer.hasReadyInput()) {
                     TimeUnit.SECONDS.sleep(1);
                 }
             }

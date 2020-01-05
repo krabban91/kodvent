@@ -289,4 +289,8 @@ public class IntCodeComputer implements Runnable {
         });
         System.out.println(new LogUtils<Long>().mapToText(output, v -> v == null ? " " : (char) v.intValue() + ""));
     }
+
+    public boolean hasReadyInput() {
+        return !inputs.isEmpty();
+    }
 }

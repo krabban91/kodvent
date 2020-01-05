@@ -2,6 +2,7 @@ package krabban91.kodvent.kodvent.y2019.d17;
 
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
+import krabban91.kodvent.kodvent.y2019.shared.AsciiComputer;
 import krabban91.kodvent.kodvent.y2019.shared.IntCodeComputer;
 
 import java.awt.*;
@@ -83,7 +84,7 @@ public class Day17 {
 
     public long getPart2() throws InterruptedException {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
-        IntCodeComputer computer = new IntCodeComputer(in, new LinkedBlockingDeque<>(), new LinkedBlockingDeque<>());
+        AsciiComputer computer = new AsciiComputer(in);
         computer.setAddress(0, 2);
         executor.execute(computer);
 
@@ -161,20 +162,18 @@ public class Day17 {
                             mainRoutine.add((int) ',');
                         }
                     }
-                    mainRoutine = "A,B,A,B,A,C,B,C,A,C\n".chars().boxed().collect(Collectors.toList());
-                    List<Integer> A = "L,6,R,9,3,L,6\n".chars().boxed().collect(Collectors.toList());
-                    List<Integer> B = "R,9,3,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
-                    List<Integer> C = "L,9,1,L,9,1,L,4,L,6\n".chars().boxed().collect(Collectors.toList());
-                    List<Integer> video = Arrays.asList((int) 'n', (int) '\n');
-                    System.out.println("main: " + (mainRoutine.size() - 1) + ", A: " + (A.size() - 1) + ", B: " + (B.size() - 1) + ", C: " + (C.size() - 1));
-                    mainRoutine.forEach(i -> computer.addInput(i.longValue()));
-                    A.forEach(i -> computer.addInput(i.longValue()));
-                    B.forEach(i -> computer.addInput(i.longValue()));
-                    C.forEach(i -> computer.addInput(i.longValue()));
-                    video.forEach(i -> computer.addInput(i.longValue()));
+                    String main = "A,B,A,B,A,C,B,C,A,C";
+                    computer.inputAscii(main);
+                    String A = "L,6,R,9,3,L,6";
+                    computer.inputAscii(A);
+                    String B = "R,9,3,L,9,1,L,4,L,6";
+                    computer.inputAscii(B);
+                    String C = "L,9,1,L,9,1,L,4,L,6";
+                    computer.inputAscii(C);
+                    String video = "n";
+                    computer.inputAscii(video);
                     mapSearched = true;
                 }
-
             } else {
                 largestOut = Math.max(largestOut, lastOutput);
                 if (lastOutput.intValue() == 10) {

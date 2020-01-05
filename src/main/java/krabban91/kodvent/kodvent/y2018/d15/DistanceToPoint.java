@@ -45,7 +45,6 @@ public class DistanceToPoint implements Path<Point> {
         this.current = edge.leadsTo(previous.destination());
         this.distance = edge.cost();
         this.target = previous.target;
-        this.heuristic = heuristic;
     }
 
     public int heuristic(){
