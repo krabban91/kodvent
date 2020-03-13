@@ -12,7 +12,8 @@ object Day1 extends App {
   def part2(input: String) = inverseCaptcha(input, i => (i + input.length / 2) % input.length)
 
   val input = getInput()
-  println(part1(input))
-  println(part2(input))
+  println(s"Starting ${this.getClass.getCanonicalName.stripSuffix("$")}")
+  println(s"Part 1 is ${part1(input)}")
+  println(s"Part 2 is ${part2(input)}")
 }
 
