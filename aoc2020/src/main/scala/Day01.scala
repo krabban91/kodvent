@@ -6,7 +6,7 @@ object Day01 extends App with AoC with AoCTest {
   printResultTest
 
   override def part1: Long = p1(getInput.map(_.toLong))
-  
+
   override def part2: Long = p2(getInput.map(_.toLong))
 
   override def part1Test: Long = p1(getInputTest.map(_.toLong))

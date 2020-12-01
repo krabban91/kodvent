@@ -1,1 +1,5 @@
 rootProject.name = 'kodvent'
+
+include 'common'
+include 'solutions'
+
