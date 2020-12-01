@@ -1,9 +1,6 @@
 import scala.io.Source
 
-trait AoCTest {
-  def part1Test: Long
-  def part2Test: Long
-
+trait AoCTest extends AoC {
 
   def getInputTest: Seq[String] = {
     val source = Source.fromResource(s"test/${this.getClass.getName.toLowerCase}.txt")
@@ -14,9 +11,13 @@ trait AoCTest {
     }
   }
 
+  def part1TestResult: Long = part1(getInputTest)
+
+  def part2TestResult: Long = part2(getInputTest)
+
   def printResultTest: Unit = {
     println(s"::${this.getClass.getName} - Test data::")
-    println(s"Part 1 -> ${this.part1Test}")
-    println(s"Part 2 -> ${this.part2Test}")
+    println(s"Part 1 -> ${this.part1TestResult}")
+    println(s"Part 2 -> ${this.part2TestResult}")
   }
 }
