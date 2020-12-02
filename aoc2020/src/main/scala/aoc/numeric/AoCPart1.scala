@@ -1,4 +1,6 @@
+package aoc.numeric
 
+import aoc.input.Inputs
 
 trait AoCPart1 extends Inputs {
   def part1(strings: Seq[String]): Long

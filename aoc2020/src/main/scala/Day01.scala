@@ -1,3 +1,4 @@
+import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 
 object Day01 extends App with AoCPart1Test with AoCPart2Test {

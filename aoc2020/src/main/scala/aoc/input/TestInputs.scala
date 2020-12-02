@@ -1,3 +1,5 @@
+package aoc.input
+
 import scala.io.Source
 
 trait TestInputs {

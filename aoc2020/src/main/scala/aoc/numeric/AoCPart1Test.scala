@@ -1,3 +1,6 @@
+package aoc.numeric
+
+import aoc.input.TestInputs
 
 
 trait AoCPart1Test extends AoCPart1 with TestInputs {
