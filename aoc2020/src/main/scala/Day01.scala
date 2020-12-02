@@ -1,6 +1,6 @@
 
 
-object Day01 extends App with AoC with AoCTest {
+object Day01 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: scala.Seq[String]): Long = {
     val input = strings.map(_.toLong)

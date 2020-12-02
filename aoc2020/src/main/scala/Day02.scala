@@ -1,9 +1,6 @@
 
 
-object Day02 extends App with AoC with AoCTest {
-
-  printResult
-  printResultTest
+object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(input: scala.Seq[String]): Long = input
     .map(Input(_))
@@ -29,5 +26,6 @@ object Day02 extends App with AoC with AoCTest {
       Input(pwd, min, max, char)
     }
   }
+
 }
 
