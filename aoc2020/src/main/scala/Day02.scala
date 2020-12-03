@@ -3,7 +3,7 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(input: scala.Seq[String]): Long = input
+  override def part1(input: Seq[String]): Long = input
     .map(Input(_))
     .map(in => {
       val count = in.pwd.count(_.equals(in.char))
@@ -11,7 +11,7 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
     })
     .count(b => b)
 
-  override def part2(input: scala.Seq[String]): Long = input
+  override def part2(input: Seq[String]): Long = input
     .map(Input(_))
     .map(in => in.pwd(in.min - 1).equals(in.char) ^ in.pwd(in.max - 1).equals(in.char))
     .count(b => b)

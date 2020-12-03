@@ -7,7 +7,7 @@ object DayXX extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2Test
   printResultPart2
 
-  override def part1(strings: scala.Seq[String]): Long = -1
+  override def part1(strings: Seq[String]): Long = -1
 
-  override def part2(strings: scala.Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = -1
 }
