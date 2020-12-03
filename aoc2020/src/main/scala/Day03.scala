@@ -4,23 +4,11 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: scala.Seq[String]): Long = countTrees(strings, 3, 1)
 
-  override def part2(strings: scala.Seq[String]): Long = countTrees(strings, 1, 1) *
-    countTrees(strings, 3, 1) *
-    countTrees(strings, 5, 1) *
-    countTrees(strings, 7, 1) *
-    countTrees(strings, 1, 2)
+  override def part2(strings: scala.Seq[String]): Long = Seq((1, 1), (3, 1), (5, 1), (7, 1), (1, 2))
+    .map(e => countTrees(strings, e._1, e._2))
+    .product
 
-
-  private def countTrees(strings: Seq[String], right: Int, down: Int): Long = {
-    var x = 0
-    var y = 0
-    var trees: Long = 0
-    while (y < strings.size) {
-      if (strings(y)(x % strings(y).size).equals('#')) trees += 1
-      y += down
-      x += right
-
-    }
-    trees
-  }
+  private def countTrees(strings: Seq[String], right: Int, down: Int): Long = strings.indices
+    .filter(_ % down == 0)
+    .count(i => strings(i)((right * i / down) % strings(i).length).equals('#'))
 }
