@@ -1,5 +1,6 @@
 package aoc.input
 
+import scala.collection.mutable
 import scala.io.Source
 
 trait Inputs {
@@ -13,5 +14,20 @@ trait Inputs {
     } finally {
       source.close()
     }
+  }
+
+  def groupsSeparatedByTwoNewlines(strings: Seq[String]): Seq[String] = {
+    var groups = mutable.ListBuffer[String]()
+    val sb = new mutable.StringBuilder
+    for (string <- strings) {
+      if (string.isBlank) {
+        groups += sb.toString()
+        sb.clear()
+      } else {
+        sb.append(s"\n${string}")
+      }
+    }
+    groups += sb.toString()
+    groups.toSeq
   }
 }

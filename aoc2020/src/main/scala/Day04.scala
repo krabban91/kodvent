@@ -1,16 +1,14 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2}
 
-import scala.collection.mutable
-
 
 object Day04 extends App with AoCPart1Test with AoCPart2 {
 
   override def part1(strings: Seq[String]): Long = {
-    Passport.fromRaw(strings).count(_.isPresent)
+    groupsSeparatedByTwoNewlines(strings).map(Passport(_)).count(_.isPresent)
   }
 
   override def part2(strings: Seq[String]): Long = {
-    Passport.fromRaw(strings).count(_.isValid)
+    groupsSeparatedByTwoNewlines(strings).map(Passport(_)).count(_.isValid)
   }
 
   case class Passport(byr: Option[String], iyr: Option[String],
@@ -93,21 +91,6 @@ object Day04 extends App with AoCPart1Test with AoCPart2 {
       val m = tokens.filterNot(_.isBlank)
         .map(v => v.split(":")(0) -> v.split(":")(1)).toMap
       Passport(m.get("byr"), m.get("iyr"), m.get("eyr"), m.get("hgt"), m.get("hcl"), m.get("ecl"), m.get("pid"), m.get("cid"))
-    }
-
-    def fromRaw(strings: Seq[String]): Seq[Passport] = {
-      var passports = mutable.ListBuffer[String]()
-      val sb = new mutable.StringBuilder
-      for (string <- strings) {
-        if (string.isBlank) {
-          passports += sb.toString()
-          sb.clear()
-        } else {
-          sb.append(s"\t${string}")
-        }
-      }
-      passports += sb.toString()
-      passports.toSeq.map(Passport(_))
     }
   }
 
