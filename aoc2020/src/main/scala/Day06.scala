@@ -3,11 +3,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day06 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = groupsSeparatedByTwoNewlines(strings)
     .map(_.replace("\n", ""))
     .map(_.toSeq.distinct.size)
