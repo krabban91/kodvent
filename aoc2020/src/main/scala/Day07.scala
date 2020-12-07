@@ -1,14 +1,16 @@
+import aoc.Timed
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 import scala.collection.mutable
 
-object Day07 extends App with AoCPart1Test with AoCPart2Test {
+object Day07 extends App with AoCPart1Test with AoCPart2Test with Timed {
 
   printResultPart1Test
   printResultPart1
   printResultPart2Test
   printResultPart2
 
+  systematicCheck(printResultPart2, 20)
 
   override def part1(strings: Seq[String]): Long = {
     val bags = strings.map(ColorCodedBag(_))
