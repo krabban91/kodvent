@@ -12,7 +12,7 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test with Timed {
 
   override def part2(strings: Seq[String]): Long = {
     val bags = strings.map(ColorCodedBag(_))
-    countBagsRecursive(bags.find(b => b.name == "shiny gold").get, bags) - 1
+    countBags(bags.find(b => b.name == "shiny gold").get, bags) - 1
   }
 
   private def canContain(b: ColorCodedBag, shiny: ColorCodedBag, bags: Seq[ColorCodedBag]): Boolean = {
@@ -30,24 +30,10 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test with Timed {
     false
   }
 
-  private def countBags(bag: ColorCodedBag, bags: Seq[ColorCodedBag]): Long = {
-    val uncounted = mutable.Stack[ColorCodedBag]()
-    uncounted.push(bag)
-    var count = 0L
-    while (uncounted.nonEmpty) {
-      val bag = uncounted.pop()
-      count += 1
-      bag.contains.foreach(bb => {
-        bags.find(i => i.name == bb._1).map(i => Range(0, bb._2).foreach(_ => uncounted.push(i)))
-      })
-    }
-    count
-  }
-
-  private def countBagsRecursive(bag: ColorCodedBag, bags: Seq[ColorCodedBag]): Long = 1L + bag.contains
+  private def countBags(bag: ColorCodedBag, bags: Seq[ColorCodedBag]): Long = 1L + bag.contains
     .map(bb => bags
       .find(i => i.name == bb._1)
-      .map(i => bb._2 * countBagsRecursive(i, bags))
+      .map(i => bb._2 * countBags(i, bags))
       .getOrElse(0L))
     .sum
 
