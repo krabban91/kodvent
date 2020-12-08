@@ -11,6 +11,22 @@ object Day08 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val program = strings.map(Instruction(_))
+    runConsule(program, strict = false).get
+  }
+
+  override def part2(strings: Seq[String]): Long = {
+    val input = strings.map(Instruction(_))
+    for (i <- input.indices.filter(i => Seq("nop", "jmp").contains(input(i).operation))) {
+      val program: Seq[Instruction] = withSwappedInstruction(input, i)
+      val result = runConsule(program, strict = true)
+      if(result.isDefined) {
+        return result.get
+      }
+    }
+    -1
+  }
+
+  private def runConsule(program: Seq[Instruction], strict: Boolean): Option[Int] = {
     var accumulator = 0
     var pointer = 0
     val setOps = mutable.Set[Int]()
@@ -26,48 +42,18 @@ object Day08 extends App with AoCPart1Test with AoCPart2Test {
         pointer += 1
       }
     }
-    accumulator
-  }
-
-  override def part2(strings: Seq[String]): Long = {
-    val input = strings.map(Instruction(_))
-    for (i <- input.indices.filter(i => Seq("nop", "jmp").contains(input(i).operation))) {
-      val program: Seq[Instruction] = withSwappedInstruction(input, i)
-      var accumulator = 0
-      var pointer = 0
-      val setOps = mutable.Set[Int]()
-      while (!setOps.contains(pointer) && pointer < program.size) {
-        setOps.add(pointer)
-        val op = program(pointer)
-        if (op.operation.equals("acc")) {
-          accumulator += op.value
-          pointer += 1
-        } else if (op.operation.equals("jmp")) {
-          pointer += op.value
-        } else if (op.operation.equals("nop")) {
-          pointer += 1
-        }
-      }
-      if (!setOps.contains(pointer)) {
-        return accumulator
-      }
+    (strict, setOps.contains(pointer)) match {
+      case (true, true) => None
+      case _ => Option(accumulator)
     }
-    -1
   }
 
   private def withSwappedInstruction(input: Seq[Instruction], index: Int): Seq[Instruction] = {
-    val program = input.indices.map(i => {
-      if (i == index) {
-        if (input(index).operation.equals("nop")) {
-          Instruction("jmp", input(index).value)
-        } else {
-          Instruction("nop", input(index).value)
-        }
-      } else {
-        input(i)
-      }
-    })
-    program
+    val program = mutable.ListBuffer.from(input)
+    program.update(index,
+      if (input(index).operation.equals("nop")) Instruction("jmp", input(index).value)
+      else Instruction("nop", input(index).value))
+    program.toSeq
   }
 
   case class Instruction(operation: String, value: Int)
