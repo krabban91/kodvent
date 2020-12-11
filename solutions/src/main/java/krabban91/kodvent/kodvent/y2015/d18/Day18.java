@@ -43,7 +43,7 @@ public class Day18 {
 
         if (debug) {
             System.out.println("Initial state");
-            System.out.println(LogUtils.tiles(lightGrid.getRaw()));
+            System.out.println(LogUtils.tiles(lightGrid));
         }
         for (int s = 1; s <= seconds; s++) {
             lightGrid.forEach((l,p) -> {
@@ -56,7 +56,7 @@ public class Day18 {
             lightGrid.forEach(Light::moveForwardInTime);
             if (debug) {
                 System.out.println("state after second " + s);
-                System.out.println(LogUtils.tiles(lightGrid.getRaw()));
+                System.out.println(LogUtils.tiles(lightGrid));
             }
         }
         return lightGrid.sum(Light::getState);

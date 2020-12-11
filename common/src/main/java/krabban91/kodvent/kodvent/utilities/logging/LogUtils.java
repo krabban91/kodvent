@@ -1,5 +1,7 @@
 package krabban91.kodvent.kodvent.utilities.logging;
 
+import krabban91.kodvent.kodvent.utilities.Grid;
+
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,10 @@ public class LogUtils<V> {
                         .reduce("", (l1, l2) -> l1 + l2, (l1, l2) -> "" + l1 + l2))
                 .reduce((l1, l2) -> l1 + "\n" + l2)
                 .orElse("");
+    }
+
+    public static String tiles(Grid<? extends Loggable> grid) {
+        return tiles(grid.getRaw());
     }
 
     public String mapToText(Map<Point, V> map, Function<V, String> valueMapper) {
