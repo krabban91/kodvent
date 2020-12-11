@@ -10,22 +10,22 @@ import scala.jdk.CollectionConverters._
 object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
-    var grid: Grid[Seat] = initialState(strings)
-    var nextState = grid.map((s, p) => s.nextState1(grid, p))
-    while (!grid.equals(nextState)) {
+    var grid: Grid[Seat] = null
+    var nextState: Grid[Seat] = initialState(strings)
+    do {
       grid = nextState
       nextState = grid.map((s, p) => s.nextState1(grid, p))
-    }
+    } while (!grid.equals(nextState))
     grid.sum(s => if (s.state == '#') 1 else 0)
   }
 
   override def part2(strings: Seq[String]): Long = {
-    var grid: Grid[Seat] = initialState(strings)
-    var nextState = grid.map((s, p) => s.nextState2(grid, p))
-    while (!grid.equals(nextState)) {
+    var grid: Grid[Seat] = null
+    var nextState: Grid[Seat] = initialState(strings)
+    do {
       grid = nextState
       nextState = grid.map((s, p) => s.nextState2(grid, p))
-    }
+    } while (!grid.equals(nextState))
     grid.sum(s => if (s.state == '#') 1 else 0)
   }
 
@@ -35,34 +35,24 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
   case class Seat(state: Int) extends Loggable {
 
-    def nextState1(grid: Grid[Seat], point: Point): Seat = {
-      val seats = grid.getSurroundingTiles(point.y, point.x)
-      if (state == 'L') {
-        if (seats.stream().filter(s => s.state == '#').count() == 0) {
-          Seat('#')
-        } else this
-      } else if (state == '#') {
-        if (seats.stream().filter(s => s.state == '#').count() >= 4) {
-          Seat('L')
-        } else this
-      } else this
-    }
-
     def isSeat: Boolean = state == '#' || state == 'L'
+
+    def nextState1(grid: Grid[Seat], point: Point): Seat = nextState(grid.getSurroundingTiles(point.y, point.x).asScala.toSeq, 4)
 
     def nextState2(grid: Grid[Seat], point: Point): Seat = {
       val directions = Seq((0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1))
-      val seats = directions.flatMap(t => seatInDirection(grid, point, t))
-      if (state == 'L') {
-        if (seats.asJava.stream().filter(s => s.state == '#').count() == 0) {
-          Seat('#')
-        } else this
-      } else if (state == '#') {
-        if (seats.asJava.stream().filter(s => s.state == '#').count() >= 5) {
-          Seat('L')
-        } else this
-      } else this
+      nextState(directions.flatMap(t => seatInDirection(grid, point, t)), 5)
     }
+
+    def nextState(seats: Iterable[Seat], threshold: Int): Seat = if (state == 'L') {
+      if (seats.count(s => s.state == '#') == 0) {
+        Seat('#')
+      } else this
+    } else if (state == '#') {
+      if (seats.count(s => s.state == '#') >= threshold) {
+        Seat('L')
+      } else this
+    } else this
 
     def seatInDirection(grid: Grid[Seat], point: Point, delta: (Int, Int)): Option[Seat] = {
       val maxX = grid.getRaw.get(0).size() - 1
@@ -82,6 +72,5 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
       if (state == '#') "#" else if (state == 'L') "L" else "."
     }
   }
-
 
 }
