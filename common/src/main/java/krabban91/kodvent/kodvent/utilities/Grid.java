@@ -27,6 +27,14 @@ public class Grid<V> {
         this.raw = grid;
     }
 
+    public int height() {
+        return this.raw.size();
+    }
+
+    public int width() {
+        return this.raw.get(0).size();
+    }
+
     public Set<Point> indicesMatching(Predicate<V> filter) {
         return IntStream.range(0, raw.size()).mapToObj(y ->
                 IntStream.range(0, raw.get(y).size())
@@ -113,6 +121,9 @@ public class Grid<V> {
 
     public void forEach(Consumer<V> action) {
         this.raw.forEach(l -> l.forEach(action));
+    }
+    public void forEach(BiConsumer<V, Point> action) {
+        IntStream.range(0, raw.size()).forEach(y -> IntStream.range(0, raw.get(0).size()).forEach(x -> action.accept(this.raw.get(y).get(x), new Point(x, y))));
     }
 
     public V get(int x, int y) {
