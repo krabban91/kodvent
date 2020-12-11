@@ -9,11 +9,6 @@ import scala.jdk.CollectionConverters._
 
 object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     var grid: Grid[Seat] = initialState(strings)
     var nextState = grid.map((s, p) => s.nextState1(grid, p))
