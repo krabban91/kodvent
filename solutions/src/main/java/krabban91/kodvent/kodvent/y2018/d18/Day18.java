@@ -104,9 +104,8 @@ public class Day18 {
     }
 
     private void updateTilesOneMinute() {
-        this.in.forEachRanged((x, y) -> {
-            SettlerTile current = in.get(x, y);
-            List<SettlerTile> adjacentTiles = getAdjacentTiles(in, x, y);
+        this.in.forEach((current, point) -> {
+            List<SettlerTile> adjacentTiles = this.in.getSurroundingTiles(point);
             long adjacentForest = adjacentTiles.stream().filter(SettlerTile::isForest).count();
             long adjacentMill = adjacentTiles.stream().filter(SettlerTile::isLumberMill).count();
             if (current.isOpen() && adjacentForest >= 3) {
@@ -118,10 +117,6 @@ public class Day18 {
             }
         });
         in.forEach(SettlerTile::oldToNew);
-    }
-
-    private List<SettlerTile> getAdjacentTiles(Grid<SettlerTile> in, int currX, int currY) {
-        return in.getSurroundingTiles(currY, currX);
     }
 
     private void storeDeltasForCycle() {

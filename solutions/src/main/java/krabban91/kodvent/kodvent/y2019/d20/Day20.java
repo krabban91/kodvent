@@ -71,7 +71,7 @@ public class Day20 {
         final List<Map.Entry<Point, Character>> portalPoints = map.entrySet().stream().filter(this::isUpperCase)
                 .collect(Collectors.toList());
         final Grid<Character> grid = new Grid<>(in.stream().map(s -> s.chars().mapToObj(i -> (char) i).collect(Collectors.toList())).collect(Collectors.toList()));
-        return portalPoints.stream().map(e -> grid.getSurroundingTilesWithPoints(e.getKey().y, e.getKey().x, true))
+        return portalPoints.stream().map(e -> grid.getSurroundingTilesWithPoints(e.getKey(), true))
                 .map(this::getPortalGate)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

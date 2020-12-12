@@ -1,6 +1,6 @@
 .gradle
 /build/
-
+aoc2020/.bsp
 common/build/
 solutions/build/
 !gradle/wrapper/gradle-wrapper.jar

@@ -4,6 +4,7 @@ import krabban91.kodvent.kodvent.utilities.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 
+import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,39 +32,38 @@ public class Day18 {
         return runGIF(getNewLights(), 100, true);
     }
 
-    public long runGIF(List<List<Light>> lights, int seconds, boolean forcedCorners) {
-        Grid<Light> lightGrid = new Grid<>();
+    public long runGIF(Grid<Light> lightGrid, int seconds, boolean forcedCorners) {
+        List<Point> corners = List.of(
+                new Point(0, 0),
+                new Point(lightGrid.width() - 1, 0),
+                new Point(0, lightGrid.height() - 1),
+                new Point(lightGrid.width() - 1, lightGrid.height() - 1));
+
         if (debug) {
             System.out.println("Initial state");
-            System.out.println(LogUtils.tiles(lights));
+            System.out.println(LogUtils.tiles(lightGrid));
         }
         for (int s = 1; s <= seconds; s++) {
-            lightGrid.forEachRanged(lights, (row, col) ->
-                    lights.get(row).get(col).setNextState(lightGrid.getSurroundingTiles(row, col, lights)));
-            if (forcedCorners) {
-                lights.get(0).get(0).setNextState(true);
-                lights.get(0).get(lights.get(0).size() - 1).setNextState(true);
-                lights.get(lights.size() - 1).get(0).setNextState(true);
-                lights.get(lights.size() - 1).get(lights.get(0).size() - 1).setNextState(true);
-            }
-
-            lightGrid.forEachRanged(lights, (row, col) -> lights.get(row).get(col).moveForwardInTime());
+            final Grid<Light> currentState = lightGrid;
+            lightGrid = currentState.map((l, p) -> forcedCorners && corners.contains(p) ?
+                    new Light(true) :
+                    l.getNextState(currentState.getSurroundingTiles(p)));
             if (debug) {
                 System.out.println("state after second " + s);
-                System.out.println(LogUtils.tiles(lights));
+                System.out.println(LogUtils.tiles(lightGrid));
             }
         }
-        return lights.stream().mapToInt(r -> r.stream().mapToInt(Light::getState).sum()).sum();
+        return lightGrid.sum(Light::getState);
     }
 
     public void readInput(String inputPath) {
         in = Input.getLines(inputPath);
     }
 
-    public List<List<Light>> getNewLights() {
-        return in.stream().map(s -> s.chars()
+    public Grid<Light> getNewLights() {
+        return new Grid<>(in.stream().map(s -> s.chars()
                 .mapToObj(Light::new)
                 .collect(Collectors.toList()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 }
