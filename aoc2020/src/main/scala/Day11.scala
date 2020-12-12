@@ -39,10 +39,7 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
     def nextState1(grid: Grid[Seat], point: Point): Seat = nextState(grid.getSurroundingTiles(point).asScala.toSeq, 4)
 
-    def nextState2(grid: Grid[Seat], point: Point): Seat = {
-      val directions = Seq((0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1))
-      nextState(directions.flatMap(t => seatInDirection(grid, point, t)), 5)
-    }
+    def nextState2(grid: Grid[Seat], point: Point): Seat = nextState(grid.getNearestTilesOfSurroundingDirections(point,Seat.isSeat).asScala, 5)
 
     def nextState(seats: Iterable[Seat], threshold: Int): Seat = if (state == 'L') {
       if (seats.count(s => s.state == '#') == 0) {
@@ -54,23 +51,12 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
       } else this
     } else this
 
-    def seatInDirection(grid: Grid[Seat], point: Point, delta: (Int, Int)): Option[Seat] = {
-      val maxX = grid.getRaw.get(0).size() - 1
-      val maxY = grid.getRaw.size() - 1
-      var dx = point.x + delta._1
-      var dy = point.y + delta._2
-      var seat = Seat('.')
-      while (dy >= 0 && dx >= 0 && dy <= maxY && dx <= maxX && !seat.isSeat) {
-        seat = grid.get(dx, dy)
-        dx += delta._1
-        dy += delta._2
-      }
-      if (seat.isSeat) Some(seat) else None
-    }
-
     override def showTile(): String = {
       if (state == '#') "#" else if (state == 'L') "L" else "."
     }
+  }
+  object Seat {
+    def isSeat(seat: Seat): Boolean = seat.isSeat
   }
 
 }

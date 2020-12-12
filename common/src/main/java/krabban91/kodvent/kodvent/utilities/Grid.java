@@ -1,17 +1,9 @@
 package krabban91.kodvent.kodvent.utilities;
 
 import java.awt.*;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToLongFunction;
+import java.util.*;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -55,6 +47,30 @@ public class Grid<V> {
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    public List<V> getNearestTilesOfSurroundingDirections(Point from, Predicate<V> predicate) {
+        return getNearestTilesOfSurroundingDirections(from.x, from.y, predicate);
+    }
+
+    public List<V> getNearestTilesOfSurroundingDirections(int x, int y, Predicate<V> predicate) {
+        List<Point> directions = List.of(new Point(0, -1), new Point(-1, -1), new Point(-1, 0), new Point(-1, 1), new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(1, -1));
+        return directions.stream()
+                .map(p -> getNearestInDirection(x, y, p, predicate))
+                .flatMap(Optional::stream)
+                .collect(Collectors.toList());
+    }
+
+    private Optional<V> getNearestInDirection(int x, int y, Point direction, Predicate<V> predicate) {
+        int dx = x + direction.x;
+        int dy = y + direction.y;
+        Optional<V> tile = this.get(dx, dy);
+        while (tile.isPresent() && !predicate.test(tile.get())) {
+            dx += direction.x;
+            dy += direction.y;
+            tile = this.get(dx, dy);
+        }
+        return tile;
     }
 
     public List<V> getAdjacentTiles(Point p) {
@@ -112,16 +128,19 @@ public class Grid<V> {
     public void forEach(Consumer<V> action) {
         this.raw.forEach(l -> l.forEach(action));
     }
+
     public void forEach(BiConsumer<V, Point> action) {
         IntStream.range(0, raw.size()).forEach(y -> IntStream.range(0, raw.get(0).size()).forEach(x -> action.accept(this.raw.get(y).get(x), new Point(x, y))));
     }
 
-    public V get(Point p) {
+    public Optional<V> get(Point p) {
         return this.get(p.x, p.y);
     }
 
-    public V get(int x, int y) {
-        return this.raw.get(y).get(x);
+    public Optional<V> get(int x, int y) {
+        return (x < 0 || x >= width() || y < 0 || y >= height()) ?
+                Optional.empty() :
+                Optional.of(this.raw.get(y).get(x));
     }
 
     public long sum(ToLongFunction<V> valueMethod) {

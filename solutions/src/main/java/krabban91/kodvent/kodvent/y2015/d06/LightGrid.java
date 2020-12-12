@@ -18,7 +18,7 @@ public class LightGrid {
 
     private void performInstruction(Instruction instruction) {
         grid.forEachRangeClosed(instruction.getFrom().x, instruction.getTo().x, instruction.getFrom().y, instruction.getTo().y,
-                (x, y) -> grid.get(x, y).actOnInstruction(instruction));
+                (x, y) -> grid.get(x, y).get().actOnInstruction(instruction));
     }
 
     public long totalBrightness() {

@@ -246,7 +246,7 @@ public class CaveBattle {
     }
 
     private void visualizeMapCell(StringBuilder builder, int y, int x) {
-        if (map.get(x, y)) {
+        if (map.get(x, y).get()) {
             Optional<BattleUnit> any = units.stream().filter(u -> u.location.x == x && u.location.y == y).findAny();
             if (any.isPresent()) {
                 if (any.get().isGoblin()) {
