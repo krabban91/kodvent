@@ -11,6 +11,9 @@ public class Light implements Loggable {
     public Light(int size) {
         this.currentState = size == '#';
     }
+    public Light(boolean state) {
+        this.currentState = state;
+    }
 
     public int getState() {
         return this.currentState ? 1 : 0;
@@ -25,11 +28,14 @@ public class Light implements Loggable {
         long count = neighbors.stream()
                 .filter(Light::isCurrentState)
                 .count();
-        if (currentState) {
-            nextState = count == 2 || count == 3;
-        } else {
-            nextState = count == 3;
-        }
+        nextState = currentState ? count == 2 || count == 3 : count == 3;
+    }
+
+    public Light getNextState(List<Light> neighbors) {
+        long count = neighbors.stream()
+                .filter(Light::isCurrentState)
+                .count();
+        return new Light(currentState ? count == 2 || count == 3 : count == 3);
     }
 
     public void setNextState(boolean on) {
