@@ -41,6 +41,10 @@ public class Grid<V> {
                 .collect(Collectors.toSet());
     }
 
+    public List<V> getSurroundingTiles(Point p) {
+        return getSurroundingTiles(p.x, p.y);
+    }
+
     public List<V> getSurroundingTiles(int x, int y) {
         return IntStream
                 .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
@@ -53,6 +57,10 @@ public class Grid<V> {
                 .collect(Collectors.toList());
     }
 
+    public List<V> getAdjacentTiles(Point p) {
+        return getAdjacentTiles(p.x, p.y);
+    }
+
     public List<V> getAdjacentTiles(int x, int y) {
         return IntStream
                 .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
@@ -63,6 +71,10 @@ public class Grid<V> {
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
+    }
+
+    public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(Point p, boolean includeCenter) {
+        return getSurroundingTilesWithPoints(p.x, p.y, includeCenter);
     }
 
     public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(int x, int y, boolean includeCenter) {
@@ -102,6 +114,10 @@ public class Grid<V> {
     }
     public void forEach(BiConsumer<V, Point> action) {
         IntStream.range(0, raw.size()).forEach(y -> IntStream.range(0, raw.get(0).size()).forEach(x -> action.accept(this.raw.get(y).get(x), new Point(x, y))));
+    }
+
+    public V get(Point p) {
+        return this.get(p.x, p.y);
     }
 
     public V get(int x, int y) {

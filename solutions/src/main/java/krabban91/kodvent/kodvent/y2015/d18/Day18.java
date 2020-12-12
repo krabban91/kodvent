@@ -47,7 +47,7 @@ public class Day18 {
             final Grid<Light> currentState = lightGrid;
             lightGrid = currentState.map((l, p) -> forcedCorners && corners.contains(p) ?
                     new Light(true) :
-                    l.getNextState(currentState.getSurroundingTiles(p.x, p.y)));
+                    l.getNextState(currentState.getSurroundingTiles(p)));
             if (debug) {
                 System.out.println("state after second " + s);
                 System.out.println(LogUtils.tiles(lightGrid));
