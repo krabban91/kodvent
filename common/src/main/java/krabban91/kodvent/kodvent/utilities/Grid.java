@@ -34,19 +34,7 @@ public class Grid<V> {
     }
 
     public List<V> getSurroundingTiles(Point p) {
-        return getSurroundingTiles(p.x, p.y);
-    }
-
-    public List<V> getSurroundingTiles(int x, int y) {
-        return IntStream
-                .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
-                .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(x - 1, 0), Math.min(x + 1, this.raw.get(y).size() - 1))
-                        .mapToObj(j -> (i == y && j == x) ? null : this.raw.get(i).get(j))
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        return getNearestTilesOfSurroundingDirections(p, v -> true);
     }
 
     public List<V> getNearestTilesOfSurroundingDirections(Point from, Predicate<V> predicate) {
@@ -55,6 +43,17 @@ public class Grid<V> {
 
     public List<V> getNearestTilesOfSurroundingDirections(int x, int y, Predicate<V> predicate) {
         List<Point> directions = List.of(new Point(0, -1), new Point(-1, -1), new Point(-1, 0), new Point(-1, 1), new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(1, -1));
+        return directions.stream()
+                .map(p -> getNearestInDirection(x, y, p, predicate))
+                .flatMap(Optional::stream)
+                .collect(Collectors.toList());
+    }
+
+    public List<V> getNearestTilesOfAdjacentDirections(Point from, Predicate<V> predicate) {
+        return getNearestTilesOfAdjacentDirections(from.x, from.y, predicate);
+    }
+    public List<V> getNearestTilesOfAdjacentDirections(int x, int y, Predicate<V> predicate) {
+        List<Point> directions = List.of(new Point(0, -1), new Point(-1, 0), new Point(0, 1), new Point(1, 0));
         return directions.stream()
                 .map(p -> getNearestInDirection(x, y, p, predicate))
                 .flatMap(Optional::stream)
@@ -74,19 +73,7 @@ public class Grid<V> {
     }
 
     public List<V> getAdjacentTiles(Point p) {
-        return getAdjacentTiles(p.x, p.y);
-    }
-
-    public List<V> getAdjacentTiles(int x, int y) {
-        return IntStream
-                .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
-                .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(x - 1, 0), Math.min(x + 1, this.raw.get(y).size() - 1))
-                        .mapToObj(j -> (i == y && j == x) ? null : (i == y || j == x) ? this.raw.get(i).get(j) : null)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        return getNearestTilesOfAdjacentDirections(p, v -> true);
     }
 
     public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(Point p, boolean includeCenter) {
