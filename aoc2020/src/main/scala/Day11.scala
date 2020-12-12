@@ -37,7 +37,7 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
     def isSeat: Boolean = state == '#' || state == 'L'
 
-    def nextState1(grid: Grid[Seat], point: Point): Seat = nextState(grid.getSurroundingTiles(point.y, point.x).asScala.toSeq, 4)
+    def nextState1(grid: Grid[Seat], point: Point): Seat = nextState(grid.getSurroundingTiles(point.x, point.y).asScala.toSeq, 4)
 
     def nextState2(grid: Grid[Seat], point: Point): Seat = {
       val directions = Seq((0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1))

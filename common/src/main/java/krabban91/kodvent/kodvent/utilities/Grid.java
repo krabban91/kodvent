@@ -41,36 +41,36 @@ public class Grid<V> {
                 .collect(Collectors.toSet());
     }
 
-    public List<V> getSurroundingTiles(int row, int col) {
+    public List<V> getSurroundingTiles(int x, int y) {
         return IntStream
-                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
                 .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
-                        .mapToObj(j -> (i == row && j == col) ? null : this.raw.get(i).get(j))
+                        .rangeClosed(Math.max(x - 1, 0), Math.min(x + 1, this.raw.get(y).size() - 1))
+                        .mapToObj(j -> (i == y && j == x) ? null : this.raw.get(i).get(j))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
-    public List<V> getAdjacentTiles(int row, int col) {
+    public List<V> getAdjacentTiles(int x, int y) {
         return IntStream
-                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
                 .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
-                        .mapToObj(j -> (i == row && j == col) ? null : (i == row || j == col) ? this.raw.get(i).get(j) : null)
+                        .rangeClosed(Math.max(x - 1, 0), Math.min(x + 1, this.raw.get(y).size() - 1))
+                        .mapToObj(j -> (i == y && j == x) ? null : (i == y || j == x) ? this.raw.get(i).get(j) : null)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
-    public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(int row, int col, boolean includeCenter) {
+    public List<Map.Entry<Point, V>> getSurroundingTilesWithPoints(int x, int y, boolean includeCenter) {
         return IntStream
-                .rangeClosed(Math.max(row - 1, 0), Math.min(row + 1, this.raw.size() - 1))
+                .rangeClosed(Math.max(y - 1, 0), Math.min(y + 1, this.raw.size() - 1))
                 .mapToObj(i -> IntStream
-                        .rangeClosed(Math.max(col - 1, 0), Math.min(col + 1, this.raw.get(row).size() - 1))
-                        .mapToObj(j -> (!includeCenter && (i == row && j == col)) ? null : Map.entry(new Point(j, i), this.raw.get(i).get(j)))
+                        .rangeClosed(Math.max(x - 1, 0), Math.min(x + 1, this.raw.get(y).size() - 1))
+                        .mapToObj(j -> (!includeCenter && (i == y && j == x)) ? null : Map.entry(new Point(j, i), this.raw.get(i).get(j)))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                 .flatMap(Collection::stream)

@@ -90,7 +90,7 @@ public class Day24 {
     }
 
     private Grid<BugTile> nextState(Grid<BugTile> grid) {
-        return grid.map((b, p) -> b.nextState(grid.getAdjacentTiles(p.y, p.x)));
+        return grid.map((b, p) -> b.nextState(grid.getAdjacentTiles(p.x, p.y)));
     }
 
     private Map<Point3D, BugTile> nextState(Map<Point3D, BugTile> current) {

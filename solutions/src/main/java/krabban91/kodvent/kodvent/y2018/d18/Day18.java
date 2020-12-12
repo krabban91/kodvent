@@ -121,7 +121,7 @@ public class Day18 {
     }
 
     private List<SettlerTile> getAdjacentTiles(Grid<SettlerTile> in, int currX, int currY) {
-        return in.getSurroundingTiles(currY, currX);
+        return in.getSurroundingTiles(currX, currY);
     }
 
     private void storeDeltasForCycle() {
