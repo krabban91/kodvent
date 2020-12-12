@@ -5,11 +5,6 @@ import krabban91.kodvent.kodvent.utilities.Distances
 
 object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val start = new Point(0, 0)
     var (current, waypoint) = (start, new Point(1, 0))
