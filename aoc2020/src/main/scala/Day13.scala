@@ -42,4 +42,5 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
       if (s == "x") None else Option(TimeTable(s.toInt, idx))
     }
   }
+
 }
