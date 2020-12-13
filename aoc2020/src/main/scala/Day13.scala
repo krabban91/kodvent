@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import krabban91.kodvent.kodvent.utilities.MathUtils
 
 object Day13 extends App with AoCPart1Test with AoCPart2Test {
-  //
-  //  printResultPart1Test
-  //  printResultPart1
-  printResultPart2Test
-  printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
     val start = strings.head.toInt
@@ -47,13 +42,4 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
       if (s == "x") None else Option(TimeTable(s.toInt, idx))
     }
   }
-
-  def LCM(a: Long, b: Long, idx: Long): Long = {
-    a * (b) / GCD(a, b)
-  }
-
-  def GCD(a: Long, b: Long): Long = {
-    if (b == 0) a else GCD(b, a % b)
-  }
-
 }
