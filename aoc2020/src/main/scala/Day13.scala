@@ -5,26 +5,20 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val start = strings.head.toInt
-    var time = start
     val buses = TimeTable.buses(strings(1))
-    while (!buses.exists(_.departs(time))) {
-      time += 1
-    }
-    buses.find(_.departs(time)).get.id * (time - start)
+    val time = Range(0,1000000).find(i => buses.exists(_.departs(start+i))).get
+    buses.find(_.departs(time+start)).get.id * time
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    val buses = TimeTable.buses(strings(1))
-    var interval = buses.head.id
-    var t = 0L
-    buses.tail.foreach(c => {
-      while (!c.fits(t)) t += interval
-      interval = MathUtils.LCM(c.id, interval)
-    })
-    t
-  }
+  override def part2(strings: Seq[String]): Long = TimeTable
+    .buses(strings(1))
+    .foldLeft((1L, 0L))((interval, c) => {
+      var t = interval._2
+      while (!c.fits(t)) t += interval._1
+      (MathUtils.LCM(c.id, interval._1), t)
+    })._2
 
-  case class TimeTable(id: Long, idx: Int) {
+  case class Bus(id: Long, idx: Int) {
 
     def departs(time: Int): Boolean = time % id == 0
 
@@ -33,13 +27,14 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   object TimeTable {
-    def buses(s: String): Seq[TimeTable] = {
+    def buses(s: String): Seq[Bus] = {
       val in = s.split(",")
       in.indices.flatMap(i => maybe(in(i), i))
     }
 
-    private def maybe(s: String, idx: Int): Option[TimeTable] = {
-      if (s == "x") None else Option(TimeTable(s.toInt, idx))
+    private def maybe(s: String, idx: Int): Option[Bus] = {
+      if (s == "x") None else Option(Bus(s.toInt, idx))
     }
   }
+
 }
