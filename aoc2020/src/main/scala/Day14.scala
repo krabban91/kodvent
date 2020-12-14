@@ -8,79 +8,67 @@ object Day14 extends App with AoCPart1 with AoCPart2 {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val in = strings.map(Instruction(_))
-    var currentMask: Mask = null
-    val mems = mutable.Map[Long, Long]()
-    for (instr <- in) {
-      instr match {
-        case m: Mask => currentMask = m
-        case MemoryUpdate(i, v) => mems(i) = if (currentMask != null) currentMask.adjust(v) else v
+    var mask: Mask = null
+    val memory = mutable.Map[Long, Long]()
+    strings.map(Instruction(_))
+      .foreach {
+        case m: Mask => mask = m
+        case MemorySet(i, v) => memory(i) = mask.value(v)
       }
-    }
-    mems.values.sum
+    memory.values.sum
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val in = strings.map(Instruction(_))
-    var currentMask: Mask = null
-    val mems = mutable.Map[Long, Long]()
-    for (instr <- in) {
-      instr match {
-        case m: Mask => currentMask = m
-        case MemoryUpdate(i, v) => currentMask.getAddresses(i).foreach(a => mems(a) = v)
+    var mask: Mask = null
+    val memory = mutable.Map[Long, Long]()
+    strings.map(Instruction(_))
+      .foreach {
+        case m: Mask => mask = m
+        case MemorySet(i, v) => mask.addresses(i).foreach(a => memory(a) = v)
       }
-    }
-    mems.values.sum
+    memory.values.sum
   }
 
-  trait Instruction {
-  }
+  trait Instruction
 
   case class Mask(mask: String) extends Instruction {
-    def adjust(v: Long): Long = {
-      var out = v
-      var step = 1L
-      for (c <- mask.reverse) {
-        if (c == '0') {
-          out &= ~step
-        }
-        if (c == '1') {
-          out |= step
-        }
-        step *= 2
-      }
-      out
+    def value(v: Long): Long = mask
+      .reverse
+      .foldLeft((v, 1L))((t, c) => (maskValue(t._1, t._2, c), 2 * t._2))
+      ._1
+
+    def addresses(address: Long): Seq[Long] = {
+      mask
+        .reverse
+        .foldLeft((Seq(address), 1L))((t, c) => (maskAddress(t._1, t._2, c), 2 * t._2))
+        ._1
     }
 
-    def getAddresses(address: Long): Seq[Long] = {
-      var out = mutable.ListBuffer[Long](address)
-      var step = 1L
-
-      for (c <- mask.reverse) {
-        if (c == '0') {
-        }
-        else if (c == '1') {
-          out = out.map(_ | step)
-        } else {
-          out = out.map(_ | step) ++ out.map(_ & ~step)
-        }
-        step *= 2
+    private def maskValue(v: Long, step: Long, c: Char): Long = {
+      c match {
+        case '0' => v & ~step
+        case '1' => v | step
+        case _ => v
       }
-      out.toSeq
     }
 
+    private def maskAddress(v: Seq[Long], step: Long, c: Char): Seq[Long] = {
+      c match {
+        case '0' => v
+        case '1' => v.map(_ | step)
+        case _ => v.map(_ | step) ++ v.map(_ & ~step)
+      }
+    }
   }
 
-  case class MemoryUpdate(address: Long, value: Long) extends Instruction {
-
-  }
+  case class MemorySet(address: Long, value: Long) extends Instruction
 
   object Instruction {
     def apply(string: String): Instruction = {
       if (string.charAt(1) == 'a') {
         Mask(string.split("=")(1).trim)
       } else {
-        MemoryUpdate(string.split("]")(0).split("\\[")(1).toInt, string.split("=")(1).trim.toLong)
+        MemorySet(string.split("]")(0).split("\\[")(1).toInt, string.split("=")(1).trim.toLong)
       }
     }
   }
