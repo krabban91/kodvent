@@ -33,26 +33,20 @@ object Day14 extends App with AoCPart1 with AoCPart2 {
       .foldRight((v, 1L))((c, t) => (maskValue(t._1, t._2, c), 2 * t._2))
       ._1
 
-    def addresses(address: Long): Seq[Long] = {
-      mask
-        .foldRight((Seq(address), 1L))((c, t) => (maskAddress(t._1, t._2, c), 2 * t._2))
-        ._1
+    def addresses(address: Long): Seq[Long] = mask
+      .foldRight((Seq(address), 1L))((c, t) => (maskAddress(t._1, t._2, c), 2 * t._2))
+      ._1
+
+    private def maskValue(v: Long, step: Long, c: Char): Long = c match {
+      case '0' => v & ~step
+      case '1' => v | step
+      case _ => v
     }
 
-    private def maskValue(v: Long, step: Long, c: Char): Long = {
-      c match {
-        case '0' => v & ~step
-        case '1' => v | step
-        case _ => v
-      }
-    }
-
-    private def maskAddress(v: Seq[Long], step: Long, c: Char): Seq[Long] = {
-      c match {
-        case '0' => v
-        case '1' => v.map(_ | step)
-        case _ => v.map(_ | step) ++ v.map(_ & ~step)
-      }
+    private def maskAddress(v: Seq[Long], step: Long, c: Char): Seq[Long] = c match {
+      case '0' => v
+      case '1' => v.map(_ | step)
+      case _ => v.map(_ | step) ++ v.map(_ & ~step)
     }
   }
 
