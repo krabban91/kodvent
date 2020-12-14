@@ -30,14 +30,12 @@ object Day14 extends App with AoCPart1 with AoCPart2 {
 
   case class Mask(mask: String) extends Instruction {
     def value(v: Long): Long = mask
-      .reverse
-      .foldLeft((v, 1L))((t, c) => (maskValue(t._1, t._2, c), 2 * t._2))
+      .foldRight((v, 1L))((c, t) => (maskValue(t._1, t._2, c), 2 * t._2))
       ._1
 
     def addresses(address: Long): Seq[Long] = {
       mask
-        .reverse
-        .foldLeft((Seq(address), 1L))((t, c) => (maskAddress(t._1, t._2, c), 2 * t._2))
+        .foldRight((Seq(address), 1L))((c, t) => (maskAddress(t._1, t._2, c), 2 * t._2))
         ._1
     }
 
