@@ -4,9 +4,6 @@ import scala.collection.mutable
 
 object Day14 extends App with AoCPart1 with AoCPart2 {
 
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     var mask: Mask = null
     val memory = mutable.Map[Long, Long]()
