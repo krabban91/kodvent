@@ -10,22 +10,15 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val in = strings(0).split(",").map(_.toLong)
-    val numbers: mutable.Map[Long, Seq[Long]] = mutable.Map[Long, Seq[Long]]() ++ (in.map(n => n -> Seq(in.indexOf(n) + 1L)))
-    var prev = in.last
-    var turn = in.size.toLong
-    while (turn < 2020) {
-      turn += 1
-      val prvL = numbers.get(prev).get
-
-      if (prvL.size == 1) {
-        prev = 0L
-      } else {
-        prev = prvL(prvL.size - 1) - prvL(prvL.size - 2)
-      }
-      numbers(prev) = numbers.getOrElse(prev, Seq()) ++ Seq(turn)
-    }
-    prev
+    val in = strings.head.split(",").map(_.toInt)
+    val numbers: mutable.Map[Int, Int] = mutable.Map[Int, Int]() ++ in.map(v => v -> (in.indexOf(v)+1))
+    var next = 0
+    Range(in.length + 1, 2020).foreach(turn => {
+        val curr = next
+        next = numbers.get(curr).map(v => turn - v).getOrElse(0)
+        numbers(curr) = turn
+      })
+    next
   }
 
   override def part2(strings: Seq[String]): Long = -1
