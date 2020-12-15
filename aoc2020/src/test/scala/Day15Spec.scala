@@ -17,9 +17,9 @@ class Day15Spec extends AnyFlatSpec with Matchers {
     Day15.part1(Seq("3,1,2")) shouldEqual 1836
   }
   "Part2 Test" should "be correct" in {
-    Day15.part2TestResult shouldEqual -1
+    Day15.part2TestResult shouldEqual 175594
   }
   "Part2" should "be correct" in {
-    Day15.part2Result shouldEqual -1
+    Day15.part2Result shouldEqual 116590
   }
 }
