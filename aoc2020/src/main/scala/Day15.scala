@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day15 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = getN(2020, strings.head.split(",").map(_.toInt))
 
   override def part2(strings: Seq[String]): Long = getN(30000000, strings.head.split(",").map(_.toInt))
