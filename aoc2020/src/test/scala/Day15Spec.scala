@@ -22,4 +22,12 @@ class Day15Spec extends AnyFlatSpec with Matchers {
   "Part2" should "be correct" in {
     Day15.part2Result shouldEqual 116590
   }
+  "Part2 bonus input" should "be correct" in {
+    Day15.part2(Seq("1,3,2")) shouldEqual 2578
+    Day15.part2(Seq("2,1,3")) shouldEqual 3544142
+    Day15.part2(Seq("1,2,3")) shouldEqual 261214
+    Day15.part2(Seq("2,3,1")) shouldEqual 6895259
+    Day15.part2(Seq("3,2,1")) shouldEqual 18
+    Day15.part2(Seq("3,1,2")) shouldEqual 362
+  }
 }
