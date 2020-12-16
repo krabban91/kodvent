@@ -4,10 +4,6 @@ import scala.collection.mutable
 
 object Day16 extends App with AoCPart1Test with AoCPart2 {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (rules, your, theirs) = input(strings)
     theirs.flatten
