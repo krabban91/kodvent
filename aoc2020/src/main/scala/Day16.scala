@@ -1,13 +1,71 @@
-import aoc.numeric.{AoCPart1Test, AoCPart2Test}
+import aoc.numeric.{AoCPart1Test, AoCPart2}
 
-object Day16 extends App with AoCPart1Test with AoCPart2Test {
+import scala.collection.mutable
+
+object Day16 extends App with AoCPart1Test with AoCPart2 {
 
   printResultPart1Test
   printResultPart1
-  printResultPart2Test
   printResultPart2
 
-  override def part1(strings: Seq[String]): Long = -1
+  override def part1(strings: Seq[String]): Long = {
+    val f = strings.indexOf("")
+    val rules = strings.take(f).map(Rule(_))
+    val ff = strings.indexOf("", f + 1)
+    val your = strings.slice(f + 2, ff)
+    val theirs = strings.drop(ff + 2).map(_.split(",").map(_.toInt))
+    val all = theirs.flatten
+    all.filterNot(v => rules.exists(r => r.intervals.exists(i => v >= i._1 && v <= i._2))).sum
+  }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val f = strings.indexOf("")
+    val rules = strings.take(f).map(Rule(_))
+    val ff = strings.indexOf("", f + 1)
+    val your = strings.slice(f + 2, ff)(0).split(",").map(_.toLong)
+    val theirs = strings.drop(ff + 2).map(_.split(",").map(_.toInt))
+    val filtered = theirs.filter(l => l.forall(v => rules.exists(r => r.fits(v))))
+
+    val rulesMap = mutable.Map[Rule, Seq[Int]]() ++ rules.map(i => i -> Seq())
+
+    for(ruleI <- rules.indices){
+      for(col <- rules.indices){
+        val rule = rules(ruleI)
+        val ts = filtered.map(l => l(col))
+        if(ts.forall(i => rule.fits(i))){
+          rulesMap(rule) = rulesMap(rule) ++ Seq(col)
+        }
+
+      }
+    }
+
+    val taken = mutable.ListBuffer[Rule]()
+    while (rulesMap.exists(t => t._2.size > 1) ){
+      val t = rulesMap.find(t => !taken.contains(t._1) && t._2.size == 1).get
+      taken += t._1
+      rulesMap
+        .filterNot(v => taken.contains(v._1))
+        .foreach(v => rulesMap(v._1) = rulesMap(v._1).filterNot(vv=> t._2.contains(vv)))
+    }
+
+      rulesMap
+        .filter(t => t._1.name.startsWith("departure"))
+        .map(_._2.head)
+        .map(i => your(i))
+      .product
+  }
+
+  case class Rule(name: String, intervals: Seq[(Int, Int)]) {
+    def fits(v: Int): Boolean = intervals.exists(i => v >= i._1 && v <= i._2)
+  }
+
+  object Rule {
+    def apply(in: String): Rule = {
+      val name = in.split(":")(0)
+      val v = in.split(":")(1).trim.split("or").map(_.trim).map(s => s.split("-")(0).toInt -> s.split("-")(1).toInt)
+      Rule(name, v)
+
+    }
+  }
+
 }
