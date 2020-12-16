@@ -44,7 +44,7 @@ object Day16 extends App with AoCPart1Test with AoCPart2 {
     .toMap
 
   def viableMatching(map: Map[Rule, Seq[Int]]): Option[Map[Rule, Int]] = {
-    val matched = mutable.ListBuffer[Tuple2[Rule, Seq[Int]]]()
+    val matched = mutable.ListBuffer[(Rule, Seq[Int])]()
     val queue = mutable.PriorityQueue.from(map.keys)(Ordering.by[Rule, Int](r => r.possibleColumns(map, matched).size).reverse)
     while (queue.nonEmpty) {
       val r = queue.dequeue()
