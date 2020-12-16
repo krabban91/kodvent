@@ -35,38 +35,30 @@ object Day16 extends App with AoCPart1Test with AoCPart2 {
     (rules, your, theirs)
   }
 
-  def matchingColumns(rules: Seq[Rule], tickets: Seq[Seq[Int]]): Map[Rule, Seq[Int]] = {
-    val rulesMap = mutable.Map[Rule, Seq[Int]]() ++ rules.map(i => i -> Seq())
-    for (ruleI <- rules.indices) {
-      for (col <- rules.indices) {
-        val rule = rules(ruleI)
-        val ts = tickets.map(l => l(col))
-        if (ts.forall(i => rule.fits(i))) {
-          rulesMap(rule) = rulesMap(rule) ++ Seq(col)
-        }
-
-      }
-    }
-    rulesMap.toMap
-  }
+  def matchingColumns(rules: Seq[Rule], tickets: Seq[Seq[Int]]): Map[Rule, Seq[Int]] = rules
+    .map(r => r -> rules
+      .indices
+      .filter(i => tickets
+        .map(l => l(i))
+        .forall(r.fits)))
+    .toMap
 
   def viableMatching(map: Map[Rule, Seq[Int]]): Option[Map[Rule, Int]] = {
-    val rulesMap = mutable.Map[Rule, Seq[Int]]() ++ map
-    val used = mutable.ListBuffer[Rule]()
-    while (rulesMap.exists(t => t._2.size > 1)) {
-      val t = rulesMap.find(t => !used.contains(t._1) && t._2.size == 1).get
-      used += t._1
-      rulesMap
-        .filterNot(v => used.contains(v._1))
-        .foreach(v => rulesMap(v._1) = rulesMap(v._1).filterNot(vv => t._2.contains(vv)))
+    val matched = mutable.ListBuffer[Tuple2[Rule, Seq[Int]]]()
+    val queue = mutable.PriorityQueue.from(map.keys)(Ordering.by[Rule, Int](r => r.possibleColumns(map, matched).size).reverse)
+    while (queue.nonEmpty) {
+      val r = queue.dequeue()
+      matched += (r -> r.possibleColumns(map, matched))
     }
-    if (rulesMap.forall(_._2.size == 1)) {
-      Option(rulesMap.map(t => (t._1, t._2.head)).toMap)
+    if (matched.forall(_._2.size == 1)) {
+      Option(matched.map(t => (t._1, t._2.head)).toMap)
     } else None
   }
 
   case class Rule(name: String, intervals: Seq[(Int, Int)]) {
     def fits(v: Int): Boolean = intervals.exists(i => v >= i._1 && v <= i._2)
+
+    def possibleColumns(map: Map[Rule, Seq[Int]], matched: Iterable[(Rule, Seq[Int])]): Seq[Int] = map(this).filterNot(v => matched.exists(_._2.contains(v)))
   }
 
   object Rule {
