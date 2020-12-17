@@ -1,6 +1,6 @@
 package krabban91.kodvent.kodvent.y2015.d06;
 
-import krabban91.kodvent.kodvent.utilities.Grid;
+import krabban91.kodvent.kodvent.utilities.grid.Grid;
 
 import java.util.List;
 import java.util.stream.Collectors;

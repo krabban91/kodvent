@@ -1,6 +1,6 @@
 package krabban91.kodvent.kodvent.utilities.logging;
 
-import krabban91.kodvent.kodvent.utilities.Grid;
+import krabban91.kodvent.kodvent.utilities.grid.Grid;
 
 import java.awt.*;
 import java.util.List;

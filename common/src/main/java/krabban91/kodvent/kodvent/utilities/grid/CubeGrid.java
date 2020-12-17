@@ -1,4 +1,6 @@
-package krabban91.kodvent.kodvent.utilities;
+package krabban91.kodvent.kodvent.utilities.grid;
+
+import krabban91.kodvent.kodvent.utilities.Point3D;
 
 import java.awt.*;
 import java.util.List;

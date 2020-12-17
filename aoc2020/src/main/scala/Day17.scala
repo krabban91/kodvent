@@ -2,7 +2,8 @@ import java.util.stream.Collectors
 
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import krabban91.kodvent.kodvent.utilities.logging.{LogUtils, Loggable}
-import krabban91.kodvent.kodvent.utilities.{CubeGrid, HyperCubeGrid, Point3D, TimePoint}
+import krabban91.kodvent.kodvent.utilities.{Point3D, TimePoint}
+import krabban91.kodvent.kodvent.utilities.grid.{CubeGrid, HyperCubeGrid}
 
 import scala.jdk.CollectionConverters._
 

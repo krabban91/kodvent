@@ -2,7 +2,7 @@ import java.awt.Point
 import java.util.stream.Collectors
 
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
-import krabban91.kodvent.kodvent.utilities.Grid
+import krabban91.kodvent.kodvent.utilities.grid.Grid
 import krabban91.kodvent.kodvent.utilities.logging.Loggable
 
 import scala.jdk.CollectionConverters._

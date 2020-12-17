@@ -1,4 +1,4 @@
-package krabban91.kodvent.kodvent.utilities;
+package krabban91.kodvent.kodvent.utilities.grid;
 
 import java.awt.*;
 import java.util.List;
