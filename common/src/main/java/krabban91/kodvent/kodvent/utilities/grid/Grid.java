@@ -38,31 +38,25 @@ public class Grid<V> {
     }
 
     public List<V> getNearestTilesOfSurroundingDirections(Point from, Predicate<V> predicate) {
-        return getNearestTilesOfSurroundingDirections(from.x, from.y, predicate);
-    }
-
-    public List<V> getNearestTilesOfSurroundingDirections(int x, int y, Predicate<V> predicate) {
-        List<Point> directions = List.of(new Point(0, -1), new Point(-1, -1), new Point(-1, 0), new Point(-1, 1), new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(1, -1));
-        return directions.stream()
-                .map(p -> getNearestInDirection(x, y, p, predicate))
+        List<Integer> xs = List.of(-1, 0, 1);
+        List<Point> ys = xs.stream().map(v -> List.of(new Point(v, -1), new Point(v, 0), new Point(v, 1))).flatMap(List::stream).collect(Collectors.toList());
+        return ys.stream().filter(p -> !p.equals(new Point(0, 0)))
+                .map(p -> getNearestInDirection(from, p, predicate))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 
     public List<V> getNearestTilesOfAdjacentDirections(Point from, Predicate<V> predicate) {
-        return getNearestTilesOfAdjacentDirections(from.x, from.y, predicate);
-    }
-    public List<V> getNearestTilesOfAdjacentDirections(int x, int y, Predicate<V> predicate) {
         List<Point> directions = List.of(new Point(0, -1), new Point(-1, 0), new Point(0, 1), new Point(1, 0));
         return directions.stream()
-                .map(p -> getNearestInDirection(x, y, p, predicate))
+                .map(p -> getNearestInDirection(from, p, predicate))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 
-    private Optional<V> getNearestInDirection(int x, int y, Point direction, Predicate<V> predicate) {
-        int dx = x + direction.x;
-        int dy = y + direction.y;
+    private Optional<V> getNearestInDirection(Point p, Point direction, Predicate<V> predicate) {
+        int dx = p.x + direction.x;
+        int dy = p.y + direction.y;
         Optional<V> tile = this.get(dx, dy);
         while (tile.isPresent() && !predicate.test(tile.get())) {
             dx += direction.x;

@@ -61,5 +61,12 @@ public class TimePoint {
         return zt.y;
     }
 
+    public TimePoint add(TimePoint other) {
+        return new TimePoint(this.getX() + other.getX(),
+                this.getY() + other.getY(),
+                this.getZ() + other.getZ(),
+                this.getW() + other.getW());
+    }
+
 
 }

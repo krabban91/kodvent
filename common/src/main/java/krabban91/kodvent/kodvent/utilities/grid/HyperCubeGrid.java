@@ -42,33 +42,24 @@ public class HyperCubeGrid<V> {
         return getNearestTilesOfSurroundingDirections(p, v -> true);
     }
 
-    public List<V> getNearestTilesOfSurroundingDirections(TimePoint from, Predicate<V> predicate) {
-        return getNearestTilesOfSurroundingDirections(from.getX(), from.getY(), from.getZ(), from.getW(), predicate);
-    }
 
-    public List<V> getNearestTilesOfSurroundingDirections(int x, int y, int z, int w, Predicate<V> predicate) {
-        List<Point> directions = List.of(new Point(0, 0), new Point(0, -1), new Point(-1, -1), new Point(-1, 0), new Point(-1, 1), new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(1, -1));
-        List<Point3D> allDirections = directions.stream().map(p -> List.of(new Point3D(p.x, p.y, -1), new Point3D(p.x, p.y, 0), new Point3D(p.x, p.y, 1))).flatMap(List::stream).collect(Collectors.toList());
-        List<TimePoint> everyDirection = allDirections.stream().map(p -> List.of(new TimePoint(p.getX(), p.getY(), p.getZ(), -1), new TimePoint(p.getX(), p.getY(), p.getZ(), 0), new TimePoint(p.getX(), p.getY(), p.getZ(), 1))).flatMap(List::stream).filter(p -> !p.equals(new TimePoint(0, 0, 0, 0))).collect(Collectors.toList());
-        return everyDirection.stream()
-                .map(p -> getNearestInDirection(x, y, z, w, p, predicate))
+    public List<V> getNearestTilesOfSurroundingDirections(TimePoint from, Predicate<V> predicate) {
+        List<Integer> xs = List.of(-1, 0, 1);
+        List<Point> ys = xs.stream().map(v -> List.of(new Point(v, -1), new Point(v, 0), new Point(v, 1))).flatMap(List::stream).collect(Collectors.toList());
+        List<Point3D> zs = ys.stream().map(p -> List.of(new Point3D(p.x, p.y, -1), new Point3D(p.x, p.y, 0), new Point3D(p.x, p.y, 1))).flatMap(List::stream).collect(Collectors.toList());
+        List<TimePoint> ws = zs.stream().map(p -> List.of(new TimePoint(p.getX(), p.getY(), p.getZ(), -1), new TimePoint(p.getX(), p.getY(), p.getZ(), 0), new TimePoint(p.getX(), p.getY(), p.getZ(), 1))).flatMap(List::stream).collect(Collectors.toList());
+        return ws.stream().filter(p -> !p.equals(new TimePoint(0, 0, 0, 0)))
+                .map(p -> getNearestInDirection(from, p, predicate))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
     }
 
-    private Optional<V> getNearestInDirection(int x, int y, int z, int w, TimePoint direction, Predicate<V> predicate) {
-        int dx = x + direction.getX();
-        int dy = y + direction.getY();
-        int dz = z + direction.getZ();
-        int dw = w + direction.getW();
-        Optional<V> tile = this.get(dx, dy, dz, dw);
+    private Optional<V> getNearestInDirection(TimePoint point, TimePoint direction, Predicate<V> predicate) {
+        point = point.add(direction);
+        Optional<V> tile = this.get(point);
         while (tile.isPresent() && !predicate.test(tile.get())) {
-            dx += direction.getX();
-            dy += direction.getY();
-            dz += direction.getZ();
-            dw += direction.getW();
-
-            tile = this.get(dx, dy, dz, dw);
+            point = point.add(direction);
+            tile = this.get(point);
         }
         return tile;
     }
