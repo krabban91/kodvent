@@ -1,7 +1,7 @@
 package krabban91.kodvent.kodvent.y2018.d15;
 
 import krabban91.kodvent.kodvent.utilities.Distances;
-import krabban91.kodvent.kodvent.utilities.Grid;
+import krabban91.kodvent.kodvent.utilities.grid.Grid;
 import krabban91.kodvent.kodvent.utilities.search.Graph;
 
 import java.awt.*;

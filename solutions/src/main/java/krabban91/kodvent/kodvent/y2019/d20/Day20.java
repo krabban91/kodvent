@@ -1,6 +1,6 @@
 package krabban91.kodvent.kodvent.y2019.d20;
 
-import krabban91.kodvent.kodvent.utilities.Grid;
+import krabban91.kodvent.kodvent.utilities.grid.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.Point3D;
 import krabban91.kodvent.kodvent.utilities.search.Graph;

@@ -1,6 +1,6 @@
 package krabban91.kodvent.kodvent.y2018.d18;
 
-import krabban91.kodvent.kodvent.utilities.Grid;
+import krabban91.kodvent.kodvent.utilities.grid.Grid;
 import krabban91.kodvent.kodvent.utilities.Input;
 import krabban91.kodvent.kodvent.utilities.logging.LogUtils;
 
