@@ -1,9 +1,9 @@
 import java.util.stream.Collectors
 
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
+import krabban91.kodvent.kodvent.utilities.grid.{CubeGrid, HyperCubeGrid}
 import krabban91.kodvent.kodvent.utilities.logging.{LogUtils, Loggable}
 import krabban91.kodvent.kodvent.utilities.{Point3D, TimePoint}
-import krabban91.kodvent.kodvent.utilities.grid.{CubeGrid, HyperCubeGrid}
 
 import scala.jdk.CollectionConverters._
 
@@ -19,7 +19,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     for (i <- Range(0, 6)) {
       if (debug) {
         println(s"iteration: $i.")
-        logCube(curr)
+        println(LogUtils.tiles(curr));
       }
       curr = curr.expandOneStep(Conway(_))
       curr = curr.map((c, p) => c.cycle(curr.getSurroundingTiles(p).asScala))
@@ -37,26 +37,12 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
       .foreach(i => {
         if (debug) {
           println(s"iteration: $i.")
-          logHyperCube(curr)
+          println(LogUtils.tiles(curr));
         }
         curr = curr.expandOneStep(Conway(_))
         curr = curr.map((c, p) => c.cycle(curr.getSurroundingTiles(p).asScala))
       })
     curr.sum(c => if (c.active) 1 else 0)
-  }
-
-  private def logCube(next: CubeGrid[Day17.Conway]): Unit = {
-    for (z <- Range(0, next.depth())) {
-      println(s"- z=$z")
-      println(LogUtils.tiles(next.getRaw.get(z)))
-    }
-  }
-
-  private def logHyperCube(next: HyperCubeGrid[Day17.Conway]): Unit = {
-    for (w <- Range(0, next.metaDepth()); z <- Range(0, next.depth())) {
-      println(s"- w=$w z=$z")
-      println(LogUtils.tiles(next.getRaw.get(w).get(z)))
-    }
   }
 
   case class Conway(active: Boolean) extends Loggable {
