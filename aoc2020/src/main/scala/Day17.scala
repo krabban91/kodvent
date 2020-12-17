@@ -11,11 +11,6 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
   val debug = false
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     var curr: CubeGrid[Conway] = new CubeGrid[Conway](java.util.List.of(strings.map(s => s.chars()
       .mapToObj(c => Conway(c == '#'))
