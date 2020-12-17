@@ -2,7 +2,7 @@ import java.util.stream.Collectors
 
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import krabban91.kodvent.kodvent.utilities.logging.{LogUtils, Loggable}
-import krabban91.kodvent.kodvent.utilities.{CubeGrid, Point3D}
+import krabban91.kodvent.kodvent.utilities.{CubeGrid, HyperCubeGrid, Point3D, TimePoint}
 
 import scala.jdk.CollectionConverters._
 
@@ -31,6 +31,24 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     curr.sum(c => if (c.active) 1 else 0)
   }
 
+  override def part2(strings: Seq[String]): Long = {
+    val in = new HyperCubeGrid[Conway](java.util.List.of(java.util.List.of(strings.map(s => s.chars()
+      .mapToObj(c => Conway(c == '#'))
+      .collect(Collectors.toList[Conway]))
+      .asJava)))
+    var curr = in
+    Range(0, 6)
+      .foreach(i => {
+        if (debug) {
+          println(s"iteration: $i.")
+          logHyperCube(curr)
+        }
+        curr = curr.expandOneStep(Conway(_))
+        curr = curr.map((c, p) => c.cycle(curr.getSurroundingTiles(p).asScala))
+      })
+    curr.sum(c => if (c.active) 1 else 0)
+  }
+
   private def logCube(next: CubeGrid[Day17.Conway]): Unit = {
     for (z <- Range(0, next.depth())) {
       println(s"- z=$z")
@@ -38,14 +56,12 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
+  private def logHyperCube(next: HyperCubeGrid[Day17.Conway]): Unit = {
+    for (w <- Range(0, next.metaDepth()); z <- Range(0, next.depth())) {
+      println(s"- w=$w z=$z")
+      println(LogUtils.tiles(next.getRaw.get(w).get(z)))
+    }
   }
-
-  def generator(point: Point3D): Conway = {
-    Conway(false)
-  }
-
 
   case class Conway(active: Boolean) extends Loggable {
     def cycle(neighbors: Iterable[Conway]): Conway = {
@@ -59,6 +75,8 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
   object Conway {
     def apply(point: Point3D): Conway = Conway(false)
+
+    def apply(point: TimePoint): Conway = Conway(false)
   }
 
 }

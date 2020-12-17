@@ -1,6 +1,7 @@
 package krabban91.kodvent.kodvent.utilities;
 
 import java.awt.*;
+import java.sql.Time;
 
 public class TimePoint {
 
@@ -16,6 +17,11 @@ public class TimePoint {
         int t = Integer.parseInt(split[3]);
         this.xy = new Point(x,y);
         this.zt = new Point(z,t);
+    }
+
+    public TimePoint(int x,int y,int z,int w){
+        this.xy = new Point(x,y);
+        this.zt = new Point(z,w);
     }
 
     public boolean equals(Object other){
@@ -41,5 +47,19 @@ public class TimePoint {
     public Point getZt() {
         return zt;
     }
+
+    public int getX() {
+        return xy.x;
+    }
+    public int getY() {
+        return xy.y;
+    }
+    public int getZ() {
+        return zt.x;
+    }
+    public int getW() {
+        return zt.y;
+    }
+
 
 }
