@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day18 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = strings.map(Expression.part1).map(_.evaluate).sum
 
   override def part2(strings: Seq[String]): Long = strings.map(Expression.part2).map(_.evaluate).sum
