@@ -36,4 +36,15 @@ class Day18Spec extends AnyFlatSpec with Matchers {
     val expression = Day18.Expression.part2("2 * 4 + 2 + ((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6)")
     expression.evaluate shouldEqual 23340
   }
+
+  "Expression reconstruction" should "be the same" in {
+    val e1 = "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"
+    Day18.Expression.part1(e1).reconstruct shouldEqual e1
+    Day18.Expression.part2(e1).reconstruct shouldEqual e1
+    Day18.Expression.part2(Day18.Expression.part1(e1).reconstruct).reconstruct shouldEqual e1
+    val e2 = "2 * 4 + 2 + ((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6)"
+    Day18.Expression.part1(e2).reconstruct shouldEqual e2
+    Day18.Expression.part2(e2).reconstruct shouldEqual e2
+    Day18.Expression.part2(Day18.Expression.part1(e2).reconstruct).reconstruct shouldEqual e2
+  }
 }
