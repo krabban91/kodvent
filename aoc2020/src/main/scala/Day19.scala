@@ -14,7 +14,13 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
     messages.count(s => ruleMap(0).fits(s, ruleMap))
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val (ruleMap, messages) = initialData(strings)
+    val editable = mutable.Map[Int, Rule]() ++ ruleMap
+    editable(8) = Rule("8: 42 | 42 8")
+    editable(11) = Rule("11: 42 31 | 42 11 31")
+    messages.count(s => ruleMap(0).fits(s, editable.toMap))
+  }
 
   def initialData(strings: Seq[String]): (Map[Int, Rule], Seq[String]) = {
     val spl = groupsSeparatedByTwoNewlines(strings)
