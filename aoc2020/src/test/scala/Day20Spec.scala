@@ -9,10 +9,10 @@ class Day20Spec extends AnyFlatSpec with Matchers {
     Day20.part1Result shouldEqual 14986175499719L
   }
   "Part2 Test" should "be correct" in {
-    Day20.part2TestResult shouldEqual -1
+    Day20.part2TestResult shouldEqual 273
   }
   "Part2" should "be correct" in {
-    Day20.part2Result shouldEqual -1
+    Day20.part2Result shouldEqual 2161
   }
 
   "Tiles" should "modify correctly" in {
@@ -34,6 +34,18 @@ class Day20Spec extends AnyFlatSpec with Matchers {
     val origTile = Day20.Tile("Tile 1951:\n#.##...##.\n#.####...#\n.....#..##\n#...######\n.##.#....#\n.###.#####\n###.##.##.\n.###....#.\n..#.#..#.#\n#...##.#..".split("\n"))
     origTile.fitsToTheBottom(origTile.flipVertically) shouldEqual true
     origTile.fitsToTheRight(origTile.flipHorizontally) shouldEqual true
+  }
+
+  "Seamonsters" should "be found" in {
+    val seaMonster = Day20.Tile(Day20.read("day20$_seamonster.txt"))
+    val image = Day20.Tile(Day20.read("test/day20$_joined.txt"))
+    println(seaMonster)
+    val res = image.permutations.find(i => {
+      val tile = i.sweepSeaMonster(seaMonster)
+      tile != i
+    }).map(_.sweepSeaMonster(seaMonster)).get
+    res.grid.sum(v => if (v.v == '#') 1 else 0) shouldEqual 273
+
   }
 }
 

@@ -21,7 +21,12 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val image = Tile.fromTiles(matchTiles(initialData(strings)).get)
+    val seaMonster = Day20.Tile(Day20.read("day20$_seamonster.txt"))
+    image.permutations
+      .find(i => i.sweepSeaMonster(seaMonster) != i)
+      .map(_.sweepSeaMonster(seaMonster))
+      .get.grid.sum(_.roughness)
   }
 
   def initialData(strings: Seq[String]): Seq[Tile] = {
@@ -71,10 +76,36 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
     def permutations: Set[Tile] = this.rotations.flatMap(_.flips)
 
     override def toString: String = s"Tile $id: \n${LogUtils.tiles(grid)}"
+
+    def sweepSeaMonster(seaMonster: Tile): Tile = {
+      var output = this
+      val smHeight = seaMonster.grid.height()
+      val smWidth = seaMonster.grid.width()
+      for (y <- Range(0, this.grid.height() - smHeight); x <- Range(0, this.grid.width() - smWidth)) {
+        if (Range(0, smHeight).forall(dy => Range(0, smWidth).forall(dx => {
+          val mask = seaMonster.grid.get(dx, dy).get.v
+          val loc = output.grid.get(x + dx, y + dy).get.v
+          mask == '.' || loc == 'O' || loc == '#'
+        }))) {
+          output = Tile(id, output.grid.map((m, p) => {
+            if (p.x >= x && p.x <= x + smWidth && p.y >= y && p.y <= y + smHeight) {
+              seaMonster.grid.get(p.x - x, p.y - y).map(a => {
+                if (a.v == '#')
+                  Mini('O')
+                else m
+              }).orElse(m)
+            } else m
+          }))
+        }
+      }
+      output
+    }
   }
 
   case class Mini(v: Char) extends Loggable {
     override def showTile(): String = v.toString
+
+    def roughness: Long = if (v == '#') 1 else 0
   }
 
   object Tile {
@@ -86,6 +117,20 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
           .asJava)
         .asJava))
 
+    def fromTiles(tiles: Seq[Tile]): Tile = {
+      val side = math.sqrt(tiles.size).round.toInt
+      val sb = new StringBuilder()
+      sb.append("Tile -1:\n")
+      for (tY <- Range(0, side)) {
+        val tileRow = tiles.slice(tY * side, (tY + 1) * side)
+        for (y <- Range(1, tileRow.head.grid.height() - 1)) {
+          tileRow.foreach(t => sb.append(t.grid.getRaw.get(y).subList(1, t.grid.width() - 1).asScala.map(_.showTile()).reduce((l, r) => l + r)))
+          sb.append("\n")
+        }
+      }
+      Tile(sb.toString().split("\n"))
+    }
+
     def isValidAlignment(alignment: Seq[Tile], side: Int): Boolean = alignment.indices.forall(i => {
       val r = if (i != alignment.size - 1 && i % side != side - 1) {
         alignment(i).fitsToTheRight(alignment(i + 1))
@@ -95,7 +140,6 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
       } else true
       r && d
     })
-
   }
 
 }
