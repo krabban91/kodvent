@@ -43,10 +43,10 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
         val potential = tiles
           .filterNot(t => pop.map(_.id).contains(t.id))
           .flatMap(_.permutations)
+          .filter(t => Tile.fitsAtEnd(pop, t, side))
           .map(t => pop ++ Seq(t))
           .toSet
-        val next = potential.filter(s => Tile.isValidAlignment(s, side))
-        frontier.addAll(next)
+        frontier.addAll(potential)
       }
     }
     valid
@@ -126,15 +126,8 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
       Tile(sb.toString().split("\n"))
     }
 
-    def isValidAlignment(alignment: Seq[Tile], side: Int): Boolean = alignment.indices.forall(i => {
-      val r = if (i != alignment.size - 1 && i % side != side - 1) {
-        alignment(i).fitsToTheRight(alignment(i + 1))
-      } else true
-      val d = if (i + side < alignment.size && i / side != side - 1) {
-        alignment(i).fitsToTheBottom(alignment(i + side))
-      } else true
-      r && d
-    })
+    def fitsAtEnd(current: Seq[Tile], tile: Tile, side: Int): Boolean = ((current.size % side == 0) || current.last.fitsToTheRight(tile)) &&
+      ((current.size - side < 0) || current(current.size - side).fitsToTheBottom(tile))
   }
 
 }
