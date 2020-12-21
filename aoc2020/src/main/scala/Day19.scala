@@ -23,7 +23,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   trait Rule {
-    def fits(string: String, allRules: Map[Int, Rule]): Boolean
+    def fits(string: String, allRules: Map[Int, Rule]): Boolean = this.matching(string, allRules).contains("")
 
     def matching(string: String, allRules: Map[Int, Rule]): Set[String]
 
@@ -31,18 +31,12 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class Exact(id: Int, rule: String) extends Rule {
-
-    override def fits(string: String, allRules: Map[Int, Rule]): Boolean = string == rule
-
     override def matching(string: String, allRules: Map[Int, Rule]): Set[String] = {
       if (string.startsWith(rule)) Set(string.replaceFirst(rule, "")) else Set()
     }
   }
 
-  case class Multiple(id: Int, rules: Seq[Seq[Int]]) extends Rule {
-
-    override def fits(string: String, allRules: Map[Int, Rule]): Boolean = this.matching(string, allRules).contains("")
-
+  case class Nested(id: Int, rules: Seq[Seq[Int]]) extends Rule {
     override def matching(string: String, allRules: Map[Int, Rule]): Set[String] = rules
       .map(l => l.map(allRules(_)))
       .flatMap(r => r.foldLeft(Set(string))((v, r) => v.flatMap(s => r.matching(s, allRules))))
@@ -57,12 +51,10 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
     def apply(string: String): Rule = {
       val id = string.split(":")(0).trim.toInt
-      val ss = string.split(":")(1).trim
-      ss match {
+      string.split(":")(1).trim match {
         case "\"a\"" => Exact(id, "a")
         case "\"b\"" => Exact(id, "b")
-        case _ => Multiple(id, ss.split("\\|")
-          .map(_.trim).map(s => s.split(" ").map(_.toInt).toSeq).toSeq)
+        case v => Nested(id, v.split("\\|").map(_.trim).map(s => s.split(" ").map(_.toInt).toSeq).toSeq)
       }
     }
   }
