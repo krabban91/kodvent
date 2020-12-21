@@ -6,23 +6,23 @@ import scala.collection.mutable
 object Day21 extends App with AoCPart1Test with AoCPart2StringTest {
 
   override def part1(strings: Seq[String]): Long = {
-    val inp = strings.map(Recipe(_)).sortBy(-_.allergens.size)
-    val ingredients = inp.flatMap(_.ingredients).toSet
-    val safeIngredients = inertIngredients(inp, ingredients)
-    inp.map(_.ingredients).map(is => is.count(i => safeIngredients.contains(i))).sum
+    val recipes = strings.map(Recipe(_)).sortBy(-_.allergens.size)
+    val ingredients = recipes.flatMap(_.ingredients).toSet
+    val safeIngredients = inertIngredients(recipes, ingredients)
+    recipes.map(_.ingredients).map(is => is.count(i => safeIngredients.contains(i))).sum
   }
 
   override def part2(strings: Seq[String]): String = {
-    val inp = strings.map(Recipe(_)).sortBy(-_.allergens.size)
-    val safeIngredients = inertIngredients(inp, inp.flatMap(_.ingredients).toSet)
-    val filteredR = inp.map(r => Recipe(r.ingredients.filterNot(safeIngredients.contains), r.allergens))
+    val recipes = strings.map(Recipe(_)).sortBy(-_.allergens.size)
+    val safeIngredients = inertIngredients(recipes, recipes.flatMap(_.ingredients).toSet)
+    val recipesFiltered = recipes.map(r => Recipe(r.ingredients.filterNot(safeIngredients.contains), r.allergens))
 
-    val ingredients = filteredR.flatMap(_.ingredients).toSet
+    val ingredients = recipesFiltered.flatMap(_.ingredients).toSet
     val result = mutable.Map[String, String]()
 
-    var frontier = filteredR.flatMap(_.allergens).toSet[String]
+    var frontier = recipesFiltered.flatMap(_.allergens).toSet[String]
       .map(a => a -> ingredients
-        .filter(i => filteredR
+        .filter(i => recipesFiltered
           .filter(_.allergens.contains(a))
           .forall(_.ingredients.contains(i))))
     while (frontier.nonEmpty) {
