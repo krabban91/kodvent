@@ -18,11 +18,8 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   def initialData(strings: Seq[String]): (Map[Int, Rule], Seq[String]) = {
-    val spl = groupsSeparatedByTwoNewlines(strings)
-    val rules = spl(0).split("\n").filterNot(_.isBlank).map(Rule(_))
-    val messages = spl(1).split("\n").filterNot(_.isBlank)
-    val ruleMap = rules.map(r => r.id -> r).toMap
-    (ruleMap, messages)
+    val input = groupsSeparatedByTwoNewlines(strings)
+    (Rule.map(input.head.split("\n")), input.last.split("\n").filterNot(_.isBlank))
   }
 
   trait Rule {
