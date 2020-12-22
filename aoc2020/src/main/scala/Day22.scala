@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day22 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val result = Option(input(strings)).map(t => combat(t._1, t._2, recursive = false)).map(t => t._1 ++ t._2).get
     result.indices.map(i => (result.size - i) * result(i)).sum
