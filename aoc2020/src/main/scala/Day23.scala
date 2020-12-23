@@ -9,7 +9,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2Test
   printResultPart2
 
-
   override def part1(strings: Seq[String]): Long = {
     val (cups, current) = getCups(strings, strings.head.length)
     val moves = 100
@@ -65,7 +64,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       println(s"current: $current")
       println(s"pick up: $pickedup")
       println(s"destination: $destination")
-
     }
 
     cups(current)
