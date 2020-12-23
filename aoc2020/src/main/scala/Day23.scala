@@ -12,10 +12,10 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString))
-    var cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
+    val cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
     val current = inp.head
     val moves = 100
-    cups = moveCupsNTimes(cups, current, moves)
+    moveCupsNTimes(cups, current, moves)
     val sb = new StringBuilder()
     var i = cups(1)
     while(i != 1){
@@ -27,27 +27,23 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString)) ++ Range(strings.head.length+1,1_000_000+1)
-    var cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
+    val cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
     val current = inp.head
     val moves = 10_000_000
-    cups = moveCupsNTimes(cups, current, moves)
+    moveCupsNTimes(cups, current, moves)
     cups(1).toLong * cups(cups(1))
   }
 
-  def moveCupsNTimes(inputCups: mutable.HashMap[Int, Int], current: Int, moves: Int): mutable.HashMap[Int, Int] = {
-    var cups = inputCups
+  def moveCupsNTimes(cups: mutable.HashMap[Int, Int], current: Int, moves: Int): Unit = {
     var curr = current
     val maxV = cups.values.max
     val minV = cups.values.min
     for (move <- Range(0, moves)) {
-      val res = moveCups(cups, curr, move, minV, maxV)
-      cups = res._1
-      curr = res._2
+      curr = moveCups(cups, curr, move, minV, maxV)
     }
-    cups
   }
 
-  def moveCups(cups: mutable.HashMap[Int, Int], current: Int, move: Int, minV: Int, maxV: Int): (mutable.HashMap[Int, Int], Int) = {
+  def moveCups(cups: mutable.HashMap[Int, Int], current: Int, move: Int, minV: Int, maxV: Int): Int = {
     val debug = false
 
     val pickedup = Seq(cups(current), cups(cups(current)), cups(cups(cups(current))))
@@ -71,6 +67,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
     }
 
-    (cups, cups(current))
+    cups(current)
   }
 }
