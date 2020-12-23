@@ -8,7 +8,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     val N = strings.head.length
     val moves = 100
     val cups = new Cups(strings, N)
-    cups.moveNTimes(moves)
+    cups.move(moves)
     cups.next(strings.head.length - 1, 1)
       .map(_.toString)
       .reduce((l, r) => l + r).toLong
@@ -18,7 +18,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     val N = 1_000_000
     val moves = 10_000_000
     val cups = new Cups(strings, N)
-    cups.moveNTimes(moves)
+    cups.move(moves)
     cups.next(2, 1).product
   }
 
@@ -30,9 +30,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     private var head: Long = inp.head
 
     def apply(i: Long): Long = map(i)
-
-    def moveNTimes(N: Int): Unit = Range(0, N)
-      .foreach(_ => move)
 
     def next(n: Long): Seq[Long] = next(n, head)
 
@@ -53,6 +50,8 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       map.update(destination, pickedup.head)
       head = map(head)
     }
+
+    def move(times: Int): Unit = Range(0, times).foreach(_ => move())
   }
 
 }
