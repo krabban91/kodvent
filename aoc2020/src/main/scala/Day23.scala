@@ -11,14 +11,12 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
 
   override def part1(strings: Seq[String]): Long = {
-    val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString))
-    val cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
-    val current = inp.head
+    val (cups, current) = getCups(strings, strings.head.length)
     val moves = 100
     moveCupsNTimes(cups, current, moves)
     val sb = new StringBuilder()
     var i = cups(1)
-    while(i != 1){
+    while (i != 1) {
       sb.append(i)
       i = cups(i)
     }
@@ -26,12 +24,15 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString)) ++ Range(strings.head.length+1,1_000_000+1)
-    val cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
-    val current = inp.head
+    val (cups, current) = getCups(strings, 1_000_000)
     val moves = 10_000_000
     moveCupsNTimes(cups, current, moves)
     cups(1).toLong * cups(cups(1))
+  }
+
+  def getCups(strings: Seq[String], size: Int): (mutable.HashMap[Int, Int], Int) = {
+    val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString)) ++ Range(strings.head.length + 1, size + 1)
+    (mutable.HashMap() ++ inp.indices.map(i => inp(i) -> inp((i + 1) % inp.size)).toMap, inp.head)
   }
 
   def moveCupsNTimes(cups: mutable.HashMap[Int, Int], current: Int, moves: Int): Unit = {
@@ -48,7 +49,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
     val pickedup = Seq(cups(current), cups(cups(current)), cups(cups(cups(current))))
     cups.update(current, cups(cups(cups(cups(current)))))
-    var destination = current -1
+    var destination = current - 1
     while (pickedup.contains(destination) || destination < minV) {
       destination -= 1
       if (destination < minV) {
