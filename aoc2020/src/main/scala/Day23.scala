@@ -1,5 +1,7 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
+import scala.collection.mutable
+
 object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   printResultPart1Test
@@ -9,38 +11,43 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
 
   override def part1(strings: Seq[String]): Long = {
-    var cups: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString))
-    var current = cups.head
+    val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString))
+    var cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
+    var current = inp.head
     val moves = 100
-    val maxV = cups.max
-    val minV = cups.min
+    val maxV = cups.values.max
+    val minV = cups.values.min
     for (move <- Range(0, moves)) {
       val res = moveCups(cups, current, move, minV, maxV)
       cups = res._1
       current = res._2
     }
-    val i = cups.indexOf(1)
-    val out = cups.indices.map(v => cups((i + v) % cups.size)).tail
-    out.map(_.toString).reduce((l, r) => l + r).toLong
+    val sb = new StringBuilder()
+    var i = cups(1)
+    while(i != 1){
+      sb.append(i)
+      i = cups(i)
+    }
+    sb.toString().toLong
   }
 
   override def part2(strings: Seq[String]): Long = -1
 
-  def moveCups(cups: Seq[Int], current: Int, move: Int, minV: Int, maxV: Int): (Seq[Int], Int) = {
-
+  def moveCups(cups: mutable.HashMap[Int, Int], current: Int, move: Int, minV: Int, maxV: Int): (mutable.HashMap[Int, Int], Int) = {
     val debug = false
-    val pickedup = Range(0, 3).map(v => cups((cups.indexOf(current) + 1 + v) % cups.size))
 
-    val next = cups.filterNot(c => pickedup.contains(c))
-    var destination = current
-    var dIndex = -1
-    do {
-      destination = (destination - 1)
+    val pickedup = Seq(cups(current), cups(cups(current)), cups(cups(cups(current))))
+    cups.update(current, cups(cups(cups(cups(current)))))
+    var destination = current -1
+    while (pickedup.contains(destination) || destination < minV) {
+      destination -= 1
       if (destination < minV) {
         destination = maxV
       }
-      dIndex = next.indexOf(destination)
-    } while (dIndex < 0)
+    }
+    cups.update(pickedup(2), cups(destination))
+    cups.update(destination, pickedup(0))
+
     if (debug) {
       println(s"-- move ${move + 1} --")
       println(s"cups: $cups")
@@ -49,8 +56,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       println(s"destination: $destination")
 
     }
-    val res = next.slice(0, dIndex + 1) ++ pickedup ++ next.slice(dIndex + 1, next.size)
-    (res,
-      res((res.indexOf(current) + 1) % res.size))
+
+    (cups, cups(current))
   }
 }
