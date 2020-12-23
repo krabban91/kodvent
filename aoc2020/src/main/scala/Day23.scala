@@ -5,21 +5,17 @@ import scala.collection.mutable
 object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
-    val (cups, current) = getCups(strings, strings.head.length)
+    val N = strings.head.length
     val moves = 100
+    val (cups, current) = getCups(strings, N)
     moveCupsNTimes(cups, current, moves)
-    val sb = new StringBuilder()
-    var i = cups(1)
-    while (i != 1) {
-      sb.append(i)
-      i = cups(i)
-    }
-    sb.toString().toLong
+    Range(1, strings.head.length).foldLeft(("", cups(1)))((t, _) => (s"${t._1}${t._2}", cups(t._2)))._1.toLong
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val (cups, current) = getCups(strings, 1_000_000)
+    val N = 1_000_000
     val moves = 10_000_000
+    val (cups, current) = getCups(strings, N)
     moveCupsNTimes(cups, current, moves)
     cups(1).toLong * cups(cups(1))
   }
