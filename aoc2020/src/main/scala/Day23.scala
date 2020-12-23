@@ -31,7 +31,20 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     sb.toString().toLong
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val inp: Seq[Int] = strings.head.map(c => Integer.parseInt(c.toString)) ++ Range(strings.head.length+1,1_000_000+1)
+    var cups = mutable.HashMap() ++ inp.indices.map(i=> inp(i) -> inp((i+1)%inp.size)).toMap
+    var current = inp.head
+    val moves = 10_000_000
+    val maxV = cups.values.max
+    val minV = cups.values.min
+    for (move <- Range(0, moves)) {
+      val res = moveCups(cups, current, move, minV, maxV)
+      cups = res._1
+      current = res._2
+    }
+    cups(1).toLong * cups(cups(1))
+  }
 
   def moveCups(cups: mutable.HashMap[Int, Int], current: Int, move: Int, minV: Int, maxV: Int): (mutable.HashMap[Int, Int], Int) = {
     val debug = false
