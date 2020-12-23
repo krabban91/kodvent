@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (cups, current) = getCups(strings, strings.head.length)
     val moves = 100
@@ -44,8 +39,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   def moveCups(cups: mutable.HashMap[Int, Int], current: Int, move: Int, minV: Int, maxV: Int): Int = {
-    val debug = false
-
     val pickedup = Seq(cups(current), cups(cups(current)), cups(cups(cups(current))))
     cups.update(current, cups(cups(cups(cups(current)))))
     var destination = current - 1
@@ -57,15 +50,6 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     }
     cups.update(pickedup(2), cups(destination))
     cups.update(destination, pickedup(0))
-
-    if (debug) {
-      println(s"-- move ${move + 1} --")
-      println(s"cups: $cups")
-      println(s"current: $current")
-      println(s"pick up: $pickedup")
-      println(s"destination: $destination")
-    }
-
     cups(current)
   }
 }
