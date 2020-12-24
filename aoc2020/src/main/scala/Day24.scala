@@ -6,11 +6,6 @@ import scala.collection.mutable
 
 object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val floor: mutable.Map[Point, HexTile] = createFloor(strings)
     floor.values.count(v => v.black)
