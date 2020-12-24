@@ -61,32 +61,28 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       .map(d => new Point(point.x + d.x, point.y + d.y)).toSeq
   }
 
+
   object HexTile {
-    def apply(string: String): HexTile = {
-      var iter = string
-      val l = mutable.ListBuffer[String]()
-      while (!iter.isBlank) {
-        if (iter.startsWith("se")) {
-          l.addOne("se")
-          iter = iter.replaceFirst("se", "")
-        } else if (iter.startsWith("e")) {
-          l.addOne("e")
-          iter = iter.replaceFirst("e", "")
-        } else if (iter.startsWith("ne")) {
-          l.addOne("ne")
-          iter = iter.replaceFirst("ne", "")
-        } else if (iter.startsWith("sw")) {
-          l.addOne("sw")
-          iter = iter.replaceFirst("sw", "")
-        } else if (iter.startsWith("w")) {
-          l.addOne("w")
-          iter = iter.replaceFirst("w", "")
-        } else if (iter.startsWith("nw")) {
-          l.addOne("nw")
-          iter = iter.replaceFirst("nw", "")
-        }
+
+    object +: {
+      def unapply(s: String): Option[(Char, String)] = s.headOption.map(c => (c, s.tail))
+    }
+
+    @scala.annotation.tailrec
+    def rec(string: String, l: Seq[String]): Seq[String] = {
+      string match {
+        case 's' +: 'e' +: t => rec(t, l ++ Seq("se"))
+        case 's' +: 'w' +: t => rec(t, l ++ Seq("sw"))
+        case 'n' +: 'e' +: t => rec(t, l ++ Seq("ne"))
+        case 'n' +: 'w' +: t => rec(t, l ++ Seq("nw"))
+        case 'e' +: t => rec(t, l ++ Seq("e"))
+        case 'w' +: t => rec(t, l ++ Seq("w"))
+        case _ => l
       }
-      l.foldLeft(HexTile(new Point(0, 0), black = false))((v, s) => v.move(s))
+    }
+
+    def apply(string: String): HexTile = {
+      rec(string, Seq()).foldLeft(HexTile(new Point(0, 0), black = false))((v, s) => v.move(s))
     }
   }
 
