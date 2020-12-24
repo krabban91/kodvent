@@ -12,85 +12,62 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val inp = strings.map(TileMove(_))
-    val map = mutable.Map[Point, Boolean]()
-    inp.foreach(p => map(p.destination(new Point(0, 0))) = !map.getOrElse(p.destination(new Point(0, 0)), false))
-    map.values.count(v => v)
+    val floor: mutable.Map[Point, HexTile] = createFloor(strings)
+    floor.values.count(v => v.black)
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val inp = strings.map(TileMove(_))
-    var map = mutable.Map[Point, Boolean]()
-    inp.foreach(p => map(p.destination(new Point(0, 0))) = !map.getOrElse(p.destination(new Point(0, 0)), false))
+    var floor: mutable.Map[Point, HexTile] = createFloor(strings)
     for (day <- Range(0, 100)) {
-      val next = map.clone()
-      val minX = next.filter(t => t._2).map(_._1.x).min
-      val minY = next.filter(t => t._2).map(_._1.y).min
-      val maxX = next.filter(t => t._2).map(_._1.x).max
-      val maxY = next.filter(t => t._2).map(_._1.y).max
-      for (x <- Range(minX - 2, maxX + 2); y <- Range(minY - 2, maxY + 2)) {
+      val next = floor.clone()
+      val minX = next.filter(t => t._2.black).map(_._1.x).min
+      val minY = next.filter(t => t._2.black).map(_._1.y).min
+      val maxX = next.filter(t => t._2.black).map(_._1.x).max
+      val maxY = next.filter(t => t._2.black).map(_._1.y).max
+      Range(minX - 2, maxX + 2).foreach(x => Range(minY - 2, maxY + 2).foreach(y => {
         val p = new Point(x, y)
-        val curr = map.getOrElse(p, false)
-        val neighbors = TileMove.adjacent(p)
-        val count = neighbors.flatMap(v => map.get(v)).map(v => if (v) 1 else 0).sum
-        if (curr) {
-          next(p) = count == 1 || count == 2
-        } else {
-          next(p) = count == 2
-        }
-      }
-      map = next
+        val current = floor.getOrElse(p, HexTile(p, black = false))
+        val neighbors = current.neighbors.flatMap(v => floor.get(v))
+        next(p) = current.conway(neighbors)
+      }))
+      floor = next
     }
-    map.values.count(v => v)
+    floor.values.count(v => v.black)
   }
 
-  case class TileMove(moves: Seq[String]) {
+  private def createFloor(strings: Seq[String]): mutable.Map[Point, HexTile] = {
+    val floor = mutable.Map[Point, HexTile]()
+    strings.map(HexTile(_)).foreach(p => floor(p.point) = floor.getOrElse(p.point, HexTile(p.point, black = false)).toggle)
+    floor
+  }
 
-    def move(direction: String, from: Point): Point = {
-      direction match {
-        case "se" =>
-          if (from.x % 2 == 0) {
-            new Point(from.x + 1, from.y + 1)
-          } else {
-            new Point(from.x + 1, from.y)
-          }
-        case "e" =>
-          new Point(from.x + 2, from.y)
-        case "ne" =>
-          if (from.x % 2 == 0) {
-            new Point(from.x + 1, from.y)
-          } else {
-            new Point(from.x + 1, from.y - 1)
-          }
-        case "nw" =>
-          if (from.x % 2 == 0) {
-            new Point(from.x - 1, from.y)
-          } else {
-            new Point(from.x - 1, from.y - 1)
-          }
-        case "w" =>
-          new Point(from.x - 2, from.y)
+  case class HexTile(point: Point, black: Boolean) {
+    private val evens = Map("se" -> new Point(1, 1), "e" -> new Point(2, 0), "ne" -> new Point(1, 0), "nw" -> new Point(-1, 0), "w" -> new Point(-2, 0), "sw" -> new Point(-1, 1))
+    private val odds = Map("se" -> new Point(1, 0), "e" -> new Point(2, 0), "ne" -> new Point(1, -1), "nw" -> new Point(-1, -1), "w" -> new Point(-2, 0), "sw" -> new Point(-1, 0))
 
-        case "sw" =>
-          if (from.x % 2 == 0) {
-            new Point(from.x - 1, from.y + 1)
-          } else {
-            new Point(from.x - 1, from.y)
-          }
-        case _ => println("bad direction")
-          from
+    def move(direction: String): HexTile = {
+      val dirs = if (point.x % 2 == 0) evens else odds
+      val delta = dirs(direction)
+      HexTile(new Point(point.x + delta.x, point.y + delta.y), black)
+    }
+
+    def toggle: HexTile = HexTile(point, !black)
+
+    def conway(neighbors: Seq[HexTile]): HexTile = {
+      val count = neighbors.map(v => if (v.black) 1 else 0).sum
+      if (black) {
+        HexTile(point, count == 1 || count == 2)
+      } else {
+        HexTile(point, count == 2)
       }
     }
 
-    def destination(from: Point): Point = {
-      var p = from
-      moves.foreach(v => p = move(v, p))
-      p
-    }
+    def neighbors: Seq[Point] = (if (point.x % 2 == 0) evens.values else odds.values)
+      .map(d => new Point(point.x + d.x, point.y + d.y)).toSeq
   }
 
-  object TileMove {
-    def apply(string: String): TileMove = {
+  object HexTile {
+    def apply(string: String): HexTile = {
       var iter = string
       val l = mutable.ListBuffer[String]()
       while (!iter.isBlank) {
@@ -114,16 +91,7 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
           iter = iter.replaceFirst("nw", "")
         }
       }
-      TileMove(l.toSeq)
-    }
-
-    def adjacent(point: Point): Seq[Point] = {
-      val delta = if (point.x % 2 == 0) {
-        Seq(new Point(1, 1), new Point(2, 0), new Point(1, 0), new Point(-1, 0), new Point(-2, 0), new Point(-1, 1))
-      } else {
-        Seq(new Point(1, 0), new Point(2, 0), new Point(1, -1), new Point(-1, -1), new Point(-2, 0), new Point(-1, 0))
-      }
-      delta.map(d => new Point(point.x + d.x, point.y + d.y))
+      l.foldLeft(HexTile(new Point(0, 0), black = false))((v, s) => v.move(s))
     }
   }
 
