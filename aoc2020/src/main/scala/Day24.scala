@@ -18,7 +18,31 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
     map.values.count(v => v)
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val inp = strings.map(TileMove(_))
+    var map = mutable.Map[Point, Boolean]()
+    inp.foreach(p => map(p.destination(new Point(0, 0))) = !map.getOrElse(p.destination(new Point(0, 0)), false))
+    for (day <- Range(0, 100)) {
+      val next = map.clone()
+      val minX = next.filter(t => t._2).map(_._1.x).min
+      val minY = next.filter(t => t._2).map(_._1.y).min
+      val maxX = next.filter(t => t._2).map(_._1.x).max
+      val maxY = next.filter(t => t._2).map(_._1.y).max
+      for (x <- Range(minX - 2, maxX + 2); y <- Range(minY - 2, maxY + 2)) {
+        val p = new Point(x, y)
+        val curr = map.getOrElse(p, false)
+        val neighbors = TileMove.adjacent(p)
+        val count = neighbors.flatMap(v => map.get(v)).map(v => if (v) 1 else 0).sum
+        if (curr) {
+          next(p) = count == 1 || count == 2
+        } else {
+          next(p) = count == 2
+        }
+      }
+      map = next
+    }
+    map.values.count(v => v)
+  }
 
   case class TileMove(moves: Seq[String]) {
 
@@ -91,6 +115,15 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
         }
       }
       TileMove(l.toSeq)
+    }
+
+    def adjacent(point: Point): Seq[Point] = {
+      val delta = if (point.x % 2 == 0) {
+        Seq(new Point(1, 1), new Point(2, 0), new Point(1, 0), new Point(-1, 0), new Point(-2, 0), new Point(-1, 1))
+      } else {
+        Seq(new Point(1, 0), new Point(2, 0), new Point(1, -1), new Point(-1, -1), new Point(-2, 0), new Point(-1, 0))
+      }
+      delta.map(d => new Point(point.x + d.x, point.y + d.y))
     }
   }
 
