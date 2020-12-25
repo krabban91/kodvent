@@ -14,9 +14,11 @@ trait Timed {
     for (t <- Range(0,times)){
       val start = System.nanoTime()
       val result = method
-      totalTime += System.nanoTime() - start
+      val time = System.nanoTime() - start
+      totalTime += time
+      println(s"Run ${t+1}, Result: $result, time: ${time * 1e-9}s")
     }
-    println(s"Times: $times, \t avg time: ${totalTime/times}")
+    println(s"Times: $times, \t avg time: ${(totalTime/times) * 1e-9}}")
   }
 
 }
