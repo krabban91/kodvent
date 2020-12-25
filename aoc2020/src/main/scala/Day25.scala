@@ -2,9 +2,6 @@ import aoc.numeric.AoCPart1Test
 
 object Day25 extends App with AoCPart1Test {
 
-  printResultPart1Test
-  printResultPart1
-
   /**
    * cardPublicKey = pow(7, cardLoopsize) mod 20201227
    * doorPublicKey = pow(7, doorLoopsize) mod 20201227
