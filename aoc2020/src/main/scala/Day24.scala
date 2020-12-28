@@ -8,46 +8,43 @@ import scala.jdk.CollectionConverters._
 
 object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(strings: Seq[String]): Long = {
-    val floor: HexGrid[HexTile] = createFloor(strings)
-    floor.sum(v => if (v.black) 1 else 0)
-  }
+  override def part1(strings: Seq[String]): Long = createFloor(strings).sum(v => if (v.alive) 1 else 0)
 
   override def part2(strings: Seq[String]): Long = {
-    var floor: HexGrid[HexTile] = createFloor(strings)
+    var floor: HexGrid[Conway] = createFloor(strings)
     Range(0, 100).foreach(day => {
-      floor = floor.shrink((t, _) => t.black).expand(_ => HexTile(black = false), 1)
+      floor = floor.shrink((t, _) => t.alive).expand(_ => Conway(alive = false), 1)
       floor = floor.map((ht, point) => ht.conway(floor.getSurroundingTiles(point).asScala.toSeq))
     })
-    floor.sum(v => if (v.black) 1 else 0)
+    floor.sum(v => if (v.alive) 1 else 0)
   }
 
-  private def createFloor(strings: Seq[String]): HexGrid[HexTile] = {
-    val floor = mutable.Map[Point, HexTile]()
-    strings.map(Point(_)).foreach(p => floor(p) = floor.getOrElse(p, HexTile(black = false)).toggle)
-    val minQ = floor.filter(t => t._2.black).map(_._1.x).min
-    val minR = floor.filter(t => t._2.black).map(_._1.y).min
-    val maxQ = floor.filter(t => t._2.black).map(_._1.x).max
-    val maxR = floor.filter(t => t._2.black).map(_._1.y).max
-    val value = new HexGrid[HexTile](Range(minR, maxR + 1).map(y => Range(minQ, maxQ + 1).map(x => floor.getOrElse(new Point(x, y), HexTile(black = false))).asJava).asJava)
+  private def createFloor(strings: Seq[String]): HexGrid[Conway] = {
+    val floor = mutable.Map[Point, Conway]()
+    strings.map(HexPoint(_)).foreach(p => floor(p) = floor.getOrElse(p, Conway(alive = false)).toggle)
+    val minQ = floor.filter(t => t._2.alive).map(_._1.x).min
+    val minR = floor.filter(t => t._2.alive).map(_._1.y).min
+    val maxQ = floor.filter(t => t._2.alive).map(_._1.x).max
+    val maxR = floor.filter(t => t._2.alive).map(_._1.y).max
+    val value = new HexGrid[Conway](Range(minR, maxR + 1).map(y => Range(minQ, maxQ + 1).map(x => floor.getOrElse(new Point(x, y), Conway(alive = false))).asJava).asJava)
     value
   }
 
-  case class HexTile(black: Boolean) {
+  case class Conway(alive: Boolean) {
 
-    def toggle: HexTile = HexTile(!black)
+    def toggle: Conway = Conway(!alive)
 
-    def conway(neighbors: Seq[HexTile]): HexTile = {
-      val count = neighbors.map(v => if (v.black) 1 else 0).sum
-      if (black) {
-        HexTile(count == 1 || count == 2)
+    def conway(neighbors: Seq[Conway]): Conway = {
+      val count = neighbors.map(v => if (v.alive) 1 else 0).sum
+      if (alive) {
+        Conway(count == 1 || count == 2)
       } else {
-        HexTile(count == 2)
+        Conway(count == 2)
       }
     }
   }
 
-  object Point {
+  object HexPoint {
 
     object +: {
       def unapply(s: String): Option[(Char, String)] = s.headOption.map(c => (c, s.tail))
