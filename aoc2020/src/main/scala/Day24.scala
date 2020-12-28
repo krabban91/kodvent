@@ -10,14 +10,10 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = createFloor(strings).sum(v => if (v.alive) 1 else 0)
 
-  override def part2(strings: Seq[String]): Long = {
-    var floor: HexGrid[Conway] = createFloor(strings)
-    Range(0, 100).foreach(day => {
-      floor = floor.shrink((t, _) => t.alive).expand(_ => Conway(alive = false), 1)
-      floor = floor.map((ht, point) => ht.conway(floor.getSurroundingTiles(point).asScala.toSeq))
-    })
-    floor.sum(v => if (v.alive) 1 else 0)
-  }
+  override def part2(strings: Seq[String]): Long = Range(0, 100).foldLeft(createFloor(strings))((prev, _) => {
+    val floor = prev.shrink((t, _) => t.alive).expand(_ => Conway(alive = false), 1)
+    floor.map((ht, point) => ht.conway(floor.getSurroundingTiles(point).asScala.toSeq))
+  }).sum(v => if (v.alive) 1 else 0)
 
   private def createFloor(strings: Seq[String]): HexGrid[Conway] = {
     val floor = mutable.Map[Point, Conway]()
