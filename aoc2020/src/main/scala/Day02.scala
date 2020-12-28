@@ -3,18 +3,11 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(input: Seq[String]): Long = input
-    .map(Input(_))
-    .map(in => {
-      val count = in.pwd.count(_.equals(in.char))
-      count >= in.min && count <= in.max
-    })
-    .count(b => b)
+  override def part1(input: Seq[String]): Long = input.map(Input(_))
+    .count(in => in.pwd.count(_.equals(in.char)) >= in.min && in.pwd.count(_.equals(in.char)) <= in.max)
 
-  override def part2(input: Seq[String]): Long = input
-    .map(Input(_))
-    .map(in => in.pwd(in.min - 1).equals(in.char) ^ in.pwd(in.max - 1).equals(in.char))
-    .count(b => b)
+  override def part2(input: Seq[String]): Long = input.map(Input(_))
+    .count(in => in.pwd(in.min - 1).equals(in.char) ^ in.pwd(in.max - 1).equals(in.char))
 
   case class Input(pwd: String, min: Int, max: Int, char: Char)
 
