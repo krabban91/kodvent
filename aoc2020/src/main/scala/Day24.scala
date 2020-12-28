@@ -1,66 +1,53 @@
 import java.awt.Point
 
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
+import krabban91.kodvent.kodvent.utilities.grid.HexGrid
 
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
-    val floor: mutable.Map[Point, HexTile] = createFloor(strings)
-    floor.values.count(v => v.black)
+    val floor: HexGrid[HexTile] = createFloor(strings)
+    floor.sum(v => if (v.black) 1 else 0)
   }
 
   override def part2(strings: Seq[String]): Long = {
-    var floor: mutable.Map[Point, HexTile] = createFloor(strings)
-    for (day <- Range(0, 100)) {
-      val next = floor.clone()
-      val minX = next.filter(t => t._2.black).map(_._1.x).min
-      val minY = next.filter(t => t._2.black).map(_._1.y).min
-      val maxX = next.filter(t => t._2.black).map(_._1.x).max
-      val maxY = next.filter(t => t._2.black).map(_._1.y).max
-      Range(minX - 1, maxX + 2).foreach(x => Range(minY - 1, maxY + 2).foreach(y => {
-        val p = new Point(x, y)
-        val current = floor.getOrElse(p, HexTile(p, black = false))
-        val neighbors = current.neighbors.flatMap(v => floor.get(v))
-        next(p) = current.conway(neighbors)
-      }))
-      floor = next
-    }
-    floor.values.count(v => v.black)
+    var floor: HexGrid[HexTile] = createFloor(strings)
+    Range(0, 100).foreach(day => {
+      floor = floor.shrink((t, _) => t.black).expand(_ => HexTile(black = false), 1)
+      floor = floor.map((ht, point) => ht.conway(floor.getSurroundingTiles(point).asScala.toSeq))
+    })
+    floor.sum(v => if (v.black) 1 else 0)
   }
 
-  private def createFloor(strings: Seq[String]): mutable.Map[Point, HexTile] = {
+  private def createFloor(strings: Seq[String]): HexGrid[HexTile] = {
     val floor = mutable.Map[Point, HexTile]()
-    strings.map(HexTile(_)).foreach(p => floor(p.point) = floor.getOrElse(p.point, HexTile(p.point, black = false)).toggle)
-    floor
+    strings.map(Point(_)).foreach(p => floor(p) = floor.getOrElse(p, HexTile(black = false)).toggle)
+    val minQ = floor.filter(t => t._2.black).map(_._1.x).min
+    val minR = floor.filter(t => t._2.black).map(_._1.y).min
+    val maxQ = floor.filter(t => t._2.black).map(_._1.x).max
+    val maxR = floor.filter(t => t._2.black).map(_._1.y).max
+    val value = new HexGrid[HexTile](Range(minR, maxR + 1).map(y => Range(minQ, maxQ + 1).map(x => floor.getOrElse(new Point(x, y), HexTile(black = false))).asJava).asJava)
+    value
   }
 
-  case class HexTile(point: Point, black: Boolean) {
-    private val directions = Map("se" -> new Point(0, 1), "e" -> new Point(1, 0), "ne" -> new Point(1, -1), "nw" -> new Point(0, -1), "w" -> new Point(-1, 0), "sw" -> new Point(-1, 1))
+  case class HexTile(black: Boolean) {
 
-    def move(direction: String): HexTile = {
-      val delta = directions(direction)
-      HexTile(new Point(point.x + delta.x, point.y + delta.y), black)
-    }
-
-    def toggle: HexTile = HexTile(point, !black)
+    def toggle: HexTile = HexTile(!black)
 
     def conway(neighbors: Seq[HexTile]): HexTile = {
       val count = neighbors.map(v => if (v.black) 1 else 0).sum
       if (black) {
-        HexTile(point, count == 1 || count == 2)
+        HexTile(count == 1 || count == 2)
       } else {
-        HexTile(point, count == 2)
+        HexTile(count == 2)
       }
     }
-
-    def neighbors: Seq[Point] = directions.values
-      .map(d => new Point(point.x + d.x, point.y + d.y)).toSeq
   }
 
-
-  object HexTile {
+  object Point {
 
     object +: {
       def unapply(s: String): Option[(Char, String)] = s.headOption.map(c => (c, s.tail))
@@ -79,8 +66,8 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       }
     }
 
-    def apply(string: String): HexTile = {
-      rec(string, Seq()).foldLeft(HexTile(new Point(0, 0), black = false))((v, s) => v.move(s))
+    def apply(string: String): Point = {
+      rec(string, Seq()).foldLeft(new Point(0, 0))((v, s) => HexGrid.move(s, v))
     }
   }
 

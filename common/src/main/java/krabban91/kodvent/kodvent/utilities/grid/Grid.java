@@ -128,6 +128,63 @@ public class Grid<V> {
         return this.raw.stream().mapToLong(l -> l.stream().mapToLong(valueMethod).sum()).sum();
     }
 
+    public Optional<Point> minX(BiPredicate<V, Point> predicate) {
+        return IntStream.range(0, height())
+                .mapToObj(y -> IntStream
+                        .range(0, width())
+                        .mapToObj(x -> new Point(x, y))
+                        .filter(p -> this.get(p).map(v -> predicate.test(v, p)).orElse(false))
+                        .min(Comparator.comparingInt(v -> v.x))
+                ).flatMap(Optional::stream).min(Comparator.comparingInt(v -> v.x));
+    }
+
+    public Optional<Point> minY(BiPredicate<V, Point> predicate) {
+        return IntStream.range(0, height())
+                .mapToObj(y -> IntStream
+                        .range(0, width())
+                        .mapToObj(x -> new Point(x, y))
+                        .filter(p -> this.get(p).map(v -> predicate.test(v, p)).orElse(false))
+                        .min(Comparator.comparingInt(v -> v.y))
+                ).flatMap(Optional::stream).min(Comparator.comparingInt(v -> v.y));
+    }
+
+    public Optional<Point> maxX(BiPredicate<V, Point> predicate) {
+        return IntStream.range(0, height())
+                .mapToObj(y -> IntStream
+                        .range(0, width())
+                        .mapToObj(x -> new Point(x, y))
+                        .filter(p -> this.get(p).map(v -> predicate.test(v, p)).orElse(false))
+                        .max(Comparator.comparingInt(v -> v.x))
+                ).flatMap(Optional::stream).max(Comparator.comparingInt(v -> v.x));
+    }
+
+    public Optional<Point> maxY(BiPredicate<V, Point> predicate) {
+        return IntStream.range(0, height())
+                .mapToObj(y -> IntStream
+                        .range(0, width())
+                        .mapToObj(x -> new Point(x, y))
+                        .filter(p -> this.get(p).map(v -> predicate.test(v, p)).orElse(false))
+                        .max(Comparator.comparingInt(v -> v.y))
+                ).flatMap(Optional::stream).max(Comparator.comparingInt(v -> v.y));
+    }
+
+    public Grid<V> expand(Function<Point, V> generator, int steps) {
+        return new Grid<>(IntStream.range(-steps, raw.size() + steps)
+                .mapToObj(y -> IntStream.range(-steps, raw.get(0).size() + steps)
+                        .mapToObj(x -> this.get(x, y).orElseGet(() -> generator.apply(new Point(x, y))))
+                        .collect(Collectors.toList()))
+                .collect(Collectors.toList()));
+    }
+
+    public Grid<V> shrink(BiPredicate<V, Point> predicate) {
+        Integer minX = minX(predicate).map(p -> p.x).orElse(0);
+        Integer minY = minY(predicate).map(p -> p.y).orElse(0);
+        Integer maxX = maxX(predicate).map(p -> p.x).orElse(0);
+        Integer maxY = maxY(predicate).map(p -> p.y).orElse(0);
+        List<List<V>> collect = this.getRaw().subList(minY, maxY + 1).stream().map(l -> l.subList(minX, maxX + 1)).collect(Collectors.toList());
+        return new Grid<>(collect);
+    }
+
     public Grid<V> clone(Function<V, V> cloneMethod) {
         return new Grid<>(raw.stream()
                 .map(l -> l.stream()
