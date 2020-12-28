@@ -19,7 +19,7 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       val minY = next.filter(t => t._2.black).map(_._1.y).min
       val maxX = next.filter(t => t._2.black).map(_._1.x).max
       val maxY = next.filter(t => t._2.black).map(_._1.y).max
-      Range(minX - 2, maxX + 2).foreach(x => Range(minY - 2, maxY + 2).foreach(y => {
+      Range(minX - 1, maxX + 2).foreach(x => Range(minY - 1, maxY + 2).foreach(y => {
         val p = new Point(x, y)
         val current = floor.getOrElse(p, HexTile(p, black = false))
         val neighbors = current.neighbors.flatMap(v => floor.get(v))
@@ -37,12 +37,10 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class HexTile(point: Point, black: Boolean) {
-    private val evens = Map("se" -> new Point(1, 1), "e" -> new Point(2, 0), "ne" -> new Point(1, 0), "nw" -> new Point(-1, 0), "w" -> new Point(-2, 0), "sw" -> new Point(-1, 1))
-    private val odds = Map("se" -> new Point(1, 0), "e" -> new Point(2, 0), "ne" -> new Point(1, -1), "nw" -> new Point(-1, -1), "w" -> new Point(-2, 0), "sw" -> new Point(-1, 0))
+    private val directions = Map("se" -> new Point(0, 1), "e" -> new Point(1, 0), "ne" -> new Point(1, -1), "nw" -> new Point(0, -1), "w" -> new Point(-1, 0), "sw" -> new Point(-1, 1))
 
     def move(direction: String): HexTile = {
-      val dirs = if (point.x % 2 == 0) evens else odds
-      val delta = dirs(direction)
+      val delta = directions(direction)
       HexTile(new Point(point.x + delta.x, point.y + delta.y), black)
     }
 
@@ -57,7 +55,7 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       }
     }
 
-    def neighbors: Seq[Point] = (if (point.x % 2 == 0) evens.values else odds.values)
+    def neighbors: Seq[Point] = directions.values
       .map(d => new Point(point.x + d.x, point.y + d.y)).toSeq
   }
 
