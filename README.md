@@ -45,5 +45,8 @@ Not many days have been solved.
 ### `scala-common`
 A utility library containing AoC helper functions for parsing input-data and benchmarking.
 
+### aoc2017
+A package setup in beginning of 2021 to learn more scala practices by solving the 2017 puzzles retroactively.
+
 ### aoc2020
 This year I will try to stick to solving the whole year using Scala and running each day using sbt.
