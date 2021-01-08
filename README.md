@@ -38,10 +38,6 @@ will produce a maven dist `kodvent:common`
 
 ## Scala
 
-### 2017
-An attempt to learn the scala syntax before starting working at Recorded Future.
-Not many days have been solved.
-
 ### `scala-common`
 A utility library containing AoC helper functions for parsing input-data and benchmarking.
 
