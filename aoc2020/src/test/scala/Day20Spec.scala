@@ -1,3 +1,4 @@
+import Day20.Tile
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -41,9 +42,9 @@ class Day20Spec extends AnyFlatSpec with Matchers {
     val image = Day20.Tile(Day20.read("test/day20$_joined.txt"))
     println(seaMonster)
     val res = image.permutations.find(i => {
-      val tile = i.sweepSeaMonster(seaMonster)
+      val tile = Tile.sweepSeaMonster(i, seaMonster)
       tile != i
-    }).map(_.sweepSeaMonster(seaMonster)).get
+    }).map(Tile.sweepSeaMonster(_, seaMonster)).get
     res.grid.sum(v => if (v.v == '#') 1 else 0) shouldEqual 273
 
   }

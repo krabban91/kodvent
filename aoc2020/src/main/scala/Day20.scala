@@ -19,8 +19,8 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
     val image = Tile.fromTiles(matchTiles(initialData(strings)).get)
     val seaMonster = Day20.Tile(Day20.read("day20$_seamonster.txt"))
     image.permutations
-      .find(i => i.sweepSeaMonster(seaMonster) != i)
-      .map(_.sweepSeaMonster(seaMonster))
+      .find(i => Tile.sweepSeaMonster(i, seaMonster) != i)
+      .map(Tile.sweepSeaMonster(_, seaMonster))
       .get.grid.sum(_.roughness)
   }
 
@@ -71,30 +71,6 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
     def permutations: Set[Tile] = this.rotations.flatMap(_.flips)
 
     override def toString: String = s"Tile $id: \n${LogUtils.tiles(grid)}"
-
-    def sweepSeaMonster(seaMonster: Tile): Tile = {
-      var output = this
-      val smHeight = seaMonster.grid.height()
-      val smWidth = seaMonster.grid.width()
-      for (y <- Range(0, this.grid.height() - smHeight); x <- Range(0, this.grid.width() - smWidth)) {
-        if (Range(0, smHeight).forall(dy => Range(0, smWidth).forall(dx => {
-          val mask = seaMonster.grid.get(dx, dy).get.v
-          val loc = output.grid.get(x + dx, y + dy).get.v
-          mask == '.' || loc == 'O' || loc == '#'
-        }))) {
-          output = Tile(id, output.grid.map((m, p) => {
-            if (p.x >= x && p.x <= x + smWidth && p.y >= y && p.y <= y + smHeight) {
-              seaMonster.grid.get(p.x - x, p.y - y).map(a => {
-                if (a.v == '#')
-                  Mini('O')
-                else m
-              }).orElse(m)
-            } else m
-          }))
-        }
-      }
-      output
-    }
   }
 
   case class Mini(v: Char) extends Loggable {
@@ -128,6 +104,40 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
 
     def fitsAtEnd(current: Seq[Tile], tile: Tile, side: Int): Boolean = ((current.size % side == 0) || current.last.fitsToTheRight(tile)) &&
       ((current.size - side < 0) || current(current.size - side).fitsToTheBottom(tile))
+
+
+    def sweepSeaMonster(tile: Tile, seaMonster: Tile): Tile = {
+      var output = tile
+      val smHeight = seaMonster.grid.height()
+      val smWidth = seaMonster.grid.width()
+      for (y <- Range(0, tile.grid.height() - smHeight); x <- Range(0, tile.grid.width() - smWidth)) {
+        if (matchingSeaMonster(output, seaMonster, (x, y))) {
+          output = applySeaMonsterMask(output, seaMonster, (x, y))
+        }
+      }
+      output
+    }
+
+    def matchingSeaMonster(tile: Tile, seaMonster: Tile, offset: (Int, Int)): Boolean = {
+      val (x, y) = offset
+      Range(0, seaMonster.grid.height()).forall(dy => Range(0, seaMonster.grid.width()).forall(dx => {
+        val mask = seaMonster.grid.get(dx, dy).get.v
+        mask == '.' || Seq('O', '#').contains(tile.grid.get(x + dx, y + dy).get.v)
+      }))
+    }
+
+    def applySeaMonsterMask(tile: Tile, seaMonster: Tile, offset: (Int, Int)): Tile = {
+      val (x, y) = offset
+      Tile(tile.id, tile.grid.map((m, p) => {
+        if (p.x >= x && p.x <= x + seaMonster.grid.width() && p.y >= y && p.y <= y + seaMonster.grid.height()) {
+          seaMonster.grid.get(p.x - x, p.y - y).map(a => {
+            if (a.v == '#')
+              Mini('O')
+            else m
+          }).orElse(m)
+        } else m
+      }))
+    }
   }
 
 }
