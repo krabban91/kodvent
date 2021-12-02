@@ -25,16 +25,17 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    var aim = 0
-    var loc = new Point(0,0)
-    strings.map(s => s.split(" ")).foreach(a => {
-      a.head match {
-        case "forward" => loc = new Point(loc.x + (a.last.toInt), loc.y + (a.last.toInt * aim))
-        case "down" => aim +=(a.last.toInt)
-        case "backward" => loc = new Point(loc.x - (a.last.toInt), loc.y - (a.last.toInt * aim))
-        case _ => aim -=(a.last.toInt)
-      }
-    })
-    loc.x * loc.y
+    val (end, _) = strings.map(s => s.split(" "))
+      .map(a => (a.head, a.last.toInt))
+      .foldLeft((new Point(), 0))((t, in) => {
+        val (loc, aim) = t
+        in._1 match {
+          case "forward" => (new Point(loc.x + in._2, loc.y + in._2 * aim), aim)
+          case "down" => (loc, aim + in._2)
+          case "backward" => (new Point(loc.x - in._2, loc.y - in._2 * aim), aim)
+          case _ => (loc, aim - in._2)
+        }
+      })
+    end.x * end.y
   }
 }
