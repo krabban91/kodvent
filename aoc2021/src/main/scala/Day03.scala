@@ -13,15 +13,9 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
   override def part1(strings: Seq[String]): Long = {
     val input = strings.map(s => s.toCharArray)
 
-    val out = input.foldLeft(input.head.indices.map(_ => (0, 0)))((res, in) => {
-      val v = ListBuffer[(Int, Int)]()
-      for (i <- res.indices) {
-        v.append((res(i)._1 + (in(i).asDigit), res(i)._2 + math.abs(in(i).asDigit - 1)))
-      }
-      v.toSeq.toIndexedSeq
-    })
-    val gamma = out.map(t => if (t._1 > t._2) "1" else "0").reduce((a, b) => a + b).pipe(Integer.parseInt(_, 2))
-    val epsilon = out.map(t => if (t._1 < t._2) "1" else "0").reduce((a, b) => a + b).pipe(Integer.parseInt(_, 2))
+    val counts = countOccurrences(input)
+    val gamma = counts.map(t => if (t._1 > t._2) '1' else '0').foldLeft("")((a, b) => a + b).pipe(Integer.parseInt(_, 2))
+    val epsilon = counts.map(t => if (t._1 < t._2) '1' else '0').foldLeft("")((a, b) => a + b).pipe(Integer.parseInt(_, 2))
     gamma * epsilon
 
   }
