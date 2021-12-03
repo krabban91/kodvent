@@ -16,7 +16,7 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
     val out = input.foldLeft(input.head.indices.map(_ => (0, 0)))((res, in) => {
       val v = ListBuffer[(Int, Int)]()
       for (i <- res.indices) {
-        v.append((res(i)._1 + (if (in(i) == '1') 1 else 0), res(i)._2 + (if (in(i) == '0') 1 else 0)))
+        v.append((res(i)._1 + (in(i).asDigit), res(i)._2 + math.abs(in(i).asDigit - 1)))
       }
       v.toSeq.toIndexedSeq
     })
@@ -27,50 +27,28 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    var input = strings.map(s => s.toCharArray)
-
-    var oInput = input
-    for (a <- input.head.indices) {
-      if (oInput.size > 1) {
-        val out = oInput.foldLeft(input.head.indices.map(_ => (0, 0)))((res, in) => {
-          val v = ListBuffer[(Int, Int)]()
-          for (i <- res.indices) {
-            v.append((res(i)._1 + (if (in(i) == '1') 1 else 0), res(i)._2 + (if (in(i) == '0') 1 else 0)))
-          }
-          v.toSeq.toIndexedSeq
-        })
-        oInput = oInput.filter(s => {
-          if(out(a)._1 == out(a)._2){
-            s(a) == '1'
-          } else {
-            s(a) == '1' == out(a)._1 > out(a)._2
-          }
-        })
-      }
-    }
-    val o2Rating = oInput.head.foldLeft("")((l,r) => l+r).pipe(Integer.parseInt(_,2))
-
-    var coInput = input
-    for (a <- input.head.indices) {
-      if (coInput.size > 1) {
-        val out = coInput.foldLeft(input.head.indices.map(_ => (0, 0)))((res, in) => {
-          val v = ListBuffer[(Int, Int)]()
-          for (i <- res.indices) {
-            v.append((res(i)._1 + (if (in(i) == '1') 1 else 0), res(i)._2 + (if (in(i) == '0') 1 else 0)))
-          }
-          v.toSeq.toIndexedSeq
-        })
-        coInput = coInput.filter(s => {
-          if(out(a)._1 == out(a)._2){
-            s(a) == '0'
-          } else {
-            s(a) == '1' == out(a)._1 < out(a)._2
-          }
-        })
-      }
-    }
-
-    val co2Rating = coInput.head.foldLeft("")((l,r) => l+r).pipe(Integer.parseInt(_,2))
+    val input = strings.map(s => s.toCharArray)
+    val o2Rating = input.head.indices.foldLeft(input)((oInput, a) => ratingsReducer(oInput, a, isO2 = true))
+      .head.foldLeft("")((l, r) => l + r).pipe(Integer.parseInt(_, 2))
+    val co2Rating = input.head.indices.foldLeft(input)((oInput, a) => ratingsReducer(oInput, a, isO2 = false))
+      .head.foldLeft("")((l, r) => l + r).pipe(Integer.parseInt(_, 2))
     o2Rating * co2Rating
+  }
+
+  private def ratingsReducer(input: Seq[Array[Char]], a: Int, isO2: Boolean): Seq[Array[Char]] = {
+    if (input.size == 1) input else {
+      val counts = countOccurrences(input)
+      input.filter(s => s(a) == (if (isO2) '0' else '1') == counts(a)._1 < counts(a)._2)
+    }
+  }
+
+  private def countOccurrences(input: Seq[Array[Char]]): Seq[(Int,Int)] = {
+    input.foldLeft(input.head.indices.toList.map(_ => (0, 0)))((res, in) => {
+      val v = ListBuffer[(Int, Int)]()
+      for (i <- res.indices) {
+        v.append((res(i)._1 + in(i).asDigit, res(i)._2 + math.abs(in(i).asDigit - 1)))
+      }
+      v.toList
+    })
   }
 }
