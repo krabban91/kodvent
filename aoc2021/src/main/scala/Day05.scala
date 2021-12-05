@@ -12,14 +12,8 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val seaFloor = new mutable.HashMap[Point, Int]()
-    val walls: Seq[(Point, Point)] = strings
-      .map(s => {
-        val points = s.split("->").map(s1 => {
-          val split = s1.strip().split(",").map(_.toInt)
-          new Point(split.head, split.last)
-        }).toSeq
-        (points.head, points.last)
-      }).filter(l => l._1.x == l._2.x || l._1.y == l._2.y)
+    val walls: Seq[(Point, Point)] = getLines(strings)
+      .filter(l => l._1.x == l._2.x || l._1.y == l._2.y)
 
     walls.flatMap(l => pointsBetween(l._1, l._2)).foreach(point => {
       if (!seaFloor.contains(point)) {
@@ -33,14 +27,7 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val seaFloor = new mutable.HashMap[Point, Int]()
-    val walls: Seq[(Point, Point)] = strings
-      .map(s => {
-        val points = s.split("->").map(s1 => {
-          val split = s1.strip().split(",").map(_.toInt)
-          new Point(split.head, split.last)
-        }).toSeq
-        (points.head, points.last)
-      })
+    val walls: Seq[(Point, Point)] = getLines(strings)
     walls.flatMap(l => pointsBetween(l._1, l._2)).foreach(point => {
       if (!seaFloor.contains(point)) {
         seaFloor.put(point, 0)
@@ -49,6 +36,18 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
     })
 
     seaFloor.count(t => t._2 > 1)
+  }
+
+
+  private def getLines(strings: Seq[String]): Seq[(Point, Point)] = {
+    strings
+      .map(s => {
+        val points = s.split("->").map(s1 => {
+          val split = s1.strip().split(",").map(_.toInt)
+          new Point(split.head, split.last)
+        }).toSeq
+        (points.head, points.last)
+      })
   }
 
   def pointsBetween(a: Point, b: Point): Seq[Point] = {
