@@ -5,11 +5,6 @@ import scala.util.chaining.scalaUtilChainingOps
 
 object Day04 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (numbers, boards): (Seq[Int], Seq[BingoBoard]) = collectInput(strings)
     var currentNumber = 0
