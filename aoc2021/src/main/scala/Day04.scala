@@ -13,15 +13,12 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
   override def part1(strings: Seq[String]): Long = {
     val numbers: Seq[Int] = strings.head.pipe(s => s.split(",")).map(_.toInt).toSeq
     val boards: Seq[BingoBoard] = extractBoards(strings)
-    var hasWon = false
     var currentNumber = 0
 
-    while (!hasWon){
+    while (!boards.exists(_.bingo)) {
       val curr = numbers(currentNumber)
       boards.foreach(_.callNumber(curr))
-      if(boards.exists(_.bingo)){
-        hasWon = true
-      }else {
+      if (!boards.exists(_.bingo)) {
         currentNumber += 1
       }
     }
@@ -34,15 +31,12 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
   override def part2(strings: Seq[String]): Long = {
     val numbers: Seq[Int] = strings.head.pipe(s => s.split(",")).map(_.toInt).toSeq
     val boards: Seq[BingoBoard] = extractBoards(strings)
-    var hasWon = false
     var currentNumber = 0
     var previousWinners = Seq[BingoBoard]()
-    while (!hasWon){
+    while (!boards.forall(_.bingo)) {
       val curr = numbers(currentNumber)
       boards.foreach(_.callNumber(curr))
-      if(boards.forall(_.bingo)){
-        hasWon = true
-      }else {
+      if (!boards.forall(_.bingo)) {
         currentNumber += 1
         previousWinners = boards.filter(_.bingo)
       }
