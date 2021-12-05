@@ -21,27 +21,13 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
         (points.head, points.last)
       }).filter(l => l._1.x == l._2.x || l._1.y == l._2.y)
 
-    walls.foreach(l => {
-      if (l._1.x == l._2.x) {
-        (math.min(l._1.y, l._2.y) to math.max(l._1.y, l._2.y)).foreach(y => {
-          val point = new Point(l._1.x, y)
-          if (!seaFloor.contains(point)) {
-            seaFloor.put(point, 0)
-          }
-          seaFloor.put(point, seaFloor(point) + 1)
-        })
-      } else if (l._1.y == l._2.y) {
-        (math.min(l._1.x, l._2.x) to math.max(l._1.x, l._2.x)).foreach(x => {
-          val point = new Point(x, l._1.y)
-          if (!seaFloor.contains(point)) {
-            seaFloor.put(point, 0)
-          }
-          seaFloor.put(point, seaFloor(point) + 1)
-        })
-      } else {
-        println("curved")
+    walls.flatMap(l => pointsBetween(l._1, l._2)).foreach(point => {
+      if (!seaFloor.contains(point)) {
+        seaFloor.put(point, 0)
       }
+      seaFloor.put(point, seaFloor(point) + 1)
     })
+
     seaFloor.count(t => t._2 > 1)
   }
 
@@ -55,47 +41,56 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
         }).toSeq
         (points.head, points.last)
       })
-    walls.foreach(l => {
-      if (l._1.x == l._2.x) {
-        (math.min(l._1.y, l._2.y) to math.max(l._1.y, l._2.y)).foreach(y => {
-          val point = new Point(l._1.x, y)
-          if (!seaFloor.contains(point)) {
-            seaFloor.put(point, 0)
-          }
-          seaFloor.put(point, seaFloor(point) + 1)
-        })
-      } else if (l._1.y == l._2.y) {
-        (math.min(l._1.x, l._2.x) to math.max(l._1.x, l._2.x)).foreach(x => {
-          val point = new Point(x, l._1.y)
-          if (!seaFloor.contains(point)) {
-            seaFloor.put(point, 0)
-          }
-          seaFloor.put(point, seaFloor(point) + 1)
-        })
+    walls.flatMap(l => pointsBetween(l._1, l._2)).foreach(point => {
+      if (!seaFloor.contains(point)) {
+        seaFloor.put(point, 0)
+      }
+      seaFloor.put(point, seaFloor(point) + 1)
+    })
+
+    seaFloor.count(t => t._2 > 1)
+  }
+
+  def pointsBetween(a: Point, b: Point): Seq[Point] = {
+    if (a.x == b.x) {
+      pointsBetweenVertical(a, b)
+    } else if (a.y == b.y) {
+      pointsBetweenHorizontal(a, b)
+    } else {
+      pointsBetweenDiagonal(a, b)
+    }
+  }
+
+
+  def pointsBetweenVertical(a: Point, b: Point): Seq[Point] = {
+    (math.min(a.y, b.y) to math.max(a.y, b.y)).map(y => {
+      new Point(a.x, y)
+    })
+  }
+
+  def pointsBetweenHorizontal(a: Point, b: Point): Seq[Point] = {
+    (math.min(a.x, b.x) to math.max(a.x, b.x)).map(x => {
+      new Point(x, a.y)
+    })
+  }
+
+  def pointsBetweenDiagonal(a: Point, b: Point): Seq[Point] = {
+    val diff = a.x - b.x
+    val ydiff = a.y - b.y
+    (0 to math.abs(diff)).map(i => {
+      if (diff > 0) {
+        if (ydiff > 0) {
+          new Point(a.x - i, a.y - i)
+        } else {
+          new Point(a.x - i, a.y + i)
+        }
       } else {
-        val diff = l._1.x - l._2.x
-        val ydiff = l._1.y - l._2.y
-        for (i <- 0 to math.abs(diff)) {
-          val point = if (diff > 0) {
-            if (ydiff > 0) {
-              new Point(l._1.x - i, l._1.y - i)
-            } else {
-              new Point(l._1.x - i, l._1.y + i)
-            }
-          } else {
-            if (ydiff > 0) {
-              new Point(l._1.x + i, l._1.y - i)
-            } else {
-              new Point(l._1.x + i, l._1.y + i)
-            }
-          }
-          if (!seaFloor.contains(point)) {
-            seaFloor.put(point, 0)
-          }
-          seaFloor.put(point, seaFloor(point) + 1)
+        if (ydiff > 0) {
+          new Point(a.x + i, a.y - i)
+        } else {
+          new Point(a.x + i, a.y + i)
         }
       }
     })
-    seaFloor.count(t => t._2 > 1)
   }
 }
