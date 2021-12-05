@@ -45,5 +45,57 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
     seaFloor.count(t => t._2 > 1)
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val seaFloor = new mutable.HashMap[Point, Int]()
+    val walls: Seq[(Point, Point)] = strings
+      .map(s => {
+        val points = s.split("->").map(s1 => {
+          val split = s1.strip().split(",").map(_.toInt)
+          new Point(split.head, split.last)
+        }).toSeq
+        (points.head, points.last)
+      })
+    walls.foreach(l => {
+      if (l._1.x == l._2.x) {
+        (math.min(l._1.y, l._2.y) to math.max(l._1.y, l._2.y)).foreach(y => {
+          val point = new Point(l._1.x, y)
+          if (!seaFloor.contains(point)) {
+            seaFloor.put(point, 0)
+          }
+          seaFloor.put(point, seaFloor(point) + 1)
+        })
+      } else if (l._1.y == l._2.y) {
+        (math.min(l._1.x, l._2.x) to math.max(l._1.x, l._2.x)).foreach(x => {
+          val point = new Point(x, l._1.y)
+          if (!seaFloor.contains(point)) {
+            seaFloor.put(point, 0)
+          }
+          seaFloor.put(point, seaFloor(point) + 1)
+        })
+      } else {
+        val diff = l._1.x - l._2.x
+        val ydiff = l._1.y - l._2.y
+        for (i <- 0 to math.abs(diff)) {
+          val point = if (diff > 0) {
+            if (ydiff > 0) {
+              new Point(l._1.x - i, l._1.y - i)
+            } else {
+              new Point(l._1.x - i, l._1.y + i)
+            }
+          } else {
+            if (ydiff > 0) {
+              new Point(l._1.x + i, l._1.y - i)
+            } else {
+              new Point(l._1.x + i, l._1.y + i)
+            }
+          }
+          if (!seaFloor.contains(point)) {
+            seaFloor.put(point, 0)
+          }
+          seaFloor.put(point, seaFloor(point) + 1)
+        }
+      }
+    })
+    seaFloor.count(t => t._2 > 1)
+  }
 }
