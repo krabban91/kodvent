@@ -15,20 +15,19 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
     val boards: Seq[BingoBoard] = extractBoards(strings)
     var hasWon = false
     var currentNumber = 0
-    val runNumbers = ListBuffer[Int]()
 
     while (!hasWon){
       val curr = numbers(currentNumber)
-      runNumbers.append(curr)
-      if(boards.exists(_.bingo(runNumbers.toSeq))){
+      boards.foreach(_.callNumber(curr))
+      if(boards.exists(_.bingo)){
         hasWon = true
       }else {
         currentNumber += 1
       }
     }
-    val winner = boards.find(_.bingo(runNumbers.toSeq))
+    val winner = boards.find(_.bingo)
 
-    winner.get.missingNumbers(runNumbers.toSeq).sum * numbers(currentNumber)
+    winner.get.missingNumbers.sum * numbers(currentNumber)
   }
 
 
@@ -37,21 +36,20 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
     val boards: Seq[BingoBoard] = extractBoards(strings)
     var hasWon = false
     var currentNumber = 0
-    val runNumbers = ListBuffer[Int]()
     var previousWinners = Seq[BingoBoard]()
     while (!hasWon){
       val curr = numbers(currentNumber)
-      runNumbers.append(curr)
-      if(boards.forall(_.bingo(runNumbers.toSeq))){
+      boards.foreach(_.callNumber(curr))
+      if(boards.forall(_.bingo)){
         hasWon = true
       }else {
         currentNumber += 1
-        previousWinners = boards.filter(_.bingo(runNumbers.toSeq))
+        previousWinners = boards.filter(_.bingo)
       }
     }
-    val winner = boards.find(b => b.bingo(runNumbers.toSeq) && !previousWinners.contains(b))
+    val winner = boards.find(b => b.bingo && !previousWinners.contains(b))
 
-    winner.get.missingNumbers(runNumbers.toSeq).sum * numbers(currentNumber)
+    winner.get.missingNumbers.sum * numbers(currentNumber)
   }
 
   private def extractBoards(strings: Seq[String]): Seq[BingoBoard] = {
@@ -63,12 +61,16 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
 
     private val columns = board.transpose
 
-    def bingo(runNumbers: Seq[Int]): Boolean = {
+    private val runNumbers = ListBuffer[Int]()
+
+    def callNumber(number: Int): Unit = runNumbers.append(number)
+
+    def bingo: Boolean = {
       this.board.exists(row => row.forall(i => runNumbers.contains(i))) ||
         this.columns.exists(row => row.forall(i => runNumbers.contains(i)))
     }
 
-    def missingNumbers(runNumbers: Seq[Int]): Seq[Int] = {
+    def missingNumbers: Seq[Int] = {
       this.board.flatten.filterNot(runNumbers.contains(_))
     }
   }
