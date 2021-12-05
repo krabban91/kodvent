@@ -11,8 +11,7 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val numbers: Seq[Int] = strings.head.pipe(s => s.split(",")).map(_.toInt).toSeq
-    val boards: Seq[BingoBoard] = extractBoards(strings)
+    val (numbers, boards): (Seq[Int], Seq[BingoBoard]) = collectInput(strings)
     var currentNumber = 0
 
     while (!boards.exists(_.bingo)) {
@@ -29,8 +28,7 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
 
 
   override def part2(strings: Seq[String]): Long = {
-    val numbers: Seq[Int] = strings.head.pipe(s => s.split(",")).map(_.toInt).toSeq
-    val boards: Seq[BingoBoard] = extractBoards(strings)
+    val (numbers, boards): (Seq[Int], Seq[BingoBoard]) = collectInput(strings)
     var currentNumber = 0
     var previousWinners = Seq[BingoBoard]()
     while (!boards.forall(_.bingo)) {
@@ -46,12 +44,21 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
     winner.get.missingNumbers.sum * numbers(currentNumber)
   }
 
+  private def collectInput(strings: Seq[String]): (Seq[Int], Seq[BingoBoard]) = {
+    val numbers = strings.head.pipe(s => s.split(",")).map(_.toInt).toSeq
+    (numbers, extractBoards(strings.tail.tail))
+  }
+
   private def extractBoards(strings: Seq[String]): Seq[BingoBoard] = {
-    strings.tail.tail.map(_.split(" ").filterNot(_.isBlank).map(_.toInt).toSeq).filterNot(_.isEmpty).grouped(5).toSeq.map(v => new BingoBoard(v))
+    strings
+      .map(_.split(" ").filterNot(_.isBlank).map(_.toInt).toSeq)
+      .filterNot(_.isEmpty)
+      .grouped(5).toSeq
+      .map(v => new BingoBoard(v))
   }
 
 
-  class BingoBoard(board: Seq[Seq[Int]]){
+  class BingoBoard(board: Seq[Seq[Int]]) {
 
     private val columns = board.transpose
 
