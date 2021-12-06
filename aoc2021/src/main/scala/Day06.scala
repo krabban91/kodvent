@@ -11,30 +11,11 @@ object Day06 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val input = strings.head.split(",").map(_.toInt)
-    var fishes = input.map(new LanternFish(_))
-    println(s"Initial state: ${fishes.foldLeft("")((a, b) => (s"$a,${b.curr}"))}")
+    var fishes = mutable.HashMap[Int, Long]()
+    input.foreach(i => fishes.put(i, fishes.getOrElse(i, 0L) + 1L))
     val days = 80
-    for (day <- 1 to days) {
-      val newFishes = fishes.flatMap(_.incDay()).toSeq
-      fishes = fishes ++ newFishes
-      //println(s"After \t$day days: ${fishes.foldLeft("")((a,b)=> (s"$a,${b.curr}"))}")
-    }
-    fishes.length
-  }
-
-  class LanternFish(initVal: Int) {
-
-    var curr: Int = initVal
-
-    def incDay(): Option[LanternFish] = {
-      curr -= 1
-      if (curr < 0) {
-        curr = 6
-        Option(new LanternFish(8))
-      } else {
-        None
-      }
-    }
+    fishes = runForDays(fishes, days)
+    fishes.values.sum
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -42,11 +23,17 @@ object Day06 extends App with AoCPart1Test with AoCPart2Test {
     var fishes = mutable.HashMap[Int, Long]()
     input.foreach(i => fishes.put(i, fishes.getOrElse(i, 0L) + 1L))
     val days = 256
-    for (day <- 1 to days) {
-      val nextDay: mutable.HashMap[Int, Long] = iterateDay(fishes)
-      fishes = nextDay
-    }
+    fishes = runForDays(fishes, days)
     fishes.values.sum
+  }
+
+  private def runForDays(fishes: mutable.HashMap[Int, Long], days: Int): mutable.HashMap[Int, Long]  = {
+    var f = fishes
+    for (day <- 1 to days) {
+      val nextDay: mutable.HashMap[Int, Long] = iterateDay(f)
+      f = nextDay
+    }
+    f
   }
 
   private def iterateDay(fishes: mutable.HashMap[Int, Long]): mutable.HashMap[Int, Long] = {
