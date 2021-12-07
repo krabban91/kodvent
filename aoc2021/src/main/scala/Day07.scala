@@ -9,32 +9,17 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val input = strings.head.split(",").map(_.toInt)
-    val min = input.min
-    val max = input.max
-    var cheapest = Long.MaxValue
-    for (i <- min to max) {
+    (input.min to input.max).foldLeft(Long.MaxValue)((cheapest, i) => {
       val sum = input.map(v => Math.abs(v - i)).sum
-      if (sum < cheapest) {
-        cheapest = sum
-      }
-    }
-    cheapest
+      if (sum < cheapest) sum else cheapest
+    })
   }
 
   override def part2(strings: Seq[String]): Long = {
     val input = strings.head.split(",").map(_.toInt)
-    val min = input.min
-    val max = input.max
-    var cheapest = Long.MaxValue
-    for (i <- min to max) {
-      val sum = input.map(v => {
-        val delta = Math.abs(v - i)
-        (1 to delta).sum
-      }).sum
-      if (sum < cheapest) {
-        cheapest = sum
-      }
-    }
-    cheapest
+    (input.min to input.max).foldLeft(Long.MaxValue)((cheapest, i) => {
+      val sum = input.map(v => (1 to Math.abs(v - i)).sum).sum
+      if (sum < cheapest) sum else cheapest
+    })
   }
 }
