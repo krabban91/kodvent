@@ -4,11 +4,6 @@ import java.util.stream
 import scala.collection.mutable
 object Day08 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val easy = Set(2, 4, 3, 7)
     strings
