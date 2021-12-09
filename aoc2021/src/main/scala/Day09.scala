@@ -10,11 +10,6 @@ import scala.jdk.CollectionConverters._
 
 object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val grid: Grid[Int] = extractMap(strings)
     val points: Set[Point] = getLowPoints(grid)
