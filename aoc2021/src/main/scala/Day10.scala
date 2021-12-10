@@ -15,30 +15,24 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val syntax = strings.map(syntaxCheck)
-    val m = Map(')' -> 1, ']' -> 2, '}' -> 3, '>' -> 4)
     val scores = syntax.filter(t => t._1 == 0).map(_._2)
-      .map(l => l.foldLeft(0L)((out, n) => out * 5 + m(n)))
+      .map(autoComplete)
       .sorted
     scores(scores.size / 2)
   }
 
   def syntaxCheck(string: String): (Long, Seq[Char]) = {
-    val m = Map(')' -> 3, ']' -> 57, '}' -> 1197, '>' -> 25137)
+    val closer = Map('(' -> ')', '[' -> ']', '{' -> '}', '<' -> '>')
+    val syntaxScores = Map(')' -> 3, ']' -> 57, '}' -> 1197, '>' -> 25137)
     var corrupted = 0
     val expected = string.foldLeft(mutable.Stack[Char]())((stack, c) => {
       c match {
-        case '<' =>
-          stack.push('>')
-        case '(' =>
-          stack.push(')')
-        case '[' =>
-          stack.push(']')
-        case '{' =>
-          stack.push('}')
+        case '<' | '(' | '[' | '{' =>
+          stack.push(closer(c))
         case _ =>
           val exp = stack.pop()
           if (corrupted == 0 && exp != c) {
-            corrupted = m(c)
+            corrupted = syntaxScores(c)
           }
       }
       stack
@@ -46,4 +40,8 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
     (corrupted, expected.toSeq)
   }
 
+  def autoComplete(missing: Seq[Char]): Long = {
+    val missingScores = Map(')' -> 1, ']' -> 2, '}' -> 3, '>' -> 4)
+    missing.foldLeft(0L)((out, n) => out * 5 + missingScores(n))
+  }
 }
