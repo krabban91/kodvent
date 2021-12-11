@@ -30,7 +30,21 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
     new Grid[Int](new util.ArrayList(input.asJavaCollection))
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    var curr: Grid[Int] = parseDay(strings)
+
+    var step = 0L
+    var sameTime = false
+    while (!sameTime) {
+      step += 1
+      val (next, newFlashes) = stepDay(curr)
+      if (newFlashes == next.width() * next.height()) {
+        sameTime = true
+      }
+      curr = next
+    }
+    step
+  }
 
   def stepDay(curr: Grid[Int]): (Grid[Int], Long) = {
     var next = curr.map((v, p) => v + 1)
