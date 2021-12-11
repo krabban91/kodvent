@@ -9,11 +9,6 @@ import scala.jdk.CollectionConverters.{CollectionHasAsScala, IterableHasAsJava}
 
 object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     var curr: Grid[Int] = parseDay(strings)
     var flashes = 0L
