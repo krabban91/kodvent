@@ -9,34 +9,38 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2Test
   printResultPart2
 
-  override def part1(strings: Seq[String]): Long = {
-    val inp = strings.map(s=>s.split(("-"))).flatMap(l => Seq((l.head, l.last), (l.last, l.head)))
-    val m = inp.groupBy(_._1)
+  override def part1(strings: Seq[String]): Long = generatePaths(strings, part2 = false).size
+
+  override def part2(strings: Seq[String]): Long = generatePaths(strings, part2 = true).size
+
+  def generatePaths(strings: Seq[String], part2: Boolean): Set[Seq[String]] = {
+    val m = strings.map(s => s.split(("-"))).flatMap(l => Seq((l.head, l.last), (l.last, l.head))).groupBy(_._1)
     val uniquePaths = mutable.HashSet[Seq[String]]()
-    uniquePaths.add(Seq("start"))
-    val frontier = mutable.Stack[String]()
+    val frontier = mutable.Stack[Seq[String]]()
+    frontier.push(Seq("start"))
+    val checkedPaths = mutable.HashSet[Seq[String]]()
 
-    frontier.push("start")
-    while (frontier.nonEmpty){
+    while (frontier.nonEmpty) {
       val curr = frontier.pop()
-      val doors = m.getOrElse(curr, Seq())
-      val paths: Seq[Seq[String]] = uniquePaths.filter(_.last==curr).toSeq
-      val newPaths: Seq[Seq[String]] = paths.flatMap(p => {
-        doors.map(_._2)
-          .filter(s=> s(0).isUpper || !p.contains(s))
-          .map(s => {
-            val l = p ++ Seq(s)
-            if(s != "end" && !uniquePaths.contains(l)){
-              frontier.push(s)
-            }
-            l
-          })
-      })
-      uniquePaths.addAll(newPaths)
+      if (!checkedPaths.contains(curr)) {
+        checkedPaths.add(curr)
+        val doors = m.getOrElse(curr.last, Seq())
+        val next = doors
+          .map(_._2)
+          .filter(s => s(0).isUpper ||
+            !curr.contains(s) ||
+            (part2 && s != "start" && !curr.filter(_ (0).isLower).groupBy(v => v).values.exists(_.size > 1)))
+          .map(s => curr ++ Seq(s))
+          .filter(!checkedPaths.contains(_))
+        next.foreach(l => {
+          if (l.last == "end") {
+            uniquePaths.add(l)
+          } else {
+            frontier.push(l)
+          }
+        })
+      }
     }
-    val ends = uniquePaths.filter(_.last == "end")
-    ends.size
+    uniquePaths.toSet
   }
-
-  override def part2(strings: Seq[String]): Long = -1
 }
