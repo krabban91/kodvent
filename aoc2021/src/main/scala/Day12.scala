@@ -17,31 +17,26 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
   def generatePaths(graph: Map[String, Seq[String]], part2: Boolean): Set[Seq[String]] = {
     val smallCaves = graph.keys.filter(_ (0).isLower).toSet
-    val uniquePaths = mutable.HashSet[Seq[String]]()
+    val paths = mutable.HashSet[Seq[String]]()
     val frontier = mutable.Stack[Seq[String]]()
     frontier.push(Seq("start"))
-    val checkedPaths = mutable.HashSet[Seq[String]]()
+    val checked = mutable.HashSet[Seq[String]]()
 
     while (frontier.nonEmpty) {
-      val curr = frontier.pop()
-      if (!checkedPaths.contains(curr)) {
-        checkedPaths.add(curr)
-        val doors = graph(curr.last)
-        val next = doors
-          .filter(s => !smallCaves.contains(s) ||
-            !curr.contains(s) ||
-            (part2 && !curr.filter(smallCaves.contains).groupBy(v => v).values.exists(_.size > 1)))
-          .map(s => curr ++ Seq(s))
-          .filter(!checkedPaths.contains(_))
-        next.foreach(l => {
-          if (l.last == "end") {
-            uniquePaths.add(l)
-          } else {
-            frontier.push(l)
-          }
+      Option(frontier.pop())
+        .filterNot(checked.contains)
+        .foreach(curr => {
+          checked.add(curr)
+          graph(curr.last)
+            .filter(s => !smallCaves.contains(s) || !curr.contains(s) || (part2 && !curr.filter(smallCaves.contains).groupBy(v => v).values.exists(_.size > 1)))
+            .map(s => curr ++ Seq(s))
+            .filterNot(checked.contains)
+            .foreach {
+              case p if p.last == "end" => paths.add(p)
+              case p => frontier.push(p)
+            }
         })
-      }
     }
-    uniquePaths.toSet
+    paths.toSet
   }
 }
