@@ -16,6 +16,7 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
 
   def generatePaths(graph: Map[String, Seq[String]], part2: Boolean): Set[Seq[String]] = {
+    val smallCaves = graph.keys.filter(_ (0).isLower).toSet
     val uniquePaths = mutable.HashSet[Seq[String]]()
     val frontier = mutable.Stack[Seq[String]]()
     frontier.push(Seq("start"))
@@ -27,9 +28,9 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
         checkedPaths.add(curr)
         val doors = graph(curr.last)
         val next = doors
-          .filter(s => s(0).isUpper ||
+          .filter(s => !smallCaves.contains(s) ||
             !curr.contains(s) ||
-            (part2 && !curr.filter(_ (0).isLower).groupBy(v => v).values.exists(_.size > 1)))
+            (part2 && !curr.filter(smallCaves.contains).groupBy(v => v).values.exists(_.size > 1)))
           .map(s => curr ++ Seq(s))
           .filter(!checkedPaths.contains(_))
         next.foreach(l => {
