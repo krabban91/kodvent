@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = generatePaths(strings, part2 = false).size
 
   override def part2(strings: Seq[String]): Long = generatePaths(strings, part2 = true).size
