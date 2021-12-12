@@ -4,9 +4,9 @@ import scala.collection.mutable
 
 object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(strings: Seq[String]): Long = generatePaths(graph(strings), part2 = false).size
+  override def part1(strings: Seq[String]): Long = paths(graph(strings), part2 = false).size
 
-  override def part2(strings: Seq[String]): Long = generatePaths(graph(strings), part2 = true).size
+  override def part2(strings: Seq[String]): Long = paths(graph(strings), part2 = true).size
 
   def graph(strings: Seq[String]): Map[String, Seq[String]] = strings
     .map(s => s.split(("-")))
@@ -15,7 +15,7 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
     .map(t => (t._1, t._2.map(_._2).filterNot(_ == "start")))
 
 
-  def generatePaths(graph: Map[String, Seq[String]], part2: Boolean): Set[Seq[String]] = {
+  def paths(graph: Map[String, Seq[String]], part2: Boolean): Set[Seq[String]] = {
     val smallCaves = graph.keys.filter(_ (0).isLower).toSet
     val paths = mutable.HashSet[Seq[String]]()
     val frontier = mutable.Stack[Seq[String]]()

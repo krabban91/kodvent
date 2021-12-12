@@ -29,8 +29,8 @@ class Day12Spec extends AnyFlatSpec with Matchers {
     assert(map2.values.exists(_.exists(_=="end")))
   }
 
-  "generatePaths" should "work for example 1 part 1" in {
-    val paths = Day12.generatePaths(Day12.graph(Day12.getInputTest), part2 = false)
+  "paths" should "work for example 1 part 1" in {
+    val paths = Day12.paths(Day12.graph(Day12.getInputTest), part2 = false)
     val expected = """start,A,b,A,c,A,end
                      |start,A,b,A,end
                      |start,A,b,end
@@ -44,8 +44,8 @@ class Day12Spec extends AnyFlatSpec with Matchers {
     paths shouldBe expected
   }
 
-  "generatePaths" should "work for example 1 part 2" in {
-    val paths = Day12.generatePaths(Day12.graph(Day12.getInputTest), part2 = true)
+  "paths" should "work for example 1 part 2" in {
+    val paths = Day12.paths(Day12.graph(Day12.getInputTest), part2 = true)
     val expected = """start,A,b,A,b,A,c,A,end
                      |start,A,b,A,b,A,end
                      |start,A,b,A,b,end
