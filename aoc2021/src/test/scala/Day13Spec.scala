@@ -3,15 +3,33 @@ import org.scalatest.matchers.should.Matchers
 
 class Day13Spec extends AnyFlatSpec with Matchers {
   "Part1 Test" should "be correct" in {
-    Day13.part1TestResult shouldEqual -1
+    Day13.part1TestResult shouldEqual 17
   }
   "Part1" should "be correct" in {
-    Day13.part1Result shouldEqual -1
+    Day13.part1Result shouldEqual 753
   }
   "Part2 Test" should "be correct" in {
-    Day13.part2TestResult shouldEqual -1
+    val expected =
+      """
+        |#####...................................
+        |#...#...................................
+        |#...#...................................
+        |#...#...................................
+        |#####...................................
+        |.......................................
+        |""".stripMargin
+    Day13.part2TestResult shouldEqual expected
   }
   "Part2" should "be correct" in {
-    Day13.part2Result shouldEqual -1
+    val expected =
+      """
+        |#..#.####.#....####.#..#...##.###..#..#.
+        |#..#....#.#....#....#..#....#.#..#.#.#..
+        |####...#..#....###..####....#.#..#.##...
+        |#..#..#...#....#....#..#....#.###..#.#..
+        |#..#.#....#....#....#..#.#..#.#.#..#.#..
+        |#..#.####.####.####.#..#..##..#..#.#..#.
+        |""".stripMargin
+    Day13.part2Result shouldEqual expected
   }
 }
