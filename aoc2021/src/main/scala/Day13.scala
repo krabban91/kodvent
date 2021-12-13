@@ -11,10 +11,10 @@ object Day13 extends App with AoCPart1Test with AoCPart2StringTest {
 
   override def part2(strings: Seq[String]): String = {
     val (points: Seq[(Int, Int)], folds: Seq[(String, Int)]) = groupInput(strings)
-    var output = points.toSet
-    for ((axis, value) <- folds) {
-      output = fold(output, axis, value)
-    }
+    val output = folds.foldLeft(points.toSet)((output, t) => {
+      val (axis, value) = t
+      fold(output, axis, value)
+    })
     asString(output)
   }
 
