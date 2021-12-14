@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day14 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (ins, start) = extractInput(strings)
     quantify(10, ins, start)
