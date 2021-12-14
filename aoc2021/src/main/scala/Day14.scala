@@ -1,8 +1,6 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
-import java.util.stream.Collectors
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object Day14 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -18,28 +16,34 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = -1
 
-
-  private def extractInput(strings: Seq[String]): (Map[String, String], String) = {
+  private def extractInput(strings: Seq[String]): (Map[String, Seq[String]], Map[String, Long]) = {
     val start: String = strings.head
-    val ins: Map[String, String] = strings.tail.tail.map(s=> s.split(" -> ").toSeq).map(l => (l.head, l.last)).toMap
-    (ins, start)
+    val lastChar = start.last
+    val ins: Map[String, Seq[String]] = strings.tail.tail.map(s => s.split(" -> ").toSeq).map(l => (l.head, Seq(l.head.substring(0, 1) + l.last, l.last + l.head.substring(1)))).toMap
+    val input = mutable.HashMap[String, Long]()
+    start.sliding(2).foreach(s => input.put(s, input.getOrElse(s, 0L) + 1L))
+    input.put(lastChar.toString, 1)
+    (ins, input.toMap)
   }
 
-  private def quantify(steps: Int, instructions: Map[String, String], input: String): Long = {
-    var curr = input
-    for (i <- 1 to steps){
-      val v  = curr.chars().mapToObj(_.toChar.toString).collect(Collectors.toList[String]).asScala.toSeq
-      val next = v.sliding(2).map(xs=> xs.reduce(_+_)).map(s=> s.substring(0,1) + instructions.getOrElse(s, "")).reduce(_+_) + v.last
-      curr = next
-    }
-    val o: Seq[Char] = curr.chars().mapToObj(_.toChar).collect(Collectors.toList[Char]).asScala.toSeq
-    val res = mutable.HashMap[Char, Long]()
-    o.foreach(c => res.put(c, res.getOrElse(c, 0L) + 1L))
-    res.values.max - res.values.min
+  private def quantify(steps: Int, instructions: Map[String, Seq[String]], input: Map[String, Long]): Long = {
+    val counts = (0 until steps)
+      .foldLeft(input)((curr, _) => step(curr, instructions))
+      .groupBy(_._1.head)
+      .map(t => (t._1, t._2.values.sum))
+    counts.values.max - counts.values.min
   }
 
-  private def step(curr: String, ins: Map[String, Seq[String]]): String = {
-    val v  = curr.chars().mapToObj(_.toChar.toString).collect(Collectors.toList[String]).asScala.toSeq
-    v.sliding(2).map(xs=> xs.reduce(_+_)).map(s=> s.substring(0,1) + ins.getOrElse(s, "")).reduce(_+_) + v.last
+  private def step(curr: Map[String, Long], ins: Map[String, Seq[String]]): Map[String, Long] = {
+    val next = mutable.HashMap[String, Long]()
+    curr.foreachEntry((k, v) => {
+      val o = ins.get(k)
+      o.foreach(_.foreach(ok => next.put(ok, next.getOrElse(ok, 0L) + v)))
+      if (o.isEmpty) {
+        next.put(k, curr(k) + next.getOrElse(k, 0L))
+      }
+    })
+    next.toMap
   }
+
 }
