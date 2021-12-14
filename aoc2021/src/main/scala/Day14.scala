@@ -14,7 +14,10 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
     quantify(10, ins, start)
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val (instructions, input) = extractInput(strings)
+    quantify(40, instructions, input)
+  }
 
   private def extractInput(strings: Seq[String]): (Map[String, Seq[String]], Map[String, Long]) = {
     val start: String = strings.head
