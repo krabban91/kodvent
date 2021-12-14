@@ -12,13 +12,24 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
+    val (ins, start) = extractInput(strings)
+    quantify(10, ins, start)
+  }
+
+  override def part2(strings: Seq[String]): Long = -1
+
+
+  private def extractInput(strings: Seq[String]): (Map[String, String], String) = {
     val start: String = strings.head
     val ins: Map[String, String] = strings.tail.tail.map(s=> s.split(" -> ").toSeq).map(l => (l.head, l.last)).toMap
-    var curr = start
+    (ins, start)
+  }
 
-    for (i <- 1 to 10){
+  private def quantify(steps: Int, instructions: Map[String, String], input: String): Long = {
+    var curr = input
+    for (i <- 1 to steps){
       val v  = curr.chars().mapToObj(_.toChar.toString).collect(Collectors.toList[String]).asScala.toSeq
-      val next = v.sliding(2).map(xs=> xs.reduce(_+_)).map(s=> s.substring(0,1) + ins.getOrElse(s, "")).reduce(_+_) + v.last
+      val next = v.sliding(2).map(xs=> xs.reduce(_+_)).map(s=> s.substring(0,1) + instructions.getOrElse(s, "")).reduce(_+_) + v.last
       curr = next
     }
     val o: Seq[Char] = curr.chars().mapToObj(_.toChar).collect(Collectors.toList[Char]).asScala.toSeq
@@ -27,5 +38,8 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
     res.values.max - res.values.min
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  private def step(curr: String, ins: Map[String, Seq[String]]): String = {
+    val v  = curr.chars().mapToObj(_.toChar.toString).collect(Collectors.toList[String]).asScala.toSeq
+    v.sliding(2).map(xs=> xs.reduce(_+_)).map(s=> s.substring(0,1) + ins.getOrElse(s, "")).reduce(_+_) + v.last
+  }
 }
