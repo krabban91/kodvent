@@ -44,14 +44,14 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
 
   def findPath(start: (Int, Int), end: (Int, Int), maps: Map[(Int, Int), Long]): (Seq[(Int, Int)], Long) = {
     val directions = Seq((-1, 0), (0, -1), (1, 0), (0, 1))
-    val frontier = mutable.PriorityQueue[(Seq[(Int, Int)], Long)]()(Ordering.Long.reverse.on(_._2))
+    val frontier = mutable.PriorityQueue[(Seq[(Int, Int)], Long, Long)]()(Ordering.Long.reverse.on(_._3))
     val checked = mutable.HashSet[(Int, Int)]()
     var path: (Seq[(Int, Int)], Long) = null
-    frontier.addOne((Seq(start), 0))
+    frontier.addOne((Seq(start), 0, 0 + manhattan(start, end)))
     while (frontier.nonEmpty && path == null) {
       val curr = frontier.dequeue()
       if (curr._1.last == end) {
-        path = curr
+        path = (curr._1, curr._2)
       }
       if (!checked.contains(curr._1.last)) {
         checked.add(curr._1.last)
@@ -59,11 +59,13 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
           .map(d => (curr._1.last._1 + d._1, curr._1.last._2 + d._2))
           .filterNot(p => checked.contains(p))
           .map(p => curr._1 ++ Seq(p))
-          .flatMap(p => maps.get(p.last).map(_ + curr._2).map(r => (p, r)))
+          .flatMap(p => maps.get(p.last).map(_ + curr._2).map(r => (p, r, r + manhattan(p.last, end))))
         frontier.addAll(around)
       }
     }
     path
   }
+
+  private def manhattan(a: (Int, Int), b: (Int, Int)): Long = math.abs(a._1 - b._1) + math.abs(a._2 - b._2)
 
 }
