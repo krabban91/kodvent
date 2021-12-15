@@ -16,8 +16,8 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
     val start = (maps.keys.map(_._1).min, maps.keys.map(_._2).min)
     val end = (maps.keys.map(_._1).max, maps.keys.map(_._2).max)
 
-    val path: Seq[((Int, Int), Long)] = findPath(start, end, maps)
-    path.map(_._2).sum
+    val path: (Seq[(Int, Int)], Long) = findPath(start, end, maps)
+    path._2
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -25,8 +25,8 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
     val start = (maps.keys.map(_._1).min, maps.keys.map(_._2).min)
     val end = (maps.keys.map(_._1).max, maps.keys.map(_._2).max)
 
-    val path: Seq[((Int, Int), Long)] = findPath(start, end, maps)
-    path.map(_._2).sum
+    val path: (Seq[(Int, Int)], Long) = findPath(start, end, maps)
+    path._2
   }
 
   private def extractMap(strings: Seq[String], tiles: Int): Map[(Int, Int), Long] = {
@@ -42,24 +42,24 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
           .map(t => ((t._1._1 + vv.head.size * x, t._1._2 + vv.size * y), (t._2 + x + y) % 10 + (t._2 + x + y) / 10)))).toMap
   }
 
-  def findPath(start: (Int, Int), end: (Int, Int), maps: Map[(Int, Int), Long]): Seq[((Int, Int), Long)] = {
+  def findPath(start: (Int, Int), end: (Int, Int), maps: Map[(Int, Int), Long]): (Seq[(Int, Int)], Long) = {
     val directions = Seq((-1, 0), (0, -1), (1, 0), (0, 1))
-    val frontier = mutable.PriorityQueue[Seq[((Int, Int), Long)]]()(Ordering.Long.reverse.on(_.map(_._2).sum))
-    val checked = mutable.HashSet[((Int, Int), Long)]()
-    var path: Seq[((Int, Int), Long)] = null
-    frontier.addOne(Seq((start, 0)))
+    val frontier = mutable.PriorityQueue[(Seq[(Int, Int)], Long)]()(Ordering.Long.reverse.on(_._2))
+    val checked = mutable.HashSet[(Int, Int)]()
+    var path: (Seq[(Int, Int)], Long) = null
+    frontier.addOne((Seq(start), 0))
     while (frontier.nonEmpty && path == null) {
       val curr = frontier.dequeue()
-      if (curr.last._1 == end) {
+      if (curr._1.last == end) {
         path = curr
       }
-      if (!checked.contains(curr.last)) {
-        checked.add(curr.last)
+      if (!checked.contains(curr._1.last)) {
+        checked.add(curr._1.last)
         val around = directions
-          .map(d => (curr.last._1._1 + d._1, curr.last._1._2 + d._2))
-          .flatMap(p => maps.get(p).map(r => (p, r)))
-          .map(n => curr ++ Seq(n))
-          .filterNot(p => checked.contains(p.last))
+          .map(d => (curr._1.last._1 + d._1, curr._1.last._2 + d._2))
+          .filterNot(p => checked.contains(p))
+          .map(p => curr._1 ++ Seq(p))
+          .flatMap(p => maps.get(p.last).map(_ + curr._2).map(r => (p, r)))
         frontier.addAll(around)
       }
     }
