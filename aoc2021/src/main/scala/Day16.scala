@@ -15,7 +15,9 @@ object Day16 extends App with AoCPart1 with AoCPart2 {
   }
 
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    Packet(binary(strings.head)).result
+  }
 
   trait Packet {
     def version: Int
