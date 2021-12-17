@@ -8,18 +8,19 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val v = strings.head.stripPrefix("target area: ").split(",").map(_.split("=").last).map(_.split("\\.\\.")).map(_.map(_.toInt))
-    val target = ((v.head.head, v.head.last), (v.last.head, v.last.last))
     initialVelocities(-200, 200).foldLeft((Integer.MIN_VALUE))((maxY, vel) => {
-      val (hit, y) = trajectory((0, 0), vel, target)
+      val (hit, y) = trajectory((0, 0), vel, getTarget(strings))
       if (hit && y > maxY) y else maxY
     })
   }
 
   override def part2(strings: Seq[String]): Long = {
+    initialVelocities(-200, 200).count(vel => trajectory((0, 0), vel, getTarget(strings))._1)
+  }
+
+  private def getTarget(strings: Seq[String]): ((Int, Int), (Int, Int)) = {
     val v = strings.head.stripPrefix("target area: ").split(",").map(_.split("=").last).map(_.split("\\.\\.")).map(_.map(_.toInt))
-    val target = ((v.head.head, v.head.last), (v.last.head, v.last.last))
-    initialVelocities(-200, 200).count(vel => trajectory((0, 0), vel, target)._1)
+    ((v.head.head, v.head.last), (v.last.head, v.last.last))
   }
 
   def trajectory(initPos: (Int, Int), initVel: (Int, Int), target: ((Int, Int), (Int, Int))): (Boolean, Int) = {
