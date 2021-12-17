@@ -9,64 +9,40 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val v = strings.head.stripPrefix("target area: ").split(",").map(_.split("=").last).map(_.split("\\.\\.")).map(_.map(_.toInt))
-    val (xs, ys) = ((v.head.head, v.head.last), (v.last.head, v.last.last))
-    val initialVelocities: Seq[(Int, Int)] = (-200 to 200).flatMap(x => ((-200 to 200).map(y => (x, y))))
-
-    val initPos = (0, 0)
-    val maxVel = initialVelocities.foldLeft(((-1, -1), -1))((t, vel) => {
-      val (maxV, maxY) = t
-      var pos = initPos
-      var xVel = vel._1
-      var yVel = vel._2
-      var outV = maxV
-      var outY = maxY
-      var my = -1
-      while (!passed(pos, xs, ys)) {
-        pos = (pos._1 + xVel, pos._2 + yVel)
-        my = if (pos._2 > my) pos._2 else my
-        if (within(pos, xs, ys)) {
-          if (my > maxY) {
-            outV = vel
-            outY = my
-          }
-        }
-        xVel = if (xVel == 0) xVel else (xVel + (if (xVel > 0) -1 else 1))
-        yVel -= 1
-      }
-      (outV, outY)
+    val target = ((v.head.head, v.head.last), (v.last.head, v.last.last))
+    initialVelocities(-200, 200).foldLeft((Integer.MIN_VALUE))((maxY, vel) => {
+      val (hit, y) = trajectory((0, 0), vel, target)
+      if (hit && y > maxY) y else maxY
     })
-    maxVel._2
   }
 
   override def part2(strings: Seq[String]): Long = {
     val v = strings.head.stripPrefix("target area: ").split(",").map(_.split("=").last).map(_.split("\\.\\.")).map(_.map(_.toInt))
-    val (xs, ys) = ((v.head.head, v.head.last), (v.last.head, v.last.last))
-    val initialVelocities: Seq[(Int, Int)] = (-200 to 200).flatMap(x => ((-200 to 200).map(y => (x, y))))
+    val target = ((v.head.head, v.head.last), (v.last.head, v.last.last))
+    initialVelocities(-200, 200).count(vel => trajectory((0, 0), vel, target)._1)
+  }
 
-    val initPos = (0, 0)
-    val maxVel = initialVelocities.filter(vel => {
-      val (maxV, maxY) = (((-1, -1), Int.MinValue))
-      var pos = initPos
-      var xVel = vel._1
-      var yVel = vel._2
-      var outV = maxV
-      var outY = maxY
-      var my = -1
-      while (!passed(pos, xs, ys)) {
-        pos = (pos._1 + xVel, pos._2 + yVel)
-        my = if (pos._2 > my) pos._2 else my
-        if (within(pos, xs, ys)) {
-          if (my > maxY) {
-            outV = vel
-            outY = my
-          }
-        }
-        xVel = if (xVel == 0) xVel else (xVel + (if (xVel > 0) -1 else 1))
-        yVel -= 1
+  def trajectory(initPos: (Int, Int), initVel: (Int, Int), target: ((Int, Int), (Int, Int))): (Boolean, Int) = {
+    val (xs, ys) = target
+    var pos = initPos
+    var xVel = initVel._1
+    var yVel = initVel._2
+    var hit = false
+    var y = -1
+    while (!passed(pos, xs, ys)) {
+      pos = (pos._1 + xVel, pos._2 + yVel)
+      y = if (pos._2 > y) pos._2 else y
+      if (within(pos, xs, ys)) {
+        hit = true
       }
-      outY != Int.MinValue
-    })
-    maxVel.size
+      xVel = if (xVel == 0) xVel else (xVel + (if (xVel > 0) -1 else 1))
+      yVel -= 1
+    }
+    (hit, y)
+  }
+
+  private def initialVelocities(min: Int, max: Int): Seq[(Int, Int)] = {
+    (min to max).flatMap(x => (min to max).map(y => (x, y)))
   }
 
   private def within(pos: (Int, Int), rangeX: (Int, Int), rangeY: (Int, Int)) = {
