@@ -2,16 +2,19 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class DayXXSpec extends AnyFlatSpec with Matchers {
-  "Part1 Test" should "be correct" in {
+  behavior of "Part 1"
+  it should "Test" in {
     DayXX.part1TestResult shouldEqual -1
   }
-  "Part1" should "be correct" in {
+  it should "Real" in {
     DayXX.part1Result shouldEqual -1
   }
-  "Part2 Test" should "be correct" in {
+
+  behavior of "Part 2"
+  it should "Test" in {
     DayXX.part2TestResult shouldEqual -1
   }
-  "Part2" should "be correct" in {
+  it should "Real" in {
     DayXX.part2Result shouldEqual -1
   }
 }
