@@ -15,7 +15,17 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     added.magnitude
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    SnailExp(strings.head)
+    val vv: Seq[SnailExp] = strings.map(SnailExp(_))
+
+    val inputs = vv.combinations(2)
+    inputs.foldLeft(-1L)((max, inp) => {
+      val l = inp.head.add(inp.tail.head)
+      val r = inp.tail.head.add(inp.head)
+      math.max(math.max(l.magnitude, r.magnitude), max)
+    })
+  }
 
   trait SnailExp {
     def magnitude: Long
