@@ -8,9 +8,11 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    SnailPair(strings.head)
-    val vv: Seq[SnailPair] = strings.map(SnailPair(_))
-    -1
+    SnailExp(strings.head)
+    val vv: Seq[SnailExp] = strings.map(SnailExp(_))
+    val added = vv.head.addAll(vv.tail)
+
+    added.magnitude
   }
 
   override def part2(strings: Seq[String]): Long = -1

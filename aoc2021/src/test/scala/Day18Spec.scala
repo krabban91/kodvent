@@ -177,10 +177,10 @@ class Day18Spec extends AnyFlatSpec with Matchers {
 
   behavior of "Part 1"
   it should "test input" in {
-    Day18.part1TestResult shouldEqual -1
+    Day18.part1TestResult shouldEqual 4140
   }
   it should "real input" in {
-    Day18.part1Result shouldEqual -1
+    Day18.part1Result shouldEqual 4480
   }
   behavior of "Part 2"
   it should "test input" in {
