@@ -17,13 +17,13 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
     known.add(scanners.head)
     val unknown = mutable.HashSet[ScanResult]()
     unknown.addAll(scanners.tail)
-    while (unknown.nonEmpty){
+    while (unknown.nonEmpty) {
 
       unknown.foreach(other => {
         known.foreach(k => {
-          if(unknown.contains(other)){
+          if (unknown.contains(other)) {
             val found = k.findMatch(other, 12)
-            if(found.isDefined){
+            if (found.isDefined) {
               unknown.remove(other)
               known.add(found.get)
             }
