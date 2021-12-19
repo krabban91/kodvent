@@ -19,7 +19,12 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
     known.values.flatMap(_.beacons).toSet.size
   }
 
-  override def part2(strings: Seq[String]): Long = -1
+  override def part2(strings: Seq[String]): Long = {
+    val scanners = inputs(strings)
+    val known = triangulate(scanners)
+
+    known.keys.map(p1 => known.keys.map(p2 => Distances.manhattan(p1, p2)).max).max
+  }
 
   private def triangulate(scanners: Seq[ScanResult]): Map[Point3D, ScanResult] = {
     val known = mutable.HashMap[Point3D, ScanResult]()
