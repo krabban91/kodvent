@@ -42,7 +42,7 @@ class Day19Spec extends AnyFlatSpec with Matchers {
                                   |-2,1""".stripMargin.split("\n"))
     val maybeResult = scanners.head.findMatch(scanners.last, 3)
     maybeResult.isDefined shouldBe true
-    maybeResult.get.beacons.toSet shouldBe scanners.head.beacons.toSet
+    maybeResult.get._1.beacons.toSet shouldBe scanners.head.beacons.toSet
   }
 
 
@@ -59,21 +59,21 @@ class Day19Spec extends AnyFlatSpec with Matchers {
     scanners.last.rotations.foreach(o => {
       val maybeResult = scanners.head.findMatch(o._2, 3)
       maybeResult.isDefined shouldBe true
-      maybeResult.get.beacons.toSet shouldBe scanners.head.beacons.toSet
+      maybeResult.get._1.beacons.toSet shouldBe scanners.head.beacons.toSet
     })
   }
   it should "1 using 0 in example" in {
     val scanners = Day19.inputs(Day19.getInputTest)
     val maybeResult = scanners.head.findMatch(scanners(1), 12)
     maybeResult.isDefined shouldBe true
-    maybeResult.get.beacons.toSet.intersect(scanners.head.beacons.toSet).size shouldBe 12
+    maybeResult.get._1.beacons.toSet.intersect(scanners.head.beacons.toSet).size shouldBe 12
   }
 
   it should "find 4 using 1 in example" in {
     val scanners = Day19.inputs(Day19.getInputTest)
     val maybeResult = scanners(1).findMatch(scanners(4), 12)
     maybeResult.isDefined shouldBe true
-    maybeResult.get.beacons.toSet.intersect(scanners(1).beacons.toSet).size shouldBe 12
+    maybeResult.get._1.beacons.toSet.intersect(scanners(1).beacons.toSet).size shouldBe 12
   }
 
   behavior of "scanner.diff"
