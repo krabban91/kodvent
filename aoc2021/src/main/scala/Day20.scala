@@ -6,11 +6,6 @@ import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object Day20 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (imageEnhancer, initImage) = imageContent(strings)
     enhance(initImage, imageEnhancer, 2).sum(i => i)
