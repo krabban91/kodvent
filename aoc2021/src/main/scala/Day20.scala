@@ -1,10 +1,8 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import krabban91.kodvent.kodvent.utilities.grid.Grid
 
-import java.awt.Point
 import java.util.stream.Collectors
-import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object Day20 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -15,60 +13,35 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val imageEnhancer = strings.head.chars().mapToObj(c => if (c == '#') 1 else 0)
-      .collect(Collectors.toList[Int]()).asScala
+      .collect(Collectors.toList[Int]()).asScala.toSeq
     val initImage: Grid[Int] = new Grid[Int](strings.tail.tail
       .map(s => s.chars().mapToObj(c => if (c == '#') 1 else 0)
         .collect(Collectors.toList[Int]())).toList.asJava)
-    var curr = initImage
-    for (i <- 1 to 2) {
-      curr = curr.expand(p => 0, 10)
-      val next = curr
-        .map((i, p) => {
-          val theNine = curr.getSurroundingTilesWithPoints(p, true)
-          val s = theNine.asScala.map(_.getValue.toString).reduce(_ + _)
-          imageEnhancer(Integer.parseInt(s, 2))
-        })
-      curr = next
-    }
-    val hm = mutable.HashMap[Point, Int]()
-
-    curr.forEach((i, p) => {
-      val w = curr.width()
-      val h = curr.height()
-      if (p.x > 10 && p.x < w - 10 - 1 && p.y > 10 && p.y < h - 10 - 1) {
-        hm.put(p, i)
-      }
-    })
-    hm.values.sum
+    enhance(initImage, imageEnhancer, 2).sum(i => i)
   }
 
   override def part2(strings: Seq[String]): Long = {
     val imageEnhancer = strings.head.chars().mapToObj(c => if (c == '#') 1 else 0)
-      .collect(Collectors.toList[Int]()).asScala
+      .collect(Collectors.toList[Int]()).asScala.toSeq
     val initImage: Grid[Int] = new Grid[Int](strings.tail.tail
-      .map(s => s.chars().mapToObj(c =>if (c == '#') 1 else 0)
+      .map(s => s.chars().mapToObj(c => if (c == '#') 1 else 0)
         .collect(Collectors.toList[Int]())).toList.asJava)
-    var curr = initImage
-    val step = 10
-    for (i <- 1 to 50){
-      curr = curr.expand(p => 0, step)
-      val next = curr
-        .map((i, p) =>{
-          val theNine = curr.getSurroundingTilesWithPoints(p, true)
-          val s = theNine.asScala.map(_.getValue.toString).reduce(_+_)
-          imageEnhancer(Integer.parseInt(s, 2))
-        })
-
-      if(i % 2 == 0){
-        val ls = next.getRaw.asScala.map(_.asScala)
-        val minLs = ls.dropRight(step+1).drop(step).map(l => l.dropRight(step+1).drop(step).asJava).asJava
-        curr = new Grid[Int](minLs)
-      } else {
-        curr = next
-      }
-    }
-    curr.sum(i => i)
+    enhance(initImage, imageEnhancer, 50).sum(i => i)
   }
 
+  def enhance(image: Grid[Int], imageEnhancer: Seq[Int], times: Int): Grid[Int] = {
+    (1 to times).foldLeft(image)((img, i) => step(img, imageEnhancer, 2, i % 2 == 0))
+  }
+
+  def step(image: Grid[Int], imageEnhancer: Seq[Int], expandWith: Int, shrink: Boolean): Grid[Int] = {
+    val filler = if (imageEnhancer.head == 1) (if (shrink) imageEnhancer.head else imageEnhancer.last) else 0
+    val curr = image.expand(_ => filler, expandWith)
+    val next = curr.map((_, p) => imageEnhancer(Integer.parseInt(curr.getSurroundingTilesWithPoints(p, true).asScala.map(_.getValue.toString).reduce(_ + _), 2)))
+    if (shrink) {
+      next.shrink((_, p) => p.x >= expandWith && p.x <= (next.width() - expandWith - 1) && p.y >= expandWith && p.y <= (next.height() - expandWith - 1))
+    } else {
+      next
+    }
+  }
 
 }
