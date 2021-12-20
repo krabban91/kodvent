@@ -12,21 +12,22 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val imageEnhancer = strings.head.chars().mapToObj(c => if (c == '#') 1 else 0)
-      .collect(Collectors.toList[Int]()).asScala.toSeq
-    val initImage: Grid[Int] = new Grid[Int](strings.tail.tail
-      .map(s => s.chars().mapToObj(c => if (c == '#') 1 else 0)
-        .collect(Collectors.toList[Int]())).toList.asJava)
+    val (imageEnhancer, initImage) = imageContent(strings)
     enhance(initImage, imageEnhancer, 2).sum(i => i)
   }
 
   override def part2(strings: Seq[String]): Long = {
+    val (imageEnhancer, initImage) = imageContent(strings)
+    enhance(initImage, imageEnhancer, 50).sum(i => i)
+  }
+
+  private def imageContent(strings: Seq[String]): (Seq[Int], Grid[Int]) = {
     val imageEnhancer = strings.head.chars().mapToObj(c => if (c == '#') 1 else 0)
       .collect(Collectors.toList[Int]()).asScala.toSeq
     val initImage: Grid[Int] = new Grid[Int](strings.tail.tail
       .map(s => s.chars().mapToObj(c => if (c == '#') 1 else 0)
         .collect(Collectors.toList[Int]())).toList.asJava)
-    enhance(initImage, imageEnhancer, 50).sum(i => i)
+    (imageEnhancer, initImage)
   }
 
   def enhance(image: Grid[Int], imageEnhancer: Seq[Int], times: Int): Grid[Int] = {
