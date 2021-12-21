@@ -106,37 +106,29 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   class DiracBoard(start: Long, size: Long, winsAt: Long, scoreInit: Long = 0L, rollsInit: Long = 0L) {
 
-    private val inner = mutable.ListBuffer[Long]()
-    inner.addAll((1L to size).toList)
-    (0L until start).foreach(_ => rotateOne)
+    var location: Long = start
     var score: Long = scoreInit
     var rolls: Long = rollsInit
 
     def move(steps: Int): Unit = {
+      location = ((location + steps - 1) % size) + 1
       rolls += 1
-      (0 until steps % 10 + 1 / 10).foreach(_ => rotateOne)
     }
 
-    def calcScore: Unit = score += inner.last
+    def calcScore: Unit = score += location
 
     def hasWon: Boolean = score >= winsAt
 
-    def rotateOne: Unit = {
-      val head = inner.head
-      inner.dropInPlace(1)
-      inner.addOne(head)
-    }
-
     def copy(): DiracBoard = {
-      new DiracBoard(this.inner.last, size, winsAt, score, rolls)
+      new DiracBoard(location, size, winsAt, score, rolls)
     }
 
     override def equals(obj: Any): Boolean = Option(obj)
       .filter(_.isInstanceOf[DiracBoard])
       .map(_.asInstanceOf[DiracBoard])
-      .exists(other => other.score == this.score && other.inner == this.inner && other.rolls == this.rolls)
+      .exists(other => other.score == this.score && other.location == this.location && other.rolls == this.rolls)
 
-    override def hashCode(): Int = Objects.hash(score, rolls, inner)
+    override def hashCode(): Int = Objects.hash(score, rolls, location)
 
   }
 
