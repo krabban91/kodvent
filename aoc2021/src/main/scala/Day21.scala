@@ -1,6 +1,5 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
-import java.util.Objects
 import scala.collection.mutable
 
 object Day21 extends App with AoCPart1Test with AoCPart2Test {
@@ -11,24 +10,25 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val p1 = new DiracBoard(strings.head.split("starting position:").last.trim.toLong, 10, 1000)
-    val p2 = new DiracBoard(strings.last.split("starting position:").last.trim.toLong, 10, 1000)
+    var p1 = DiracBoard(strings.head.split("starting position:").last.trim.toLong)
+    var p2 = DiracBoard(strings.last.split("starting position:").last.trim.toLong)
+    val winsAt = 1000
     var dice = 1
-    while (!(p1.hasWon || p2.hasWon)) {
+    while (!(p1.hasWon(winsAt) || p2.hasWon(winsAt))) {
       for (i <- 1 to 3) {
-        p1.move(dice)
+        p1 = p1.move(dice)
         dice = nextDice(dice)
       }
-      p1.calcScore
-      if (!p1.hasWon) {
+      p1 = p1.calcScore
+      if (!p1.hasWon(winsAt)) {
         for (i <- 1 to 3) {
-          p2.move(dice)
+          p2 = p2.move(dice)
           dice = nextDice(dice)
         }
-        p2.calcScore
+        p2 = p2.calcScore
       }
     }
-    if (p1.hasWon) {
+    if (p1.hasWon(winsAt)) {
       p2.score * (p1.rolls + p2.rolls)
     } else {
       p1.score * (p1.rolls + p2.rolls)
@@ -54,8 +54,9 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     .map(t => (t._1, t._2 * count))
 
   override def part2(strings: Seq[String]): Long = {
-    val p1Init = new DiracBoard(strings.head.split("starting position:").last.trim.toLong, 10, 21)
-    val p2Init = new DiracBoard(strings.last.split("starting position:").last.trim.toLong, 10, 21)
+    val p1Init = DiracBoard(strings.head.split("starting position:").last.trim.toLong)
+    val p2Init = DiracBoard(strings.last.split("starting position:").last.trim.toLong)
+    val winsAt = 21
     val done = mutable.HashMap[((DiracBoard, DiracBoard), Boolean), Long]()
     val pq = mutable.PriorityQueue[((DiracBoard, DiracBoard), Long)]()(Ordering.Long.on(t => t._2))
     pq.addOne(((p1Init, p2Init), 1L))
@@ -63,28 +64,16 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
       val pop = pq.dequeue()
       val ((p1, p2), countDimensions) = pop
       rollQuantumRound(countDimensions)
-        .map(t => {
-          val inP1 = p1.copy()
-          val inP2 = p2.copy()
-          inP1.move(t._1)
-          inP1.calcScore
-          ((inP1, inP2), t._2)
-        })
+        .map(t => ((p1.move(t._1).calcScore, p2), t._2))
         .foreach(p1Res => {
           val (pt1@(inP1, inP2), countDimensionsP2) = p1Res
 
-          if (!p1Res._1._1.hasWon) {
+          if (!inP1.hasWon(winsAt)) {
             rollQuantumRound(countDimensionsP2)
-              .map(t => {
-                val outP1 = inP1.copy()
-                val outP2 = inP2.copy()
-                outP2.move(t._1)
-                outP2.calcScore
-                ((outP1, outP2), t._2)
-              })
+              .map(t => ((inP1, inP2.move(t._1).calcScore), t._2))
               .foreach(p2Res => {
                 val (pt2@(_, outP2), countDimensionsDone) = p2Res
-                if (outP2.hasWon) {
+                if (outP2.hasWon(winsAt)) {
                   done.put((pt2, false), countDimensionsDone + done.getOrElse((pt2, false), 0L))
                 } else {
                   pq.addOne(p2Res)
@@ -104,31 +93,13 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  class DiracBoard(start: Long, size: Long, winsAt: Long, scoreInit: Long = 0L, rollsInit: Long = 0L) {
+  case class DiracBoard(location: Long, score: Long = 0L, rolls: Long = 0L) {
 
-    var location: Long = start
-    var score: Long = scoreInit
-    var rolls: Long = rollsInit
+    def move(steps: Int): DiracBoard = DiracBoard(((location + steps - 1) % 10) + 1, score, rolls + 1)
 
-    def move(steps: Int): Unit = {
-      location = ((location + steps - 1) % size) + 1
-      rolls += 1
-    }
+    def calcScore: DiracBoard = DiracBoard(location, score + location, rolls)
 
-    def calcScore: Unit = score += location
-
-    def hasWon: Boolean = score >= winsAt
-
-    def copy(): DiracBoard = {
-      new DiracBoard(location, size, winsAt, score, rolls)
-    }
-
-    override def equals(obj: Any): Boolean = Option(obj)
-      .filter(_.isInstanceOf[DiracBoard])
-      .map(_.asInstanceOf[DiracBoard])
-      .exists(other => other.score == this.score && other.location == this.location && other.rolls == this.rolls)
-
-    override def hashCode(): Int = Objects.hash(score, rolls, location)
+    def hasWon(winsAt: Int): Boolean = score >= winsAt
 
   }
 
