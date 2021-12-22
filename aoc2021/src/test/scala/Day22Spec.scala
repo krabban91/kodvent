@@ -4,10 +4,10 @@ import org.scalatest.matchers.should.Matchers
 class Day22Spec extends AnyFlatSpec with Matchers {
   behavior of "Part 1"
   it should "Test" in {
-    Day22.part1TestResult shouldEqual -1
+    Day22.part1TestResult shouldEqual 474140
   }
   it should "Real" in {
-    Day22.part1Result shouldEqual -1
+    Day22.part1Result shouldEqual 647076
   }
 
   behavior of "Part 2"
