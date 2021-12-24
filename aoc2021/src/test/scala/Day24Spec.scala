@@ -9,6 +9,6 @@ class Day24Spec extends AnyFlatSpec with Matchers {
 
   behavior of "Part 2"
   it should "Real" in {
-    Day24.part2Result shouldEqual -1
+    Day24.part2Result shouldEqual "11189561113216"
   }
 }
