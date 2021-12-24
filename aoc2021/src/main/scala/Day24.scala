@@ -47,7 +47,47 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
     "N/A"
   }
 
-  override def part2(strings: Seq[String]): String = "N/A"
+  override def part2(strings: Seq[String]): String = {
+    val exprs = strings.map(Expr(_))
+
+    for (i <- (1L to 1L)) {
+      for (j <- (1L to 1L)) {
+        for (k <- (1L to 2L)) {
+          for (l <- (8L to 9L)) {
+            for (m <- 9L to 9L) {
+              for (n <- 5L to 9L) {
+                for (o <- (6L to 9L)) {
+                  for (p <- (1L to 4L)) {
+                    for (q <- (1L to 8L)) {
+                      for (r <- (1L to 7L)) {
+                        for (s <- (3L to 9L)) {
+                          for (t <- (2L to 9L)) {
+                            for (u <- (1L to 9L)) {
+                              for (v <- (6L to 6L)) {
+
+                                val inp = Seq(i, j, k, l, m, n, o, p, q, r, s, t, u, v)
+                                val res = exprs.take(18 * 14).foldLeft(ALU(inp))((alu, expr) => {
+                                  expr.eval(alu)
+                                })
+                                if (res.z == 0) {
+                                  return inp.map(_.toString).reduce(_ + _)
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    "N/A"
+  }
 
   case class ALU(inputs: Seq[Long], w: Long = 0, x: Long = 0, y: Long = 0, z: Long = 0) {
 
