@@ -21,24 +21,22 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
   override def part2(strings: Seq[String]): Long = {
     val dirac = QuantumDirac(strings)
     val winsAt = 21
-    val done = mutable.HashMap[Int, Long]()
-    val pq = mutable.PriorityQueue[(QuantumDirac, Long)]()(Ordering.Long.on(t => t._2))
-    pq.addOne((dirac, 1L))
-    while (pq.nonEmpty) {
-      val (board, countDimensions) = pq.dequeue()
-      board.rollQuantumRound(countDimensions)
-        .foreach(boardRes => {
-          val (b, dims) = boardRes
-          val maybePlayer = b.winner(winsAt)
-          if (maybePlayer.isDefined) {
-            done.put(maybePlayer.get.id, dims + done.getOrElse(maybePlayer.get.id, 0L))
-          } else {
-            pq.addOne(boardRes)
-          }
-        })
-    }
-    done.values.max
+    val (p1, p2) = winningDimensions(dirac, winsAt)
+    if (p1 > p2) p1 else p2
   }
+
+  def winningDimensions(state: QuantumDirac, winsAt: Int, memoize: mutable.HashMap[QuantumDirac, (Long, Long)] = mutable.HashMap[QuantumDirac, (Long, Long)]()): (Long, Long) = {
+    val winner = state.winner(winsAt)
+    if (winner.isEmpty) {
+      memoize.getOrElseUpdate(state, state.nextStates
+        .map(s => (winningDimensions(s._1, winsAt, memoize), s._2))
+        .map(v => (v._1._1 * v._2, v._1._2 * v._2))
+        .reduce((a, b) => (a._1 + b._1, a._2 + b._2)))
+    } else {
+      if (winner.get.id == 1) (1, 0) else (0, 1)
+    }
+  }
+
 
   case class Dirac(player1: DiracPlayer, player2: DiracPlayer, dice: Int, isP1: Boolean) {
 
@@ -55,8 +53,6 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class QuantumDirac(player1: DiracPlayer, player2: DiracPlayer, isP1: Boolean) {
-
-    def rollQuantumRound(count: Long): Seq[(QuantumDirac, Long)] = nextStates.map(t => (t._1, t._2 * count))
 
     def nextStates: Seq[(QuantumDirac, Long)] = QuantumDirac.ROLL_SCENARIOS
       .map(t => (if (isP1) QuantumDirac(player1.move(t._1).calcScore, player2, !isP1) else QuantumDirac(player1, player2.move(t._1).calcScore, !isP1), t._2))
