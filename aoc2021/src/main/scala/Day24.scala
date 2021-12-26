@@ -5,95 +5,36 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
   printResultPart1
   printResultPart2
 
-  override def part1(strings: Seq[String]): String = {
-    val exprs = strings.map(Expr(_))
+  override def part1(strings: Seq[String]): String = modelNumber(strings.map(Expr(_)), ALU(), retro = false).get
 
-    for (i <- (1L to 4L).reverse) {
-      for (j <- (1L to 1L).reverse) {
-        for (k <- (1L to 2L).reverse) {
-          for (l <- Seq(9L, 8L)) {
-            for (m <- 9L to 9L) {
-              for (n <- 9L to 9L) {
-                for (o <- (9L to 9L).reverse) {
-                  for (p <- (4L to 4L).reverse) {
-                    for (q <- (1L to 9L).reverse) {
-                      for (r <- (1L to 7L).reverse) {
-                        for (s <- (3L to 9L).reverse) {
-                          for (t <- (1L to 9L).reverse) {
-                            for (u <- (5L to 9L).reverse) {
-                              for (v <- (6L to 9L).reverse) {
+  override def part2(strings: Seq[String]): String = modelNumber(strings.map(Expr(_)), ALU(), retro = true).get
 
-                                val inp = Seq(i, j, k, l, m, n, o, p, q, r, s, t, u, v)
-                                val res = exprs.foldLeft(ALU(inp))((alu, expr) => {
-                                  expr.eval(alu).get
-                                })
-                                if (res.z == 0) {
-                                  return inp.map(_.toString).reduce(_ + _)
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    "N/A"
-  }
+  def modelNumber(instr: Seq[Expr], alu: ALU, retro: Boolean): Option[String] = Option("")
+    .filter(_ => instr.isEmpty)
+    .orElse((if (retro) (1 to 9) else (1 to 9).reverse)
+      .map(i => (i, alu.addInput(i).runUntilInput(instr)))
+      .filter(v => v._2._1.z <= getZLimit(v._2._2.size))
+      .foldLeft(Option.empty[String])((out, v) => out.orElse(modelNumber(v._2._2, v._2._1, retro).map(t => v._1 + t))))
 
-  override def part2(strings: Seq[String]): String = {
-    val exprs = strings.map(Expr(_))
+  case class ALU(inputs: Seq[Long] = Seq(), w: Long = 0, x: Long = 0, y: Long = 0, z: Long = 0) {
 
-    for (i <- (1L to 1L)) {
-      for (j <- (1L to 1L)) {
-        for (k <- (1L to 2L)) {
-          for (l <- (8L to 9L)) {
-            for (m <- 9L to 9L) {
-              for (n <- 5L to 9L) {
-                for (o <- (6L to 9L)) {
-                  for (p <- (1L to 4L)) {
-                    for (q <- (1L to 8L)) {
-                      for (r <- (1L to 7L)) {
-                        for (s <- (3L to 9L)) {
-                          for (t <- (2L to 9L)) {
-                            for (u <- (1L to 9L)) {
-                              for (v <- (6L to 6L)) {
-
-                                val inp = Seq(i, j, k, l, m, n, o, p, q, r, s, t, u, v)
-                                val res = exprs.take(18 * 14).foldLeft(ALU(inp))((alu, expr) => {
-                                  expr.eval(alu).get
-                                })
-                                if (res.z == 0) {
-                                  return inp.map(_.toString).reduce(_ + _)
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    "N/A"
-  }
-
-  case class ALU(inputs: Seq[Long], w: Long = 0, x: Long = 0, y: Long = 0, z: Long = 0) {
-
+    def addInput(input: Int): ALU = ALU(inputs ++ Seq(input), w, x, y, z)
 
     def step(expr: Expr): Option[ALU] = {
       expr.eval(this)
+    }
+
+    def runUntilInput(instr: Seq[Expr]): (ALU, Seq[Expr]) = {
+      val (curr, _, run) = instr.foldLeft((this, false, 0))((t, expr) => {
+        if (t._2) {
+          t
+        } else {
+          val v = t._1.step(expr)
+          v.map(a => (a, false, t._3 + 1))
+            .getOrElse((t._1, true, t._3))
+        }
+      })
+      (curr, instr.drop(run))
     }
   }
 
@@ -223,5 +164,23 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
         case e => println("missing"); Inp(spl.head)
       }
     }
+  }
+
+  private def getZLimit(instructionSize: Int): Int = instructionSize match {
+    case 0 => 0
+    case 18 => 26
+    case 36 => 600
+    case 54 => 15_000
+    case 72 => 360_000
+    case 90 => 15_000
+    case 108 => 600
+    case 126 => 15_000
+    case 144 => 600
+    case 162 => 50
+    case 180 => 600
+    case 198 => 15_000
+    case 216 => 600
+    case 234 => 26
+    case 252 => 0
   }
 }
