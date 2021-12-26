@@ -25,7 +25,7 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
 
                                 val inp = Seq(i, j, k, l, m, n, o, p, q, r, s, t, u, v)
                                 val res = exprs.foldLeft(ALU(inp))((alu, expr) => {
-                                  expr.eval(alu)
+                                  expr.eval(alu).get
                                 })
                                 if (res.z == 0) {
                                   return inp.map(_.toString).reduce(_ + _)
@@ -67,7 +67,7 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
 
                                 val inp = Seq(i, j, k, l, m, n, o, p, q, r, s, t, u, v)
                                 val res = exprs.take(18 * 14).foldLeft(ALU(inp))((alu, expr) => {
-                                  expr.eval(alu)
+                                  expr.eval(alu).get
                                 })
                                 if (res.z == 0) {
                                   return inp.map(_.toString).reduce(_ + _)
@@ -92,274 +92,119 @@ object Day24 extends App with AoCPart1String with AoCPart2String {
   case class ALU(inputs: Seq[Long], w: Long = 0, x: Long = 0, y: Long = 0, z: Long = 0) {
 
 
-    def step(expr: Expr): ALU = {
+    def step(expr: Expr): Option[ALU] = {
       expr.eval(this)
     }
   }
 
   trait Expr {
-    def eval(alu: ALU): ALU
+    def eval(alu: ALU): Option[ALU]
   }
 
   case class Inp(x: String) extends Expr {
-    override def eval(alu: ALU): ALU = {
-      val in = alu.inputs.head
-      val tail = alu.inputs.tail
-      x match {
-        case "w" => ALU(tail, w = in, x = alu.x, y = alu.y, z = alu.z)
-        case "x" => ALU(tail, w = alu.w, x = in, y = alu.y, z = alu.z)
-        case "y" => ALU(tail, w = alu.w, x = alu.x, y = in, z = alu.z)
-        case "z" => ALU(tail, w = alu.w, x = alu.x, y = alu.y, z = in)
+    override def eval(alu: ALU): Option[ALU] = {
+      if (alu.inputs.isEmpty) {
+        None
+      } else {
+        val in = alu.inputs.head
+        val tail = alu.inputs.tail
+        Option(x match {
+          case "w" => ALU(tail, w = in, x = alu.x, y = alu.y, z = alu.z)
+          case "x" => ALU(tail, w = alu.w, x = in, y = alu.y, z = alu.z)
+          case "y" => ALU(tail, w = alu.w, x = alu.x, y = in, z = alu.z)
+          case "z" => ALU(tail, w = alu.w, x = alu.x, y = alu.y, z = in)
+        })
       }
     }
   }
 
   case class Add(a: String, b: String) extends Expr {
-    override def eval(alu: ALU): ALU = {
-      (a, b) match {
-        case ("w", "w") => ALU(alu.inputs, w = alu.w + alu.w, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "x") => ALU(alu.inputs, w = alu.w + alu.x, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "y") => ALU(alu.inputs, w = alu.w + alu.y, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "z") => ALU(alu.inputs, w = alu.w + alu.z, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", d) => ALU(alu.inputs, w = alu.w + d.toLong, x = alu.x, y = alu.y, z = alu.z)
-        case ("x", "w") => ALU(alu.inputs, w = alu.w, x = alu.x + alu.w, y = alu.y, z = alu.z)
-        case ("x", "x") => ALU(alu.inputs, w = alu.w, x = alu.x + alu.x, y = alu.y, z = alu.z)
-        case ("x", "y") => ALU(alu.inputs, w = alu.w, x = alu.x + alu.y, y = alu.y, z = alu.z)
-        case ("x", "z") => ALU(alu.inputs, w = alu.w, x = alu.x + alu.z, y = alu.y, z = alu.z)
-        case ("x", d) => ALU(alu.inputs, w = alu.w, x = alu.x + d.toLong, y = alu.y, z = alu.z)
-        case ("y", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + alu.w, z = alu.z)
-        case ("y", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + alu.x, z = alu.z)
-        case ("y", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + alu.y, z = alu.z)
-        case ("y", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + alu.z, z = alu.z)
-        case ("y", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + d.toLong, z = alu.z)
-        case ("z", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + alu.w)
-        case ("z", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + alu.x)
-        case ("z", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + alu.y)
-        case ("z", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + alu.z)
-        case ("z", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + d.toLong)
+    override def eval(alu: ALU): Option[ALU] = {
+      val bVal = b match {
+        case "w" => alu.w
+        case "x" => alu.x
+        case "y" => alu.y
+        case "z" => alu.z
+        case v => v.toLong
       }
+      Option(a match {
+        case "w" => ALU(alu.inputs, w = alu.w + bVal, x = alu.x, y = alu.y, z = alu.z)
+        case "x" => ALU(alu.inputs, w = alu.w, x = alu.x + bVal, y = alu.y, z = alu.z)
+        case "y" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y + bVal, z = alu.z)
+        case "z" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z + bVal)
+      })
     }
   }
 
   case class Mul(a: String, b: String) extends Expr {
-    override def eval(alu: ALU): ALU = {
-      (a, b) match {
-        case ("w", "w") => ALU(alu.inputs, w = alu.w * alu.w, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "x") => ALU(alu.inputs, w = alu.w * alu.x, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "y") => ALU(alu.inputs, w = alu.w * alu.y, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", "z") => ALU(alu.inputs, w = alu.w * alu.z, x = alu.x, y = alu.y, z = alu.z)
-        case ("w", d) => ALU(alu.inputs, w = alu.w * d.toLong, x = alu.x, y = alu.y, z = alu.z)
-        case ("x", "w") => ALU(alu.inputs, w = alu.w, x = alu.x * alu.w, y = alu.y, z = alu.z)
-        case ("x", "x") => ALU(alu.inputs, w = alu.w, x = alu.x * alu.x, y = alu.y, z = alu.z)
-        case ("x", "y") => ALU(alu.inputs, w = alu.w, x = alu.x * alu.y, y = alu.y, z = alu.z)
-        case ("x", "z") => ALU(alu.inputs, w = alu.w, x = alu.x * alu.z, y = alu.y, z = alu.z)
-        case ("x", d) => ALU(alu.inputs, w = alu.w, x = alu.x * d.toLong, y = alu.y, z = alu.z)
-        case ("y", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * alu.w, z = alu.z)
-        case ("y", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * alu.x, z = alu.z)
-        case ("y", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * alu.y, z = alu.z)
-        case ("y", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * alu.z, z = alu.z)
-        case ("y", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * d.toLong, z = alu.z)
-        case ("z", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * alu.w)
-        case ("z", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * alu.x)
-        case ("z", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * alu.y)
-        case ("z", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * alu.z)
-        case ("z", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * d.toLong)
+    override def eval(alu: ALU): Option[ALU] = {
+      val bVal = b match {
+        case "w" => alu.w
+        case "x" => alu.x
+        case "y" => alu.y
+        case "z" => alu.z
+        case v => v.toLong
       }
+      Option(a match {
+        case "w" => ALU(alu.inputs, w = alu.w * bVal, x = alu.x, y = alu.y, z = alu.z)
+        case "x" => ALU(alu.inputs, w = alu.w, x = alu.x * bVal, y = alu.y, z = alu.z)
+        case "y" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y * bVal, z = alu.z)
+        case "z" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z * bVal)
+      })
     }
   }
 
   case class Div(a: String, b: String) extends Expr {
-    override def eval(alu: ALU): ALU = (a, b) match {
-      case ("w", "w") => if (alu.w == 0) {
-        println("w==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w / alu.w, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "x") => if (alu.x == 0) {
-        println("x==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w / alu.x, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "y") => if (alu.y == 0) {
-        println("y==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w / alu.y, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "z") => if (alu.z == 0) {
-        println("z==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w / alu.z, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", d) => if (d == "0") {
-        println("d==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w / d.toLong, x = alu.x, y = alu.y, z = alu.z)
-      case ("x", "w") => if (alu.w == 0) {
-        println("w==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x / alu.w, y = alu.y, z = alu.z)
-      case ("x", "x") => if (alu.x == 0) {
-        println("x==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x / alu.x, y = alu.y, z = alu.z)
-      case ("x", "y") => if (alu.y == 0) {
-        println("y==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x / alu.y, y = alu.y, z = alu.z)
-      case ("x", "z") => if (alu.z == 0) {
-        println("z==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x / alu.z, y = alu.y, z = alu.z)
-      case ("x", d) => if (d == "0") {
-        println("d==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x / d.toLong, y = alu.y, z = alu.z)
-      case ("y", "w") => if (alu.w == 0) {
-        println("w==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / alu.w, z = alu.z)
-      case ("y", "x") => if (alu.x == 0) {
-        println("x==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / alu.x, z = alu.z)
-      case ("y", "y") => if (alu.y == 0) {
-        println("y==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / alu.y, z = alu.z)
-      case ("y", "z") => if (alu.z == 0) {
-        println("z==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / alu.z, z = alu.z)
-      case ("y", d) => if (d == "0") {
-        println("d==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / d.toLong, z = alu.z)
-      case ("z", "w") => if (alu.w == 0) {
-        println("w==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / alu.w)
-      case ("z", "x") => if (alu.x == 0) {
-        println("x==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / alu.x)
-      case ("z", "y") => if (alu.y == 0) {
-        println("y==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / alu.y)
-      case ("z", "z") => if (alu.z == 0) {
-        println("z==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / alu.z)
-      case ("z", d) => if (d == "0") {
-        println("d==0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / d.toLong)
+    override def eval(alu: ALU): Option[ALU] = {
+      val bVal = b match {
+        case "w" => alu.w
+        case "x" => alu.x
+        case "y" => alu.y
+        case "z" => alu.z
+        case v => v.toLong
+      }
+      Option(a match {
+        case "w" => ALU(alu.inputs, w = alu.w / bVal, x = alu.x, y = alu.y, z = alu.z)
+        case "x" => ALU(alu.inputs, w = alu.w, x = alu.x / bVal, y = alu.y, z = alu.z)
+        case "y" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y / bVal, z = alu.z)
+        case "z" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z / bVal)
+      })
     }
   }
 
   case class Mod(a: String, b: String) extends Expr {
-    override def eval(alu: ALU): ALU = (a, b) match {
-      case ("w", "w") => if (alu.w < 0) {
-        println("w mod<0");
-        alu
-      } else ALU(alu.inputs, w = alu.w % alu.w, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "x") => if (alu.w < 0 || alu.x < 0) {
-        println("x mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w % alu.x, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "y") => if (alu.w < 0 || alu.y < 0) {
-        println("y mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w % alu.y, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "z") => if (alu.w < 0 || alu.z < 0) {
-        println("z mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w % alu.z, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", d) => if (d.toLong < 0) {
-        println("d mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w % d.toLong, x = alu.x, y = alu.y, z = alu.z)
-      case ("x", "w") => if (alu.w < 0 || alu.x < 0) {
-        println("w mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x % alu.w, y = alu.y, z = alu.z)
-      case ("x", "x") => if (alu.x < 0) {
-        println("x mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x % alu.x, y = alu.y, z = alu.z)
-      case ("x", "y") => if (alu.x < 0 || alu.y < 0) {
-        println("y mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x % alu.y, y = alu.y, z = alu.z)
-      case ("x", "z") => if (alu.x < 0 || alu.z < 0) {
-        println("z mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x % alu.z, y = alu.y, z = alu.z)
-      case ("x", d) => if (d.toLong < 0) {
-        println("d mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x % d.toLong, y = alu.y, z = alu.z)
-      case ("y", "w") => if (alu.y < 0 || alu.w < 0) {
-        println("w mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % alu.w, z = alu.z)
-      case ("y", "x") => if (alu.y < 0 || alu.x < 0) {
-        println("x mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % alu.x, z = alu.z)
-      case ("y", "y") => if (alu.y < 0) {
-        println("y mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % alu.y, z = alu.z)
-      case ("y", "z") => if (alu.y < 0 || alu.z < 0) {
-        println("z mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % alu.z, z = alu.z)
-      case ("y", d) => if (d.toLong < 0) {
-        println("d mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % d.toLong, z = alu.z)
-      case ("z", "w") => if (alu.z < 0 || alu.w < 0) {
-        println("w mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % alu.w)
-      case ("z", "x") => if (alu.z < 0 || alu.x < 0) {
-        println("x mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % alu.x)
-      case ("z", "y") => if (alu.z < 0 || alu.y < 0) {
-        println("y mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % alu.y)
-      case ("z", "z") => if (alu.z < 0) {
-        println("z mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % alu.z)
-      case ("z", d) => if (d.toLong < 0) {
-        println("d mod <0");
-        alu
-      } else ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % d.toLong)
+    override def eval(alu: ALU): Option[ALU] = {
+      val bVal = b match {
+        case "w" => alu.w
+        case "x" => alu.x
+        case "y" => alu.y
+        case "z" => alu.z
+        case v => v.toLong
+      }
+      Option(a match {
+        case "w" => ALU(alu.inputs, w = alu.w % bVal, x = alu.x, y = alu.y, z = alu.z)
+        case "x" => ALU(alu.inputs, w = alu.w, x = alu.x % bVal, y = alu.y, z = alu.z)
+        case "y" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y % bVal, z = alu.z)
+        case "z" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = alu.z % bVal)
+      })
     }
   }
 
   case class Eql(a: String, b: String) extends Expr {
-    override def eval(alu: ALU): ALU = (a, b) match {
-      case ("w", "w") => ALU(alu.inputs, w = if (alu.w == alu.w) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "x") => ALU(alu.inputs, w = if (alu.w == alu.x) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "y") => ALU(alu.inputs, w = if (alu.w == alu.y) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", "z") => ALU(alu.inputs, w = if (alu.w == alu.z) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
-      case ("w", d) => ALU(alu.inputs, w = if (alu.w == d.toLong) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
-      case ("x", "w") => ALU(alu.inputs, w = alu.w, x = if (alu.x == alu.w) 1 else 0, y = alu.y, z = alu.z)
-      case ("x", "x") => ALU(alu.inputs, w = alu.w, x = if (alu.x == alu.x) 1 else 0, y = alu.y, z = alu.z)
-      case ("x", "y") => ALU(alu.inputs, w = alu.w, x = if (alu.x == alu.y) 1 else 0, y = alu.y, z = alu.z)
-      case ("x", "z") => ALU(alu.inputs, w = alu.w, x = if (alu.x == alu.z) 1 else 0, y = alu.y, z = alu.z)
-      case ("x", d) => ALU(alu.inputs, w = alu.w, x = if (alu.x == d.toLong) 1 else 0, y = alu.y, z = alu.z)
-      case ("y", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == alu.w) 1 else 0, z = alu.z)
-      case ("y", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == alu.x) 1 else 0, z = alu.z)
-      case ("y", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == alu.y) 1 else 0, z = alu.z)
-      case ("y", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == alu.z) 1 else 0, z = alu.z)
-      case ("y", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == d.toLong) 1 else 0, z = alu.z)
-      case ("z", "w") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == alu.w) 1 else 0)
-      case ("z", "x") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == alu.x) 1 else 0)
-      case ("z", "y") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == alu.y) 1 else 0)
-      case ("z", "z") => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == alu.z) 1 else 0)
-      case ("z", d) => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == d.toLong) 1 else 0)
+    override def eval(alu: ALU): Option[ALU] = {
+      val bVal = b match {
+        case "w" => alu.w
+        case "x" => alu.x
+        case "y" => alu.y
+        case "z" => alu.z
+        case v => v.toLong
+      }
+      Option(a match {
+        case "w" => ALU(alu.inputs, w = if (alu.w == bVal) 1 else 0, x = alu.x, y = alu.y, z = alu.z)
+        case "x" => ALU(alu.inputs, w = alu.w, x = if (alu.x == bVal) 1 else 0, y = alu.y, z = alu.z)
+        case "y" => ALU(alu.inputs, w = alu.w, x = alu.x, y = if (alu.y == bVal) 1 else 0, z = alu.z)
+        case "z" => ALU(alu.inputs, w = alu.w, x = alu.x, y = alu.y, z = if (alu.z == bVal) 1 else 0)
+      })
     }
 
 
