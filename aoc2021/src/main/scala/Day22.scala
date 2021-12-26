@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day22 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = countActive(strings.map(Instruction(_)).flatMap(_.limited((-50, 50), (-50, 50), (-50, 50))))
 
   override def part2(strings: Seq[String]): Long = countActive(strings.map(Instruction(_)))
