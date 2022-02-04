@@ -1,5 +1,7 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
+import scala.util.parsing.combinator.RegexParsers
+
 object Day18 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
@@ -125,46 +127,15 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     override def asLeaf: Option[Leaf] = None
   }
 
-  object SnailExp {
+  object SnailExp extends RegexParsers {
+    def leaf: Parser[SnailExp] = """\d+""".r.map(_.toLong).map(Leaf)
+
+    def tree: Parser[SnailExp] = "[" ~> snail ~ "," ~ snail <~ "]" ^^ { case l ~ _ ~ r => Tree(l, r) }
+
+    def snail: Parser[SnailExp] = leaf | tree
+
     def apply(string: String): SnailExp = {
-      if (string.head == '[') {
-        val in = string.substring(1, string.length - 1)
-        val split = in.split(",")
-        val splL = split.tail
-          .foldLeft(initial(split.head))(collector)._2
-        val rIn = split.drop(splL.size)
-        val splR = rIn.tail
-          .foldLeft(initial(rIn.head))(collector)._2
-        Tree(splL.reduce(_ + "," + _), splR.reduce(_ + "," + _))
-      } else {
-        Leaf(string)
-      }
-    }
-
-    private def initial(head: String): (Int, Seq[String]) = {
-      (head.count(_ == '['), Seq(head))
-    }
-
-    private def collector(t: (Int, Seq[String]), s: String): (Int, Seq[String]) = {
-      if (t._1 == 0) {
-        t
-      } else if (s.contains('[')) {
-        (t._1 + s.count(_ == '['), t._2 ++ Seq(s))
-      } else {
-        (t._1 - s.count(_ == ']'), t._2 ++ Seq(s))
-      }
-    }
-  }
-
-  object Leaf {
-    def apply(string: String): Leaf = {
-      Leaf(string.takeWhile(_.isDigit).toLong)
-    }
-  }
-
-  object Tree {
-    def apply(l: String, r: String): Tree = {
-      Tree(SnailExp(l), SnailExp(r))
+      parseAll(snail, string).get
     }
   }
 }

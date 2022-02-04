@@ -10,6 +10,7 @@ lazy val root = (project in file("."))
     name := "aoc2021",
     libraryDependencies ++= Seq(
       scalaTest % Test,
+      combinators % Compile,
       kodventCommon % Compile,
       kodventScalaCommon % Compile
     )
