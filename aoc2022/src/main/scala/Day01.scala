@@ -5,41 +5,28 @@ import scala.collection.mutable
 object Day01 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
-    var sum = 0
-    var max = 0
-    strings.foreach(s => {
-      if(s == ""){
-        if (sum > max){
-          max = sum
-        }
-        sum = 0
-      } else {
-        sum += s.toInt
-      }
-    })
 
-    max
+    strings.foldLeft((0, 0)) { case ((sum, max), row) =>
+      if (row == "") {
+        if (sum > max) (0, sum) else (0, max)
+      } else {
+        (sum + row.toInt, max)
+      }
+    }._2
   }
 
   override def part2(strings: Seq[String]): Long = {
-    var sum = 0
-    val max = mutable.ListBuffer[Int]()
-    strings.foreach(s => {
-      if(s == ""){
-        if (max.size<3){
-          max.append(sum)
-        }
-        else if (max.exists(v => v<sum)){
-          val toRemove = max.min
-          max.remove(max.indexOf(toRemove))
-          max.append(sum)
 
-        }
-        sum = 0
+    strings.foldLeft((0, Seq[Int]())) { case ((sum, max), row) =>
+      if (row == "") {
+        if (max.size < 3) {
+          (0, max ++ Seq(sum))
+        } else if (max.exists(v => v < sum)) {
+          (0, (max diff Seq(max.min)) ++ Seq(sum))
+        } else (0, max)
       } else {
-        sum += s.toInt
+        (sum + row.toInt, max)
       }
-    })
-    max.sum
+    }._2.sum
   }
 }
