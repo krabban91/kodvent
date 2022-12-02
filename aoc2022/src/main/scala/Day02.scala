@@ -2,62 +2,50 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
+  override def part1(strings: Seq[String]): Long = solve(strings, part2 = false)
 
-  printResultPart2Test
-  printResultPart2
+  override def part2(strings: Seq[String]): Long = solve(strings, part2 = true)
 
-  override def part1(strings: Seq[String]): Long = {
-    val input: Seq[Seq[String]] = strings.map(_.split(" ").filter(_.nonEmpty).toSeq)
-    input.map(par => {
-      par.head match {
-        case "A" => // rock
-          par.tail.head match {
-            case "X" => 1 + 3 //rock
-            case "Y" => 2 + 6 // paper
-            case "Z" => 3 + 0 // scissor
-          }
-        case "B" => // paper
-          par.tail.head match {
-            case "X" => 1
-            case "Y" => 2 + 3
-            case "Z" => 3 + 6
-          }
-        case "C" => // scissor
-          par.tail.head match {
-            case "X" => 1 + 6
-            case "Y" => 2 + 0
-            case "Z" => 3 + 3
-          }
+  private def solve(strings: Seq[String], part2: Boolean): Long = strings
+    .map(_.split(" ").filter(_.nonEmpty))
+    .map(l => (l.head, l.tail.head))
+    .map { case (elf, move) => score(elf, move, part2) }
+    .sum
 
+
+  /**
+   * score
+   *
+   * A: rock 1, B: paper 2, C: scissors 3
+   *
+   * win: 6, draw: 3, lose: 0
+   *
+   * part 1
+   *
+   * X: rock, Y: paper, Z: scissors
+   *
+   * part 2
+   *
+   * X: lose, Y: draw, Y: win
+   */
+  private def score(elf: String, move: String, part2: Boolean): Long = elf match {
+    case "A" =>
+      move match {
+        case "X" => if (part2) 3 + 0 else 1 + 3
+        case "Y" => if (part2) 1 + 3 else 2 + 6
+        case "Z" => if (part2) 2 + 6 else 3 + 0
       }
-    }).sum
-  }
-
-  override def part2(strings: Seq[String]): Long = {
-    val input: Seq[Seq[String]] = strings.map(_.split(" ").filter(_.nonEmpty).toSeq)
-    input.map(par => {
-      par.head match {
-        case "A" => // rock
-          par.tail.head match {
-            case "X" => 3 + 0 //lose
-            case "Y" => 1 + 3 // draw
-            case "Z" => 2 + 6 // win
-          }
-        case "B" => // paper
-          par.tail.head match {
-            case "X" => 1 + 0
-            case "Y" => 2 + 3
-            case "Z" => 3 + 6
-          }
-        case "C" => // scissor
-          par.tail.head match {
-            case "X" => 2 + 0
-            case "Y" => 3 + 3
-            case "Z" => 1 + 6
-          }
+    case "B" =>
+      move match {
+        case "X" => if (part2) 1 + 0 else 1 + 0
+        case "Y" => if (part2) 2 + 3 else 2 + 3
+        case "Z" => if (part2) 3 + 6 else 3 + 6
       }
-    }).sum
+    case "C" =>
+      move match {
+        case "X" => if (part2) 2 + 0 else 1 + 6
+        case "Y" => if (part2) 3 + 3 else 2 + 0
+        case "Z" => if (part2) 1 + 6 else 3 + 3
+      }
   }
 }
