@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day05 extends App with AoCPart1StringTest with AoCPart2StringTest {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): String = {
     val (stacks, instructions) = parseInput(strings)
     instructions.foreach(_.run1(stacks))
