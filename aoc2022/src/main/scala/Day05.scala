@@ -64,10 +64,10 @@ object Day05 extends App with AoCPart1StringTest with AoCPart2StringTest {
   }
 
   object Instruction {
-    def apply(string: String): Instruction = {
-      val spl = string.split(" from ")
-      val pair = spl.last.split(" to ").map(_.toInt)
-      Instruction(spl.head.split("move ").last.toInt, pair.head, pair.last)
+    private val pattern = """move (\d+) from (\d+) to (\d+)""".r
+
+    def apply(string: String): Instruction = string match {
+      case pattern(a, b, c) => Instruction(a.toInt, b.toInt, c.toInt)
     }
   }
 }
