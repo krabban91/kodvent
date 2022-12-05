@@ -10,83 +10,66 @@ object Day05 extends App with AoCPart1StringTest with AoCPart2StringTest {
   printResultPart2
 
   override def part1(strings: Seq[String]): String = {
-    val grouped = groupsSeparatedByTwoNewlines(strings)
-    val stacks = grouped.head.split("\n").filter(_.nonEmpty)
-
-    val map: mutable.Map[Int, mutable.Stack[String]] = extractStacks(stacks)
-
-    val moves = grouped.last.split("\n").filter(_.nonEmpty).map(Instruction(_))
-    moves.foreach { case Instruction(times, from, to) =>
-
-      (0 until times).foreach(_ => {
-        if (map.contains(from)) {
-          if (!map.contains(to)) {
-            map.put(to, mutable.Stack())
-          }
-          val fromStack = map(from)
-          val toStack = map(to)
-          if (fromStack.nonEmpty) {
-            toStack.push(fromStack.pop)
-          }
-        }
-      })
-    }
-
-    map.keys.toSeq.sorted.map(map(_).head).reduce(_ + _)
+    val (stacks, instructions) = parseInput(strings)
+    instructions.foreach(_.run1(stacks))
+    topLayer(stacks).reduce(_ + _)
   }
 
+
   override def part2(strings: Seq[String]): String = {
+    val (stacks, instructions) = parseInput(strings)
+    instructions.foreach(_.run2(stacks))
+    topLayer(stacks).reduce(_ + _)
+  }
+
+  private def parseInput(strings: Seq[String]): (mutable.Map[Int, mutable.Stack[String]], Array[Instruction]) = {
     val grouped = groupsSeparatedByTwoNewlines(strings)
-    val stacks = grouped.head.split("\n").filter(_.nonEmpty)
-    val map: mutable.Map[Int, mutable.Stack[String]] = extractStacks(stacks)
-
+    val stacks = extractStacks(grouped.head.split("\n").filter(_.nonEmpty))
     val moves = grouped.last.split("\n").filter(_.nonEmpty).map(Instruction(_))
-    moves.foreach { case Instruction(times, from, to) =>
-
-      val toMove = mutable.Stack[String]()
-      (0 until times).foreach(_ => {
-        if (map.contains(from)) {
-          if (!map.contains(to)) {
-            map.put(to, mutable.Stack())
-          }
-          val fromStack = map(from)
-          toMove.push(fromStack.pop())
-        }
-      })
-      while (toMove.nonEmpty) {
-        val toStack = map(to)
-        if (toMove.nonEmpty) {
-          toStack.push(toMove.pop)
-        }
-      }
-    }
-
-    map.keys.toSeq.sorted.map(map(_).head).reduce(_ + _)
+    (stacks, moves)
   }
 
   private def extractStacks(stacks: Array[String]): mutable.Map[Int, mutable.Stack[String]] = {
     val map = mutable.HashMap[Int, mutable.Stack[String]]()
+    val count = stacks.last.split(" ").last.toInt
+    (1 to count).foreach(i => map.put(i, mutable.Stack()))
     stacks.dropRight(1).reverse.foreach(row => {
       val boxes = row.grouped(4).toSeq
-      boxes.indices.map(_ + 1).foreach(i => {
-        if (!map.contains(i)) {
-          map.put(i, mutable.Stack())
-        }
-        if (boxes(i - 1).startsWith("[")) {
-          map(i).push(boxes(i - 1).drop(1).split("]").head)
+      boxes.indices.foreach(i => {
+        if (boxes(i).startsWith("[")) {
+          map(i + 1).push(boxes(i).drop(1).split("]").head)
         }
       })
     })
     map
   }
 
-  case class Instruction(times: Int, from: Int, to: Int) {
+  private def topLayer(stacks: mutable.Map[Int, mutable.Stack[String]]): Seq[String] = stacks.keys.toSeq.sorted.map(stacks(_).head)
 
+  case class Instruction(times: Int, from: Int, to: Int) {
+    def run1(stacks: mutable.Map[Int, mutable.Stack[String]]): Unit = {
+      (0 until times).foreach(_ => {
+        val fromStack = stacks(from)
+        val toStack = stacks(to)
+        toStack.push(fromStack.pop)
+      })
+    }
+
+    def run2(stacks: mutable.Map[Int, mutable.Stack[String]]): Unit = {
+      val toMove = mutable.Stack[String]()
+      (0 until times).foreach(_ => {
+        val fromStack = stacks(from)
+        toMove.push(fromStack.pop())
+      })
+      while (toMove.nonEmpty) {
+        val toStack = stacks(to)
+        toStack.push(toMove.pop)
+      }
+    }
   }
 
   object Instruction {
     def apply(string: String): Instruction = {
-
       val spl = string.split(" from ")
       val pair = spl.last.split(" to ").map(_.toInt)
       Instruction(spl.head.split("move ").last.toInt, pair.head, pair.last)
