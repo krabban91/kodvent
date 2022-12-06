@@ -6,10 +6,9 @@ object Day06 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = packetStart(strings.head, 14)
 
-  def packetStart(string: String, minSize: Int): Int = string.foldLeft(("", 0, false)) { case ((str, count, seen), c) => if (seen)
-    (str, count, seen)
-  else if (str.contains(c))
-    (str.drop(str.indexOf(c) + 1) + c, count + 1, seen)
-  else (str + c, count + 1, str.length + 1 >= minSize)
-  }._2
+  def packetStart(string: String, minSize: Int): Int = string.sliding(minSize).zipWithIndex
+    .filter(_._1.length >= minSize)
+    .find(p => p._1 == p._1.distinct)
+    .map(p => p._1.length + p._2)
+    .get
 }
