@@ -18,7 +18,11 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val tree: Path = parseTree(strings)
+    val freeSpace = 70000000 - tree.size
+    val needed = 30000000 - freeSpace
+    val sizes = tree.recursiveDirs.map(_.size)
+    sizes.sorted.find(size => size >= needed).get
   }
 
   def parseTree(strings: Seq[String]): Path = {
