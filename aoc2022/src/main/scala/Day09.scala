@@ -1,8 +1,7 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
-import krabban91.kodvent.kodvent.utilities.Distances
+import krabban91.kodvent.kodvent.utilities.Distances.manhattan
 
 import java.awt.Point
-import scala.collection.mutable
 
 object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -15,57 +14,27 @@ object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = followTail(strings, 10).size
 
-  private def followTail(strings: Seq[String], length: Int): Set[Point] = {
-    val directions = Map(
-      "L" -> new Point(-1, 0),
-      "R" -> new Point(1, 0),
-      "U" -> new Point(0, -1),
-      "D" -> new Point(0, 1),
-    )
+  private def followTail(strings: Seq[String], length: Int): Set[(Int, Int)] = {
+    val directions = Map("L" -> new Point(-1, 0), "R" -> new Point(1, 0), "U" -> new Point(0, -1), "D" -> new Point(0, 1))
 
-    val snake = (1 to length).map(_ => new Point(0, 0))
-    val tailPositions = mutable.HashMap[Point, String]()
-    tailPositions.put(new Point(snake.last.x, snake.last.y), "#")
-    val inputPattern = """(.+) (.+)""".r
-    strings.foreach { case inputPattern(d, times) =>
+    val rope = (1 to length).map(_ => new Point(0, 0))
+
+    val inputPattern = """(.+) (\d+)""".r
+    strings.flatMap { case inputPattern(d, times) =>
       val dir = directions(d)
-      (1 to times.toInt).foreach(i => {
-        snake.head.move(snake.head.x + dir.x, snake.head.y + dir.y)
-        snake.sliding(2).filter(_.size == 2).foreach(l => {
-          val head = l.head
-          val tail = l.last
-          val dist = Distances.manhattan(tail, head)
-          if (dist > 1) {
-            if (tail.x != head.x && tail.y != head.y && dist > 2) {
-              if (tail.x < head.x && tail.y < head.y) {
-                tail.move(tail.x + 1, tail.y + 1)
-              }
-              else if (tail.x < head.x && tail.y > head.y) {
-                tail.move(tail.x + 1, tail.y + -1)
-              }
-              else if (tail.x > head.x && tail.y < head.y) {
-                tail.move(tail.x + -1, tail.y + 1)
-              }
-              else if (tail.x > head.x && tail.y > head.y) {
-                tail.move(tail.x + -1, tail.y + -1)
-              }
-              else {
-                println(tail + " and " + head)
-              }
-
-            }
-            else if (tail.x != head.x) {
-              tail.move(tail.x + (head.x - tail.x) / 2, tail.y + (head.y - tail.y) / 2)
-
-            } else if (tail.y != head.y) {
-              tail.move(tail.x + (head.x - tail.x) / 2, tail.y + (head.y - tail.y) / 2)
-            }
-          }
-        })
-        tailPositions.put(new Point(snake.last.x, snake.last.y), "#")
-      })
-    }
-    //println(new LogUtils[String].mapToText(tailPositions.asJava, v => if(v == null) "." else v))
-    tailPositions.keys.toSet
+      (0 until times.toInt).map { _ =>
+        rope.head.translate(dir.x, dir.y)
+        rope.sliding(2).map(l => (l.head, l.last)).foreach {
+          case (head, tail) => (tail.translate _).tupled(tailDelta(head, tail))
+        }
+        (rope.last.x, rope.last.y)
+      }
+    }.toSet
   }
+
+  private def tailDelta(head: Point, tail: Point): (Int, Int) = {
+    val (dx, dy) = (head.x - tail.x, head.y - tail.y)
+    if (manhattan(head, tail) > 2) (math.signum(dx), math.signum(dy)) else (dx / 2, dy / 2)
+  }
+
 }
