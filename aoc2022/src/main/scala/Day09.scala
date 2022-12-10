@@ -5,11 +5,6 @@ import java.awt.Point
 
 object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = followTail(strings, 2).size
 
   override def part2(strings: Seq[String]): Long = followTail(strings, 10).size
