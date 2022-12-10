@@ -9,9 +9,23 @@ class Day10Spec extends AnyFlatSpec with Matchers {
     Day10.part1Result shouldEqual 16020
   }
   "Part2 Test" should "be correct" in {
-    Day10.part2TestResult shouldEqual -1
+    val expected = "\n" +
+      "##  ##  ##  ##  ##  ##  ##  ##  ##  ##  \n" +
+      "###   ###   ###   ###   ###   ###   ### \n" +
+      "####    ####    ####    ####    ####    \n" +
+      "#####     #####     #####     #####     \n" +
+      "######      ######      ######      ####\n" +
+      "#######       #######       #######     "
+    Day10.part2TestResult shouldEqual expected
   }
   "Part2" should "be correct" in {
-    Day10.part2Result shouldEqual -1
+    val expected = "\n" +
+      "####  ##  #### #  # ####  ##  #    ###  \n" +
+      "#    #  #    # #  #    # #  # #    #  # \n" +
+      "###  #      #  #  #   #  #  # #    #  # \n" +
+      "#    #     #   #  #  #   #### #    ###  \n" +
+      "#    #  # #    #  # #    #  # #    # #  \n" +
+      "####  ##  ####  ##  #### #  # #### #  # "
+    Day10.part2Result shouldEqual expected
   }
 }
