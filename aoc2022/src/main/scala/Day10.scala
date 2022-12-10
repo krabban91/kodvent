@@ -4,11 +4,6 @@ import computer.{CommunicationsUnit, Instruction}
 
 object Day10 extends App with AoCPart1Test with AoCPart2StringTest {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val interesting = Seq(20, 60, 100, 140, 180, 220)
     val values: Seq[Long] = registers(strings.map(Instruction(_)))
