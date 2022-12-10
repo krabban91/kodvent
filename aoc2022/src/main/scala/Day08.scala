@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day08 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val trees: Seq[Seq[Tree]] = Tree.parse(strings)
     val transposed = trees.head.indices.map(x => trees.map(_ (x)))
