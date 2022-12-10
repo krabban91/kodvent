@@ -12,120 +12,42 @@ object Day10 extends App with AoCPart1Test with AoCPart2StringTest {
 
   override def part1(strings: Seq[String]): Long = {
     val interesting = Seq(20, 60, 100, 140, 180, 220)
-    val values = ListBuffer[Long]()
-    var register = 1
-    val addPattern = """addx (\d+)""".r
-    val minusPattern = """addx -(\d+)""".r
-    var pointer = 0
-    val cycles = 0 to interesting.last
-    cycles.foreach(i => {
-
-      val op = strings((pointer % (strings.length)))
-
-      op match {
-        case addPattern(v) =>
-          values.append(register)
-          values.append(register)
-          register += v.toInt
-        case minusPattern(v) =>
-          values.append(register)
-          values.append(register)
-          register -= v.toInt
-        case _ =>
-          values.append(register)
-      }
-      pointer += 1
-    })
-    val value = interesting.map(i => values(i - 1) * i)
-    value.sum
+    val values: Seq[Long] = registers(strings)
+    interesting.map(i => values(i - 1) * i).sum
   }
 
   override def part2(strings: Seq[String]): String = {
-    val interesting = Seq(20, 60, 100, 140, 180, 220)
-    val values = ListBuffer[Long]()
-    var register = 1
-    val addPattern = """addx (\d+)""".r
-    val minusPattern = """addx -(\d+)""".r
-    var pointer = 0
-    val cycles = 0 to interesting.last
-    var cycle = 0
-    cycles.foreach(i => {
-
-      val op = strings((pointer % (strings.length)))
-
-      val endLine = (c: Int) => (c) % 40 == 0
-      val point = (c: Int) => (c) % 40
-      op match {
-        case addPattern(v) =>
-          values.append(register)
-          cycle += 1
-          var p = point(cycle)
-          if (matched(register, p)) {
-            print("#")
-          } else {
-            print(".")
-          }
-          if (endLine(cycle)) {
-            println()
-          }
-          values.append(register)
-          cycle += 1
-          p = point(cycle)
-          if (matched(register, p)) {
-            print("#")
-          } else {
-            print(".")
-          }
-          if (endLine(cycle)) {
-            println()
-          }
-          register += v.toInt
-        case minusPattern(v) =>
-          values.append(register)
-          cycle += 1
-          var p = point(cycle)
-          if (matched(register, p)) {
-            print("#")
-          } else {
-            print(".")
-          }
-          if (endLine(cycle)) {
-            println()
-          }
-          values.append(register)
-          cycle += 1
-          p = point(cycle)
-          if (matched(register, p)) {
-            print("#")
-          } else {
-            print(".")
-          }
-          if (endLine(cycle)) {
-            println()
-          }
-          register -= v.toInt
-        case _ =>
-          values.append(register)
-          cycle += 1
-          val p = point(cycle)
-          if (matched(register, p)) {
-            print("#")
-          } else {
-            print(".")
-          }
-          if (endLine(cycle)) {
-            println()
-          }
-      }
-      pointer += 1
-    })
-    "\n" + values
-      .zipWithIndex.map { case (v, i) => matched(v.toInt, i % 40 + 1) }
-      .map(if (_) "#" else " ")
+    val c = Map(true -> "#", false -> " ")
+    val values = registers(strings)
+    "\n" + values.zipWithIndex.map(t => (t._1, t._2 % 40 + 1))
+      .map((matched _).tupled(_))
+      .map(c)
       .take(240).grouped(40).map(_.reduce(_ + _)).mkString("\n")
   }
 
-  private def matched(register: Int, p: Int): Boolean = {
+  private def registers(strings: Seq[String]) = {
+    val values = ListBuffer[Long]()
+    var register = 1
+    val addPattern = """addx (-?\d+)""".r
+    var pointer = 0
+    (0 to 240).foreach(i => {
+
+      val op = strings((pointer % (strings.length)))
+
+      op match {
+        case addPattern(v) =>
+          values.append(register)
+          values.append(register)
+          register += v.toInt
+        case _ =>
+          values.append(register)
+      }
+      pointer += 1
+    })
+    values.toSeq
+  }
+
+  private def matched(register: Long, p: Int): Boolean = {
     p >= register && p <= register + 2
   }
 }
