@@ -1,5 +1,5 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
-import krabban91.kodvent.kodvent.utilities.MathUtils.{GCD, LCM}
+import krabban91.kodvent.kodvent.utilities.MathUtils.LCM
 
 object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -9,92 +9,28 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val v = groupsSeparatedByTwoNewlines(strings).map(_.strip())
-    val ms = v.map(Monkey(_)).sortBy(_.id)
-    // relief worry level /3
-    val lcm = ms.tail.foldLeft(ms.head.divisibleBy){ case (lcm, other) => LCM(lcm, other.divisibleBy)}
-    val outMonkeys = (1 to 20).foldLeft(ms) { case (monkeys, i) =>
-      var next = monkeys
-      monkeys.map(_.id).foreach(id => {
-        val monkey = next.find(_.id == id).get
-        val items = monkey.inspect(worry = false)
-        val throwTo = items.groupBy(_._2)
-        val other = next.filter(_.id != id)
-
-        val next1 = (Seq(monkey.withItems(Seq()).incInspectCount(items.size)) ++ other.map(m => m.withItems(m.items ++ throwTo.getOrElse(m.id, Seq()).map(_._1)))).sortBy(_.id)
-        next = next1
-      })
-      val v = next//.map(m => m.withItems(m.items.map(wl => wl%lcm)))
-
-      v
-    }
-    val sorted = outMonkeys.sortBy(_.inspectCount).reverse
-
-    sorted.head.inspectCount * sorted.tail.head.inspectCount
-
+    val sorted: Seq[Int] = monkeyAround(strings, 20, worry = false).map(_.inspectCount)
+    sorted.head.toLong * sorted.tail.head.toLong
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val v = groupsSeparatedByTwoNewlines(strings).map(_.strip())
-    val ms = v.map(Monkey(_)).sortBy(_.id)
-    val lcm = ms.tail.foldLeft(ms.head.divisibleBy){ case (lcm, other) => LCM(lcm, other.divisibleBy)}
-    val outMonkeys = (1 to 10000).foldLeft(ms) { case (monkeys, i) =>
-      var next = monkeys
-      monkeys.map(_.id).foreach(id => {
-        val monkey = next.find(_.id == id).get
-        val items = monkey.inspect(worry = true)
-        val throwTo = items.groupBy(_._2)
-        val other = next.filter(_.id != id)
-
-        val next1 = (Seq(monkey.withItems(Seq()).incInspectCount(items.size)) ++ other.map(m => m.withItems(m.items ++ throwTo.getOrElse(m.id, Seq()).map(_._1)))).sortBy(_.id)
-        next = next1
-      })
-
-      val v = next.map(m => m.withItems(m.items.map(wl => wl%lcm)))
-      val x1 = i
-
-      v
-    }
-
-
-    val sorted = outMonkeys.sortBy(_.inspectCount).reverse
-
-    sorted.head.inspectCount.toLong * sorted.tail.head.inspectCount.toLong
-
+    val sorted: Seq[Int] = monkeyAround(strings, 10000, worry = true).map(_.inspectCount)
+    sorted.head.toLong * sorted.tail.head.toLong
   }
 
-  case class Monkey(id: Int, items: Seq[Long], operation: String, divisibleBy: Long, testTrue: Int, testFalse: Int, inspectCount: Int) {
+  private def monkeyAround(strings: Seq[String], times: Int, worry: Boolean): Seq[Monkey] = {
+    val ms = groupsSeparatedByTwoNewlines(strings).map(_.strip()).map(Monkey(_)).sortBy(_.id)
+    val lcm = ms.tail.foldLeft(ms.head.divisibleBy) { case (lcm, other) => LCM(lcm, other.divisibleBy) }
+    (1 to times).foldLeft(ms) { case (monkeys, i) => Monkey.playWithItems(monkeys, worry, lcm) }
+      .sortBy(_.inspectCount).reverse
+  }
+
+  case class Monkey(id: Int, items: Seq[Long], operation: Operation, divisibleBy: Long, testTrue: Int, testFalse: Int, inspectCount: Int) {
 
     def inspect(worry: Boolean): Seq[(Long, Int)] = {
-      val operationAdd = """new = old + (\d+)""".r
-      val operationMul = """new = old * (\d+)""".r
-      val operationPow = """new = old * old""".r
-      val targets = items.map(item => operation match {
-        case operationAdd(v) => item + v.toInt
-        case operationMul(v) => item * v.toInt
-        case operationPow() => item * item
-        case op =>
-          val tokens = op.split(" ")
-          if (tokens(3) == "+") {
-            item + tokens.last.toInt
-          } else {
-            if (tokens.last == "old") {
-              item * item
-            } else {
-              item * tokens.last.toInt
-            }
-          }
-      })
-        .map(worryLevel => {
-          val reducedWorryLevel = if (worry) {
-              worryLevel
-          } else worryLevel / 3
-          (reducedWorryLevel, if (reducedWorryLevel % divisibleBy == 0) {
-            testTrue
-          } else {
-            testFalse
-          })
-        })
+      val targets = items.map(operation.calculate)
+        .map(level => if (worry) level else level / 3)
+        .map(worryLevel => (worryLevel, if (worryLevel % divisibleBy == 0) testTrue else testFalse))
       targets
     }
 
@@ -108,22 +44,65 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
   }
 
+  trait Operation {
+    def calculate(old: Long): Long
+  }
+
+  object Operation {
+
+    def apply(string: String): Operation = {
+      val operationAdd = """new = old \+ (\d+)""".r
+      val operationMul = """new = old \* (\d+)""".r
+      val operationPow = """new = old \* old""".r
+      string match {
+        case operationAdd(v) => Add(v.toInt)
+        case operationMul(v) => Mul(v.toInt)
+        case operationPow() => Pow2()
+      }
+    }
+  }
+
+  case class Add(value: Int) extends Operation {
+    override def calculate(old: Long): Long = old + value
+  }
+
+  case class Mul(value: Int) extends Operation {
+    override def calculate(old: Long): Long = old * value
+  }
+
+  case class Pow2() extends Operation {
+    override def calculate(old: Long): Long = old * old
+  }
+
   object Monkey {
 
     def apply(string: String): Monkey = {
       val monkeyPattern =
-        """Monkey (.+):.*""".r
+        ("""Monkey (\d+):[\s]+""" +
+          """Starting items: (.*)[\s]+""" +
+          """Operation: (.*)[\s]+""" +
+          """Test: divisible by (\d+)[\s]+""" +
+          """If true: throw to monkey (\d+)[\s]+""" +
+          """If false: throw to monkey (\d+)""").r
       string match {
-        case _ =>
-          val lines = string.split("\n")
-          val id = lines.head.split(" ").last.dropRight(1).toInt
-          val items = lines.tail.head.split(": ").last.split(",").map(_.trim).map(_.toLong)
-          val operation = lines.tail.tail.head.split(": ").last.trim
-          val test = lines(3).split(": ").last.split("by ").last.toLong
-          val testTrue = lines(4).split("monkey ").last.toInt
-          val testFalse = lines.last.split("monkey ").last.toInt
-          Monkey(id, items, operation, test, testTrue, testFalse, 0)
+        case monkeyPattern(id, items, operation, divBy, testTrue, testFalse) =>
+          val itemList = items.split(",").map(_.trim.toLong)
+          Monkey(id.toInt, itemList, Operation(operation), divBy.toLong, testTrue.toInt, testFalse.toInt, 0)
       }
+    }
+
+    def playWithItems(monkeys: Seq[Monkey], worry: Boolean, lcm: Long): Seq[Monkey] = {
+      val next = monkeys.map(_.id).foldLeft(monkeys) { case (next, id) =>
+        val monkey = next.find(_.id == id).get
+        val items = monkey.inspect(worry)
+        val throwTo = items.groupBy(_._2).map { case (k, l) => (k, l.map(_._1)) }
+        val other = next.filter(_.id != id)
+          .map(m => m.withItems(m.items ++ throwTo.getOrElse(m.id, Seq())))
+
+        (Seq(monkey.withItems(Seq()).incInspectCount(items.size)) ++ other).sortBy(_.id)
+      }
+
+      next.map(m => m.withItems(m.items.map(wl => wl % lcm)))
     }
   }
 }
