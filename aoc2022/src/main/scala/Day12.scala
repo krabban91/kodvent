@@ -10,75 +10,54 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val v = strings //.map(_.map(_.toInt).map(_ - 48))
-      .zipWithIndex.flatMap { case (l, y) => l.zipWithIndex.map { case (height, x) => ((x, y), height) } }
-      .toMap
-    val start = v.find(t => t._2 == 'S').get
-    val end = v.find(t => t._2 == 'E').get
-
-    shortestPath(v, start, end)
-  }
-
-  private def shortestPath(v: Map[(Int, Int), Char], start: ((Int, Int), Char), end: ((Int, Int), Char)):Long = {
-    val directions = Seq((-1, 0), (1, 0), (0, -1), (0, 1))
-
-    val queue = mutable.PriorityQueue[((Int, Int), Long, Long)]((start._1, 0L, manhattan(start._1, end._1)))(Ordering.by(v => -(v._2 + v._3)))
-    val visited = mutable.HashSet[(Int, Int)]()
-    while (queue.nonEmpty) {
-      val pop = queue.dequeue()
-      if (pop._1 == end._1) {
-        return pop._2
-      }
-      if (visited.add(pop._1)) {
-        val value = directions.map(t => (pop._1._1 + t._1, pop._1._2 + t._2))
-          .filterNot(visited.contains)
-          .filter(v.contains)
-        val value1 = value
-          .filter(p => {
-            val i = heightDiff(v, pop._1, p)
-            i <= 1
-          })
-        val heuristic = 0 //manhattan(end._1, pop._1)
-        value1
-          .foreach(p => queue.enqueue((p, pop._2 + 1L, heuristic)))
-      }
-    }
-    -1L
-  }
-
-  private def manhattan(end: (Int, Int), pop: (Int, Int)): Long = {
-    math.abs(pop._1 - end._1) + math.abs(pop._2 - end._2)
-  }
-
-  private def heightDiff(v: Map[(Int, Int), Char], pop: (Int, Int), p: (Int, Int)) = {
-    var to = v(p)
-    var from = v(pop)
-    if (from == 'S') {
-      from = 'a'
-    }
-    if (from == 'E') {
-      from = 'z'
-    }
-    if (to == 'S') {
-      to = 'a'
-    }
-    if (to == 'E') {
-      to = 'z'
-    }
-    val i = to - from
-    i
+    val mountain = parseMap(strings)
+    val start = mountain.find(t => t._2 == 'S').get._1
+    val end = mountain.find(t => t._2 == 'E').get._1
+    shortestPath(mountain, start, end)
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val v = strings //.map(_.map(_.toInt).map(_ - 48))
-      .zipWithIndex.flatMap { case (l, y) => l.zipWithIndex.map { case (height, x) => ((x, y), height) } }
-      .toMap
-    val value = v.toSeq.filter(t => t._1._1 == 0 || t._1._2 == 0 || t._1._2 == strings.head.length-1 || t._1._1 == strings.size-1).sortBy(v => v._1._1)
-    val edges = value
+    val mountain = parseMap(strings)
+    val edges = mountain.toSeq
       .filter(t => t._2 == 'a' || t._2 == 'S')
-    val end = v.find(t => t._2 == 'E').get
-    edges.map(t => shortestPath(v, t, end))
-      .filterNot(_ == -1)
-      .min
+      .map(_._1)
+      .filter(t => t._1 == 0 || t._1 == strings.size - 1 || t._2 == 0 || t._2 == strings.head.length - 1)
+    val end = mountain.find(t => t._2 == 'E').get._1
+    edges.map(shortestPath(mountain, _, end)).min
   }
+
+  private def parseMap(strings: Seq[String]): Map[(Int, Int), Char] = strings
+    .zipWithIndex.flatMap { case (l, y) => l.zipWithIndex.map { case (height, x) => ((x, y), height) } }
+    .toMap
+
+  private def shortestPath(v: Map[(Int, Int), Char], start: (Int, Int), end: (Int, Int)): Long = {
+    val queue = mutable.PriorityQueue[((Int, Int), Long, Long)]((start, 0L, heuristic(start, end)))(Ordering.by(v => -(v._2 + v._3)))
+    val visited = mutable.HashSet[(Int, Int)]()
+    while (queue.nonEmpty) {
+      val pop = queue.dequeue()
+      if (pop._1 == end) {
+        return pop._2
+      }
+      if (visited.add(pop._1)) {
+        moves(v, pop._1)
+          .filterNot(visited.contains)
+          .foreach(p => queue.enqueue((p, pop._2 + 1L, heuristic(end, p))))
+      }
+    }
+    Long.MaxValue
+  }
+
+  private def moves(v: Map[(Int, Int), Char], pop: (Int, Int)): Seq[(Int, Int)] = Seq((-1, 0), (1, 0), (0, -1), (0, 1))
+    .map(t => (pop._1 + t._1, pop._2 + t._2))
+    .filter(v.contains)
+    .filter(height(v, pop) + 1 >= height(v, _))
+
+  private def height(v: Map[(Int, Int), Char], point: (Int, Int)): Int = {
+    val mapping = Map[Char, Char]('S' -> 'a', 'E' -> 'z')
+    val c = v(point)
+    mapping.getOrElse(c, c).asInstanceOf[Int]
+  }
+
+  private def heuristic(end: (Int, Int), pop: (Int, Int)): Long = math.abs(pop._1 - end._1) + math.abs(pop._2 - end._2)
+
 }
