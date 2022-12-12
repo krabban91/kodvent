@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val mountain = parseMap(strings)
     val start = mountain.find(t => t._2 == 'S').get._1
