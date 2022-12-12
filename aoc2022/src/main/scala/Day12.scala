@@ -70,6 +70,15 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-     -1
+    val v = strings //.map(_.map(_.toInt).map(_ - 48))
+      .zipWithIndex.flatMap { case (l, y) => l.zipWithIndex.map { case (height, x) => ((x, y), height) } }
+      .toMap
+    val value = v.toSeq.filter(t => t._1._1 == 0 || t._1._2 == 0 || t._1._2 == strings.head.length-1 || t._1._1 == strings.size-1).sortBy(v => v._1._1)
+    val edges = value
+      .filter(t => t._2 == 'a' || t._2 == 'S')
+    val end = v.find(t => t._2 == 'E').get
+    edges.map(t => shortestPath(v, t, end))
+      .filterNot(_ == -1)
+      .min
   }
 }
