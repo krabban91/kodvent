@@ -12,12 +12,30 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
   override def part1(strings: Seq[String]): Long = {
     groupsSeparatedByTwoNewlines(strings).map(_.split("\n").filter(_.nonEmpty)
       .map(Packet(_)))
-      .zipWithIndex.map { case (l, i) => (i + 1, compare(l.head, l.last)) }
+      .zipWithIndex.map { case (l, i) => (i + 1, PacketOrdering.compare(l.head, l.last)) }
       .map { case (i, i1) => i * (if (i1 >= 0) 1 else 0) }.sum
   }
 
-  def compare(lp: Packet, rp: Packet): Int = {
-    (lp, rp) match {
+  override def part2(strings: Seq[String]): Long = {
+    val v = strings.filter(_.nonEmpty).map(Packet(_))
+    val div1 = PacketList(Seq(PacketList(Seq(PacketValue(2L)))))
+    val div2 = PacketList(Seq(PacketList(Seq(PacketValue(6L)))))
+    val s = (Seq(div1, div2) ++ v).sorted(PacketOrdering).reverse
+    (s.indexOf(div1) + 1) * (s.indexOf(div2) + 1)
+  }
+
+  trait Packet {
+    def value: Long
+  }
+
+  case class PacketList(list: Seq[Packet]) extends Packet {
+    override def value: Long = list.map(_.value).sum
+
+  }
+
+  implicit object PacketOrdering extends Ordering[Packet] {
+
+    override def compare(x: Packet, y: Packet): Int = (x, y) match {
       case (PacketList(left), PacketList(right)) =>
         left.indices.foreach(i => {
           val l = left(i)
@@ -54,19 +72,8 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
+  case class PacketValue(value: Long) extends Packet {
   }
-
-  trait Packet {
-    def value: Long
-  }
-
-  case class PacketList(list: Seq[Packet]) extends Packet {
-    override def value: Long = list.map(_.value).sum
-  }
-
-  case class PacketValue(value: Long) extends Packet
 
   object Packet extends RegexParsers {
     def token: Parser[Packet] = value | list
