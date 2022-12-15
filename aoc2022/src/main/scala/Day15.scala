@@ -17,12 +17,10 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
     val test = v.map(_.location._1).max < 100
     val row = if (test) 10 else 2000000
     val yLimits = Some((row, row))
-    val beacons = chartBeacons(v, yLimits, None)
-
-    val filtered = beacons.filter(kv => kv._1._2 == row).values
-
-    val size = filtered.count(v => v == "#" || v == "S")
-    size
+    val (_, _, lines) = chartBeacons(v, yLimits, None)
+    val minX = lines(row).map(_._1).min
+    val maxX = lines(row).map(_._2).max
+    (minX to maxX).count(x => lines(row).exists(p => p._1 <= x && x <= p._2))
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -30,17 +28,23 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
     val v = strings.map(Sensor(_))
     val test = v.map(_.location._1).max < 100
     val range = if (test) (0, 20) else (0, 4000000)
-    val beacons = chartBeacons(v, Some(range), Some(range))
+    val (sensors, beacons, lines) = chartBeacons(v, Some(range), Some(range))
 
     val points = (range._1 to range._2).flatMap(x => (range._1 to range._2).map(y => (x, y)))
-    val maybeTuple = points.find(!beacons.contains(_))
+    val maybeTuple = points
+      .filter(p => !sensors.contains(p) && !beacons.contains(p) && !lines(p._2)
+        .exists(row => row._1 <= p._1 && p._1 <= row._2))
     // test
     val maybeLong = maybeTuple.map(p => p._1.toLong * 4000000L + p._2.toLong)
-    maybeLong.get
+    maybeLong.head
   }
 
-  private def chartBeacons(v: Seq[Sensor], yLimits: Option[(Int, Int)], xLimits: Option[(Int, Int)]): Map[(Int, Int), String] = {
-    val beacons = mutable.HashMap[(Int, Int), String]()
+  private def chartBeacons(v: Seq[Sensor], yLimits: Option[(Int, Int)], xLimits: Option[(Int, Int)]): (Set[(Int, Int)], Set[(Int, Int)], Map[Int, Seq[(Int, Int)]]) = {
+    val sensors = mutable.HashSet[(Int, Int)]()
+    val beacons = mutable.HashSet[(Int, Int)]()
+    v.foreach(s => sensors.add(s.location))
+    v.foreach(s => beacons.add(s.closest))
+    val lines = mutable.HashMap[Int, Seq[(Int, Int)]]()
     v.foreach(sensor => {
       val distance = sensor.manhattan
       val minY = (sensor.location._2 - (distance - 1))
@@ -52,18 +56,20 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
         val minX = (sensor.location._1 - (distanceLeft))
         val maxX = (sensor.location._1 + (distanceLeft))
         val xTuple = (xLimits.map(_._1).map(math.max(_, minX)).getOrElse(minX), xLimits.map(_._2).map(math.min(_, maxX)).getOrElse(maxX))
-        (xTuple._1 to xTuple._2).foreach(x => {
-          val str = beacons.getOrElse((x, y), ".")
-          if (!(str == "S" || str == "B")) {
-            beacons.put((x, y), "#")
-          }
-        })
+        val sOnSame = sensors.filter(_._2 == y).map(_._1).filter(s => xTuple._1 <= s && s <= xTuple._2)
+        val bOnSame = beacons.filter(_._2 == y).map(_._1).filter(s => xTuple._1 <= s && s <= xTuple._2)
+        val ranges = (sOnSame ++ bOnSame).toSeq.sorted.foldLeft(Seq(xTuple)) {
+          case (l, x) =>
+            val t = l.dropRight(1) ++ Seq((l.last._1, x - 1), (x + 1, l.last._2)).filterNot(v => v._2 - v._1 < 0)
+            t
+        }
+        val current = lines.getOrElse(y, Seq())
+        lines.put(y, current ++ ranges)
+
       })
-      beacons.put(sensor.closest, "B")
-      beacons.put(sensor.location, "S")
       //logMap(beacons)
     })
-    beacons.toMap
+    (sensors.toSet, beacons.toSet, lines.toMap)
   }
 
   case class Sensor(location: (Int, Int), closest: (Int, Int)) {
