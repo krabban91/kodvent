@@ -9,7 +9,6 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  //tetris
 
   override def part1(strings: Seq[String]): Long = {
     val v = strings.head
@@ -22,31 +21,22 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   private def fallingRocks(v: String, goalRocks: Long): Long = {
-    //val rockMap = mutable.HashMap[(Int, Int), String]()
     val rockIntMap = mutable.HashMap[Int, Int]()
-
-    val loopsCheckedAt = mutable.HashSet[(Int, Int)]()
-    var loopcheckStart = 0
-    val maxLoopSize = 100000
-    val minLoopSize = 50
-    val loopLookupMap: mutable.HashMap[Int, (Seq[Int], Seq[Int], Seq[Int])] = mutable.HashMap()
+    val lockedTower = mutable.ListBuffer[Int]()
+    var longestDrop = 0
     val minX = 0
     val maxX = 7
     var inputIndex = 0
     var rockCount = 0L
     val loopFinder = mutable.ListBuffer[Int]()
     val allRocks = mutable.HashMap[Int, Seq[Int]]()
-    val firstRock = mutable.HashMap[Int, Int]()
-    //(minX until maxX).foreach(x => rockMap.put((x, 0), "_"))
     while (rockCount < goalRocks) {
-      val startY = (if (rockIntMap.isEmpty) 0 else rockIntMap.keys.min) - 3
+      val topOfTower = if (rockIntMap.isEmpty) 0 else rockIntMap.keys.min
+      val startY = topOfTower - 3
       var currentRock = Tetris.newPiece(rockCount, startY)
       var moving = true
-      //println("new Rock")
 
       while (moving) {
-        // move hor
-        //logMap(rockMap, currentRock)
         val i = inputIndex % v.length
         v(i) match {
           case '<' =>
@@ -60,102 +50,86 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
         }
 
         inputIndex += 1
-        //logMap(rockMap, currentRock)
 
         if (currentRock.collidesDown(rockIntMap, minX, maxX)) {
           moving = false
-          // update rockMap
-          //currentRock.rock.foreach(rockMap.put(_, "#"))
           currentRock.numRock.foreach { case (y, v) =>
             val value = rockIntMap.getOrElse(y, 0) | v
             rockIntMap.put(y, value)
             if (-y >= loopFinder.size) {
               loopFinder.append(value)
               allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
-              firstRock.put(-y, rockCount.toInt + 1)
             } else {
               loopFinder.updated(-y, value)
               allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
             }
           }
+          rockCount += 1
+
+          currentRock.numRock
+            .map(_._1)
+            .map(y => (y + 2, (y to y + 1).map(rockIntMap.getOrElse(_, 0)).reduce(_ | _)))
+            .collectFirst {
+              case (y, value) if value == 127 => y
+            }
+            .foreach(lockedPoint => {
+              val mapMax = rockIntMap.keys.max
+              (mapMax to lockedPoint by -1).foreach(i => rockIntMap.remove(i).foreach(lockedTower.append))
+
+              findLoop(lockedTower).foreach{ case (start, size) =>
+                println(s"loop found at rock ${rockCount}, startY=$startY, loop: start=$start, size$size")
+                return calculateHeight(goalRocks, allRocks, start, size)
+
+              }
+            })
         } else {
           currentRock = currentRock.moveVertical(1)
-          //logMap(rockMap, currentRock)
         }
       }
-
-      //logMap(rockMap, currentRock)
-      rockCount += 1
-      val offset = 11
-      if (rockCount > offset) {
-        // instead of looking for exact cycles, split tower into locked in vs changing. then take a chunk of the end and see of the remainder contains it.
-        // No need to do comparisons before that happens.
-        // something like locked.dropRight(N).indexOf(locked.takeRight(N)). If index is locked.size - N*2, the cycle is complete.
-
-        // below we store three cycles of each between sizes 50 and 1e4.
-        // A bit over kill to store 150 million arrays every rock change.
-        val loopable = loopFinder.size / 3
-        (math.min(maxLoopSize, loopable) to minLoopSize by -1).foreach { i =>
-          loopLookupMap.put(i, loopLookupMap.get(i + 1)
-            .map { case (v1, v2, v3) => (v1.drop(3) ++ v2.take(2), v2.drop(2) ++ v3.take(1), v3.drop(1)) }
-            .getOrElse((
-              loopFinder.dropRight(i * 2).takeRight(i).toSeq,
-              loopFinder.dropRight(i * 1).takeRight(i).toSeq,
-              loopFinder.dropRight(i).takeRight(i).toSeq
-            )))
-        }
-        val foundMaybe = loopLookupMap.filter(kv => kv._1 == kv._2._1.size)
-          .find { case (_, (first, rest, validation)) => first == rest && first == validation }
-        if (foundMaybe.isDefined) {
-          println("loopFound")
-          val start = loopFinder.size - foundMaybe.get._1 * 3
-          val size = foundMaybe.get._1
-
-          println(s"Loop found at rock ${rockCount}. StartY Was $startY. Start=$start, size=$size")
-
-          val unitsBeforeLoop = start // in rocks
-          val rocksBeforeLoop = allRocks(start).head
-          val rocksPerLoop = allRocks(start + size).head - allRocks(start).head
-          val unitsPerLoop = size
-          val countLoops = (goalRocks - rocksBeforeLoop) / rocksPerLoop.toLong
-          val modRocks = (goalRocks - rocksBeforeLoop) % rocksPerLoop
-          val modUnits = allRocks // changing to first rock -> +2
-            .filter(kv => kv._1 >= start && kv._1 <= (start + size))
-            .toSeq
-            .findLast(kv => kv._2.contains(allRocks(start).head + modRocks))
-            .get
-            ._1 - start
-          val output = unitsBeforeLoop.toLong +
-            unitsPerLoop.toLong * countLoops.toLong +
-            (modUnits)
-          println(s"output $output")
-          val diff = 1514285714288L - output
-          println(s"diff $diff")
-          return output
-
-          //689000000047  is too low
-          //1999999999960 is too high
-          //1999999999959 is too high
-        }
-      }
-
-      ()
     }
     val ys = rockIntMap.keys
     // building negatively
     -ys.min.toLong
   }
 
-  private def logMap(rockMap: mutable.HashMap[(Int, Int), String], rock: Tetris) = {
-    /*
-
-    val other = mutable.HashMap.from(rockMap)
-    rock.rock.foreach(v => if (!other.contains(v)) other.put(v, "@") else other.put(v, "X"))
-    val java = other.map(kv => (new Point(kv._1._1, kv._1._2), kv._2)).asJava
-    println(new LogUtils[String].mapToText(java, v => if (v == null) "." else v))
-     */
+  private def calculateHeight(goalRocks: Long, allRocks: mutable.HashMap[Int, Seq[Int]], start: Int, size: Int): Long = {
+    val unitsBeforeLoop = start
+    val startingRock = allRocks(start)
+    val rocksBeforeLoop = startingRock.head
+    val endingRock = allRocks(start + size)
+    val rocksPerLoop = endingRock.head - startingRock.head
+    val unitsPerLoop = size
+    val countLoops = (goalRocks - rocksBeforeLoop) / rocksPerLoop.toLong
+    val modRocks = (goalRocks - rocksBeforeLoop) % rocksPerLoop
+    val modUnits = allRocks
+      .filter(kv => kv._1 >= start && kv._1 <= (start + size))
+      .toSeq
+      .findLast(kv => kv._2.contains(startingRock.head + modRocks))
+      .get
+      ._1 - start
+    val towerHeight = unitsBeforeLoop.toLong +
+      unitsPerLoop.toLong * countLoops +
+      (modUnits)
+    towerHeight
   }
 
+  def findLoop(lockedTower: mutable.ListBuffer[Int]): Option[(Int, Int)] = {
+    val minLoopSize = 50
+    if (lockedTower.size > minLoopSize * 2) {
+      val chunk = lockedTower.takeRight(minLoopSize)
+      val remainder = lockedTower.dropRight(minLoopSize)
+      val ind = remainder.sliding(minLoopSize).toSeq.zipWithIndex.findLast(kv => kv._1 == chunk).map(_._2)
+      ind.flatMap(i => {
+        val newChunkStart = i + minLoopSize
+        val biggerChunk = lockedTower.drop(newChunkStart)
+        val chunkSize = biggerChunk.size
+        val newRemainder = lockedTower.dropRight(chunkSize)
+        val toFindIn = newRemainder.sliding(chunkSize).toSeq
+        val found = toFindIn.zipWithIndex.findLast(kv => kv._1 == biggerChunk)
+        found.map{ case (_, start) => (start, chunkSize)}
+      })
+    } else None
+  }
 
   trait Tetris {
     def height: Int
