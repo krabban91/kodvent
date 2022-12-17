@@ -21,10 +21,15 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     fallingRocks(v, 1000000000000L)
   }
 
-  private def fallingRocks(v: String, goalRocks : Long): Long = {
+  private def fallingRocks(v: String, goalRocks: Long): Long = {
     //val rockMap = mutable.HashMap[(Int, Int), String]()
     val rockIntMap = mutable.HashMap[Int, Int]()
 
+    val loopsCheckedAt = mutable.HashSet[(Int, Int)]()
+    var loopcheckStart = 0
+    val maxLoopSize = 100000
+    val minLoopSize = 50
+    val loopLookupMap: mutable.HashMap[Int, (Seq[Int], Seq[Int], Seq[Int])] = mutable.HashMap()
     val minX = 0
     val maxX = 7
     var inputIndex = 0
@@ -61,22 +66,18 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
           moving = false
           // update rockMap
           //currentRock.rock.foreach(rockMap.put(_, "#"))
-          currentRock.numRock.foreach{ case (y, v) => rockIntMap.put(y, rockIntMap.getOrElse(y, 0) | v)}
-          currentRock.numRock.map(_._1)
-            .foreach(y => {
-              val str = rockIntMap(y)
-              rockIntMap.put(y, str | rockIntMap.getOrElse(y, 0))
-              if (-y >= loopFinder.size) {
-                loopFinder.append(str)
-                allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
-                firstRock.put(-y, rockCount.toInt + 1)
-
-              } else {
-                loopFinder.updated(-y, str)
-                allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
-              }
-
-            })
+          currentRock.numRock.foreach { case (y, v) =>
+            val value = rockIntMap.getOrElse(y, 0) | v
+            rockIntMap.put(y, value)
+            if (-y >= loopFinder.size) {
+              loopFinder.append(value)
+              allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
+              firstRock.put(-y, rockCount.toInt + 1)
+            } else {
+              loopFinder.updated(-y, value)
+              allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
+            }
+          }
         } else {
           currentRock = currentRock.moveVertical(1)
           //logMap(rockMap, currentRock)
@@ -87,73 +88,57 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
       rockCount += 1
       val offset = 11
       if (rockCount > offset) {
-        val maxSize = (loopFinder.size - offset) / 3
-        for (size <- (maxSize/2 to maxSize)) {
-          for (start <- (0 to (maxSize - size))) {
-            val first = loopFinder.slice(start + size * 0, start + size * 1)
-            val rest = loopFinder.slice(start + size * 1, start + size * 2)
-            val found = first == rest
-            if (found) {
-              val validation = loopFinder.slice(start + size * 2, start + size * 3)
-              val validated = first == validation
-              if (validated) {
+        // instead of looking for exact cycles, split tower into locked in vs changing. then take a chunk of the end and see of the remainder contains it.
+        // No need to do comparisons before that happens.
+        // something like locked.dropRight(N).indexOf(locked.takeRight(N)). If index is locked.size - N*2, the cycle is complete.
 
-                val unitsBeforeLoop = start // in rocks
-                val rocksBeforeLoop = firstRock(start)
-                val rocksPerLoop = firstRock(start + size) - firstRock(start)
-                val unitsPerLoop = size
-                val countLoops = (goalRocks - rocksBeforeLoop) / rocksPerLoop.toLong
-                val modRocks = (goalRocks - rocksBeforeLoop) % rocksPerLoop
-                val modUnits = allRocks // changing to first rock -> +2
-                  .filter(kv => kv._1 >= start && kv._1 <= (start + size))
-                  .toSeq
-                  .findLast(kv => kv._2.contains(firstRock(start) + modRocks))
-                  .get
-                  ._1 - start
-                val output = unitsBeforeLoop.toLong +
-                  unitsPerLoop.toLong * countLoops.toLong +
-                  (modUnits)
-                println(s"Loop found at rock ${rockCount}. StartY Was $startY. Start=$start, size=$size")
-                println(s"output $output")
-                val diff = 1514285714288L - output
-                println(s"diff $diff")
-                return output
-                println(s"presumed output ${output}")
-              }
-              // rockCount = rock 169
-              // loopStart = unit 28, how many rocks?
-              // loopSize  = unit 53, how many rocks?
-              // loopEnd   = 28 + 53,
-              // starty    = -264
-              // rock 244
-              // loopStart = unit 84,
-              // loopSize  = unit 53
-              // loopEnd   = 84 + 53
-              // starty    = -377
-
-              // rocks per loop 52 - 17 = 35
-              // goal rocks = 1000000000000
-              // rocks before = ?? rock 17 updated row -28
-              // loops = (1000000000000-17) / 35 = 28 571 428 570
-              // rest  = 33
-              //169 + 15 => endRock=184, startY (264) to (285) = 21 diff = X
-
-              // total units = (26) + loops * 53 + 15 * X
-              // 13
-              //firstRock(28) == 17
-              //lastRock(28)  == 17
-              //firstRock(28) == 52
-              //lastRock(28)  == 17
-
-
-              //689000000047  is too low
-              //1999999999960 is too high
-              //1999999999959 is too high
-            }
-          }
+        // below we store three cycles of each between sizes 50 and 1e4.
+        // A bit over kill to store 150 million arrays every rock change.
+        val loopable = loopFinder.size / 3
+        (math.min(maxLoopSize, loopable) to minLoopSize by -1).foreach { i =>
+          loopLookupMap.put(i, loopLookupMap.get(i + 1)
+            .map { case (v1, v2, v3) => (v1.drop(3) ++ v2.take(2), v2.drop(2) ++ v3.take(1), v3.drop(1)) }
+            .getOrElse((
+              loopFinder.dropRight(i * 2).takeRight(i).toSeq,
+              loopFinder.dropRight(i * 1).takeRight(i).toSeq,
+              loopFinder.dropRight(i).takeRight(i).toSeq
+            )))
         }
+        val foundMaybe = loopLookupMap.filter(kv => kv._1 == kv._2._1.size)
+          .find { case (_, (first, rest, validation)) => first == rest && first == validation }
+        if (foundMaybe.isDefined) {
+          println("loopFound")
+          val start = loopFinder.size - foundMaybe.get._1 * 3
+          val size = foundMaybe.get._1
 
+          println(s"Loop found at rock ${rockCount}. StartY Was $startY. Start=$start, size=$size")
+
+          val unitsBeforeLoop = start // in rocks
+          val rocksBeforeLoop = allRocks(start).head
+          val rocksPerLoop = allRocks(start + size).head - allRocks(start).head
+          val unitsPerLoop = size
+          val countLoops = (goalRocks - rocksBeforeLoop) / rocksPerLoop.toLong
+          val modRocks = (goalRocks - rocksBeforeLoop) % rocksPerLoop
+          val modUnits = allRocks // changing to first rock -> +2
+            .filter(kv => kv._1 >= start && kv._1 <= (start + size))
+            .toSeq
+            .findLast(kv => kv._2.contains(allRocks(start).head + modRocks))
+            .get
+            ._1 - start
+          val output = unitsBeforeLoop.toLong +
+            unitsPerLoop.toLong * countLoops.toLong +
+            (modUnits)
+          println(s"output $output")
+          val diff = 1514285714288L - output
+          println(s"diff $diff")
+          return output
+
+          //689000000047  is too low
+          //1999999999960 is too high
+          //1999999999959 is too high
+        }
       }
+
       ()
     }
     val ys = rockIntMap.keys
@@ -188,17 +173,14 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     def shape: Seq[(Int, Int)]
 
     def numShape: Seq[Int]
-    def numRock: Seq[(Int,Int)] = numShape.zipWithIndex.map{ case (v, dy) => (dy + location._2, v >> location._1)}
+
+    def numRock: Seq[(Int, Int)] = numShape.zipWithIndex.map { case (v, dy) => (dy + location._2, v >> location._1) }
+
     def collidesDown(rockIntMap: mutable.HashMap[Int, Int], minX: Int, maxX: Int): Boolean = {
       if (location._2 + height == 0) {
         true
       } else {
-        Seq("").zipWithIndex
-
-        val oBool = numRock.exists{case (y, v) => (v & rockIntMap.getOrElse(y + 1, 0)) > 0}
-
-        //val bool = rock.map { case (x, y) => (x, y + 1) }.exists(rockMap.contains)
-        oBool
+        numRock.exists { case (y, v) => (v & rockIntMap.getOrElse(y + 1, 0)) > 0 }
       }
     }
 
@@ -206,10 +188,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
       if (location._1 == minX) {
         true
       } else {
-        val oBool = numRock.exists{case (y, v) => ((v<<1) & rockIntMap.getOrElse(y, 0)) > 0}
-        //val bool = rock.map { case (x, y) => (x - 1, y) }.exists(rockMap.contains)
-        oBool
-
+        numRock.exists { case (y, v) => ((v << 1) & rockIntMap.getOrElse(y, 0)) > 0 }
       }
     }
 
@@ -217,9 +196,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
       if (location._1 + width == maxX) {
         true
       } else {
-        val oBool = numRock.exists{case (y, v) => ((v>>1) & rockIntMap.getOrElse(y, 0)) > 0}
-        //rock.map { case (x, y) => (x + 1, y) }.exists(rockMap.contains)
-        oBool
+        numRock.exists { case (y, v) => ((v >> 1) & rockIntMap.getOrElse(y, 0)) > 0 }
       }
     }
   }
