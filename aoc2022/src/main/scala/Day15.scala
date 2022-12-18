@@ -7,11 +7,6 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 
 object Day15 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val v = strings.map(Sensor(_))
     val test = v.map(_.location._1).max < 100
@@ -47,7 +42,6 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
 
     })
     v.zipWithIndex.foreach{ case (sensor, i) =>
-      println(s"Sensor ${i}: $sensor")
       val distance = sensor.manhattan
       val minY = (sensor.location._2 - (distance - 1))
       val maxY = (sensor.location._2 + (distance - 1))
@@ -72,7 +66,6 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
         potential.put(y, newPot)
 
       })
-      //logMap(beacons)
     }
     (sensors.toSet, beacons.toSet, lines.toMap, potential.toMap)
   }
@@ -124,11 +117,6 @@ object Day15 extends App with AoCPart1Test with AoCPart2Test {
         case pattern(sx, sy, bx, by) => Sensor((sx.toInt, sy.toInt), (bx.toInt, by.toInt))
       }
     }
-  }
-
-  private def logMap(sandMap: mutable.HashMap[(Int, Int), String]) = {
-    val java = sandMap.map(kv => (new Point(kv._1._1, kv._1._2), kv._2)).asJava
-    println(new LogUtils[String].mapToText(java, v => if (v == null) "." else v))
   }
 
 }
