@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day18 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = exposedSides(readInput(strings)).map(_.size).sum
 
   override def part2(strings: Seq[String]): Long = {
