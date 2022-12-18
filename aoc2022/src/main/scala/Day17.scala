@@ -4,12 +4,6 @@ import scala.collection.mutable
 
 object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
-
   override def part1(strings: Seq[String]): Long = {
     val v = strings.head
     fallingRocks(v, 2022)
@@ -77,9 +71,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
               (mapMax to lockedPoint by -1).foreach(i => rockIntMap.remove(i).foreach(lockedTower.append))
 
               findLoop(lockedTower).foreach{ case (start, size) =>
-                println(s"loop found at rock ${rockCount}, startY=$startY, loop: start=$start, size$size")
                 return calculateHeight(goalRocks, allRocks, start, size)
-
               }
             })
         } else {
