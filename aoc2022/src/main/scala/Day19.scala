@@ -5,15 +5,15 @@ import scala.collection.mutable
 object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   printResultPart1Test
+  printResultPart1
   printResultPart2Test
-  //printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
     val v = strings.map(Blueprint(_))
     val maxMinutes = 24
     val out: Seq[(Blueprint, State)] = calculateStates(v, maxMinutes)
-    out.map{ case (bp, best) =>best.material("geode") * bp.id}.sum
+    out.map { case (bp, best) => best.material("geode") * bp.id }.sum
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -31,7 +31,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
       // (ore,clay obsidian, geode), (ore, clayRobots, obsidian, geode)
       // State
 
-      val frontier = mutable.PriorityQueue[(State, Int)]()(Ordering.by(v => (-v._2, v._1.material("geode"))))
+      val frontier = mutable.PriorityQueue[(State, Int)]()(Ordering.by(v => v._1.sorting(maxMinutes - v._2)))
       val visited = mutable.HashSet[State]()
       frontier.enqueue((start, 0))
       var best: State = null
@@ -50,60 +50,72 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
           }
         }
       }
-      val score = best.material("geode") * blueprint.id
-      println(s"Blueprint ${blueprint.id} score=$score, state=$best")
-      score
+      val geodeCount = best.material("geode")
+      println(s"Blueprint ${blueprint.id}\t for $maxMinutes:\tgeodes=$geodeCount,\tstate=$best")
       (blueprint, best)
     })
     out
   }
 
+  case class State(material: Map[String, Int], robots: Map[String, Int]) {
 
-  case class State(material: Map[String, Int], robots: Map[String,Int])
+    def sorting(minutesLeft: Int): (Int, Int, Int, Int) = {
+      /*(
+        material("geode") + robots("geode") * (minutesLeft),
+        material("obsidian") + robots("obsidian") * (minutesLeft),
+        material("clay") + robots("clay") * (minutesLeft),
+        material("ore") + robots("ore") * (minutesLeft)
+      )
+       */
+      (
+        minutesLeft,
+        material("geode"),
+        0, 0)
+    }
+}
 
   case class Blueprint(id: Int, oreRobotCost: Seq[(Int, String)], clayRobotCost: Seq[(Int, String)], obsidianRobotCost: Seq[(Int, String)], geodeRobotCost: Seq[(Int, String)]) {
     def nextStates(state: State): Seq[State] = {
-      val start = state
-
-      val frontier = mutable.PriorityQueue[State]()(Ordering.by(v =>v.material.head._2))
-      val visited = mutable.HashSet[State]()
-      frontier.enqueue(start)
-      while (frontier.nonEmpty) {
-        val pop = frontier.dequeue()
-
-        if (visited.add(pop)) {
-          val affordable = buildStates(pop)
-          //println(affordable)
-          // todo add more states. done
-          val next = affordable.reverse.take(2)
-          frontier.addAll(next)
-          visited.addAll(next)
-        }
-
-      }
-      visited.toSeq
+      (Seq(state) ++ buildStates(state)).takeRight(2)
     }
+
+    def maxRequirement(name: String): Int = {
+      Seq(oreRobotCost, clayRobotCost, obsidianRobotCost, geodeRobotCost)
+        .flatMap(_.find(_._2 == name).map(_._1)).max
+    }
+
+    val maxOreRequirement: Int = maxRequirement("ore")
+    val maxClayRequirement: Int = maxRequirement("clay")
+    val maxObsidianRequirement: Int = maxRequirement("obsidian")
 
     def buildStates(state: State): Seq[State] = {
       Seq(
-        Some(oreRobotCost.map{ case (count, material) => state.material(material) - count})
-          .filter(_.forall(_ >=0))
+        Some(oreRobotCost)
+          .filterNot(_ => state.material("ore") + state.robots("ore") > 2 * maxOreRequirement)
+          .map(_.map { case (count, material) => state.material(material) - count })
+          .filter(_.forall(_ >= 0))
           .map(_ => ("ore", oreRobotCost)),
-        Some(clayRobotCost.map{ case (count, material) => state.material(material) - count})
-          .filter(_.forall(_ >=0))
+        Some(clayRobotCost)
+          .filterNot(_ => state.material("clay") + state.robots("clay") > 2 * maxClayRequirement)
+          .map(_.map { case (count, material) => state.material(material) - count })
+          .filter(_.forall(_ >= 0))
           .map(_ => ("clay", clayRobotCost)),
-        Some(obsidianRobotCost.map{ case (count, material) => state.material(material) - count})
-          .filter(_.forall(_ >=0))
+        Some(obsidianRobotCost)
+          .filterNot(_ => state.material("obsidian") + state.robots("obsidian") > 2 * maxObsidianRequirement)
+          .map(_.map { case (count, material) => state.material(material) - count })
+          .filter(_.forall(_ >= 0))
           .map(_ => ("obsidian", obsidianRobotCost)),
-        Some(geodeRobotCost.map{ case (count, material) => state.material(material) - count})
-          .filter(_.forall(_ >=0))
-          .map(_ => ("geode", geodeRobotCost))
-      ).flatten
-        .map{case (mat, costs) =>
-          val nextMaterials = state.material.map{case (k,v) => (k, v - costs.find(_._2 == k).map(_._1).getOrElse(0))}
-          val nextRobots = state.robots.map{ case (k,v) => (k, v + (if(k == mat) 1 else 0))}
+        Some(geodeRobotCost)
+          .map(_.map { case (count, material) => state.material(material) - count })
+          .filter(_.forall(_ >= 0))
+          .map(_ => ("geode", geodeRobotCost)))
+        .flatten
+        .map { case (mat, costs) =>
+          val nextMaterials = state.material.map { case (k, v) => (k, v - costs.find(_._2 == k).map(_._1).getOrElse(0)) }
+          val nextRobots = state.robots.map { case (k, v) => (k, v + (if (k == mat) 1 else 0)) }
           State(nextMaterials, nextRobots)
         }
+        .takeRight(2)
     }
   }
 
@@ -121,7 +133,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
       }
     }
 
-    private def extractCosts(ore: String) = {
+    private def extractCosts(ore: String): Seq[(Int, String)] = {
       ore.split("and").map(_.trim).map(_.split(" ")).map(l => (l.head.toInt, l.last)).toSeq
     }
   }
