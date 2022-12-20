@@ -9,9 +9,9 @@ class Day20Spec extends AnyFlatSpec with Matchers {
     Day20.part1Result shouldEqual 2622
   }
   "Part2 Test" should "be correct" in {
-    Day20.part2TestResult shouldEqual -1
+    Day20.part2TestResult shouldEqual 1623178306
   }
   "Part2" should "be correct" in {
-    Day20.part2Result shouldEqual -1
+    Day20.part2Result shouldEqual 1538773034088L
   }
 }
