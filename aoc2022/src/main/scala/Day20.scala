@@ -5,61 +5,63 @@ import scala.collection.mutable
 object Day20 extends App with AoCPart1Test with AoCPart2Test {
 
   printResultPart1Test
-  printResultPart2Test
   printResultPart1
+  printResultPart2Test
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val v = strings.map(v => v.toInt)
-    val l = mixNumbers(v)
-    val i0 = l.indexOf(0)
-    val i1000 = (i0 + 1000)
-    val i2000 = (i0 + 2000)
-    val i3000 = (i0 + 3000)
-
-    val i = l(i1000 % v.size)
-    val i1 = l(i2000 % v.size)
-    val i2 = l(i3000 % v.size)
-    i + i1 + i2
-    // -27706 is wrong
-    // 5195 is wrong
+    val v = strings.map(v => v.toLong)
+    val l = mixNumbers(v, 1)
+    l(1000 % v.size) + l(2000 % v.size) + l(3000 % v.size)
   }
 
-  private def mixNumbers(v: Seq[Int]): mutable.ArrayDeque[Int] = {
+  override def part2(strings: Seq[String]): Long = {
+    val v = strings.map(v => v.toLong).map(_ * 811589153L)
+    val l = mixNumbers(v, 10)
+    l(1000 % v.size) + l(2000 % v.size) + l(3000 % v.size)
+  }
 
-    val l = mutable.ArrayDeque[(Int, Int)]()
-    val initial =v.zipWithIndex
-    l.addAll(initial)
+  private def mixNumbers(v: Seq[Long], times: Int): Seq[Long] = {
+    val initial = v.zipWithIndex
+    (1 to times).foldLeft(initial) { case (l, _) => mixNumbers(l, initial) }.map(_._1)
+  }
+
+  private def mixNumbers(v: Seq[(Long, Int)], initial: Seq[(Long, Int)]): Seq[(Long, Int)] = {
+    val l = mutable.ArrayDeque[(Long, Int)]()
+    val zero = initial.find(_._1 == 0L).get
+    l.addAll(v)
+    var pointer = 0
     initial.foreach(x => {
       // move to item
       while (l.head != x) {
         l.append(l.removeFirst(_ => true).get)
+        pointer += 1
       }
+      pointer = pointer % v.size
+
       //move item
       val o = l.removeFirst(_ => true).get
       if (x != o) {
         println(s"moved wrong item x=${x}, o=$o")
       }
-      val times = x._1
+      val times = x._1 % (v.size - 1)
+
       if (times > 0) {
-        (1 to times).foreach(t => l.append(l.removeFirst(_ => true).get))
+        (1L to times).foreach(t => l.append(l.removeFirst(_ => true).get))
         l.prepend(x)
         //move back
-        (1 to (times)).foreach(t => l.prepend(l.removeLast()))
+        (1L to (times)).foreach(t => l.prepend(l.removeLast()))
       } else {
-        (1 to math.abs(times)).foreach(t => l.prepend(l.removeLast()))
+        (1L to math.abs(times)).foreach(t => l.prepend(l.removeLast()))
         l.prepend(x)
         //move back
-        (1 to math.abs(times)).foreach(t => l.append(l.removeFirst(_ => true).get))
-
+        (1L to math.abs(times)).foreach(t => l.append(l.removeFirst(_ => true).get))
       }
-
     })
-    l.append(l.removeFirst(_ => true).get)
-    l.map(_._1)
+    while (l.head != zero) {
+      l.append(l.removeFirst(_ => true).get)
+    }
+    l.toSeq
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
-  }
 }
