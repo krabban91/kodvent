@@ -29,7 +29,9 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
       while (l.head != x) rotate(l)
 
       l.removeFirst(_ => true).get
-      val times = x._1 % (v.size - 1)
+      val t1 = x._1 % l.size
+      val t2 = l.size + t1
+      val times = if (t1 > t2) t2 else t1
       if (times > 0) {
         (1L to times).foreach(_ => rotate(l))
         l.prepend(x)
