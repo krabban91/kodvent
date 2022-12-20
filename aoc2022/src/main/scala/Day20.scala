@@ -30,38 +30,32 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
     val l = mutable.ArrayDeque[(Long, Int)]()
     val zero = initial.find(_._1 == 0L).get
     l.addAll(v)
-    var pointer = 0
     initial.foreach(x => {
-      // move to item
-      while (l.head != x) {
-        l.append(l.removeFirst(_ => true).get)
-        pointer += 1
-      }
-      pointer = pointer % v.size
+      while (l.head != x) rotate(l)
 
-      //move item
-      val o = l.removeFirst(_ => true).get
-      if (x != o) {
-        println(s"moved wrong item x=${x}, o=$o")
-      }
+      l.removeFirst(_ => true).get
       val times = x._1 % (v.size - 1)
-
       if (times > 0) {
-        (1L to times).foreach(t => l.append(l.removeFirst(_ => true).get))
+        (1L to times).foreach(_ => rotate(l))
         l.prepend(x)
-        //move back
-        (1L to (times)).foreach(t => l.prepend(l.removeLast()))
+        (1L to (times)).foreach(_ => rotateBack(l))
       } else {
-        (1L to math.abs(times)).foreach(t => l.prepend(l.removeLast()))
+        (1L to math.abs(times)).foreach(_ => rotateBack(l))
         l.prepend(x)
-        //move back
-        (1L to math.abs(times)).foreach(t => l.append(l.removeFirst(_ => true).get))
+        (1L to math.abs(times)).foreach(_ => rotate(l))
       }
     })
     while (l.head != zero) {
-      l.append(l.removeFirst(_ => true).get)
+      rotate(l)
     }
     l.toSeq
   }
 
+  private def rotateBack(l: mutable.ArrayDeque[(Long, Int)]): Unit = {
+    l.prepend(l.removeLast())
+  }
+
+  private def rotate(l: mutable.ArrayDeque[(Long, Int)]): Unit = {
+    l.append(l.removeFirst(_ => true).get)
+  }
 }
