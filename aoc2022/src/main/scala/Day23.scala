@@ -6,12 +6,6 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 
 object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
-
   override def part1(strings: Seq[String]): Long = {
     val initial = Elf.parse(strings)
     val after = (1 to 10).foldLeft((initial, Elf.initialOrder)) { case ((before, orderToUse), i) =>
