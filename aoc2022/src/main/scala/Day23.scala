@@ -40,7 +40,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     var start = initial
     val after = (1 to 10).foldLeft(initial) { case (before, i) =>
       println(s"before $i")
-      logMap(before)
+      //logMap(before)
 
       val firstHalf = before.toSeq.map { case (p@(x, y), elf) =>
         //first half: next location
@@ -62,7 +62,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
         .map(elf => (elf.pos, elf))
       value.toMap
     }
-    logMap(after)
+    //logMap(after)
 
     val minX = after.keySet.map(_._1).min
     val minY = after.keySet.map(_._2).min
@@ -72,7 +72,67 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val N = (0, -1)
+    val E = (1, 0)
+    val S = (0, 1)
+    val W = (-1, 0)
+
+    val NE = (1, -1)
+    val NW = (-1, -1)
+
+    val SE = (1, 1)
+    val SW = (-1, 1)
+    val order = Seq(N, S, W, E)
+    val check = Map(
+      N -> Seq(NW, N, NE),
+      S -> Seq(SW, S, SE),
+      E -> Seq(SE, E, NE),
+      W -> Seq(NW, W, SW)
+    )
+    //10 rounds
+
+    var rounds = 10
+
+    val initial = strings.zipWithIndex.flatMap { case (s, y) => s.zipWithIndex.filter(_._1 == '#').map { case (c, x) => (x, y) } }
+      .map(p => (p, Elf(p, order)))
+      .toMap
+    var start = initial
+    val after = (1 to 100000).foldLeft((initial, -1)) { case ((before, res), i) =>
+      if (res > 0) {
+        (before, res)
+      } else {
+        if (before.values.forall(e => e.noMoves(before.keySet, check))) {
+          (before, i)
+        } else {
+
+          println(s"before $i")
+          //logMap(before)
+
+          val firstHalf = before.toSeq.map { case (p@(x, y), elf) =>
+            //first half: next location
+            val suggestion = elf.suggestMove(before.keySet, check)
+
+            (suggestion, elf)
+          }
+          val secondHalf = firstHalf.map { case (suggested, current) =>
+            val collission = firstHalf.exists(o => o._1.pos == suggested.pos && o._2.pos != current.pos)
+            if (collission) {
+              val nextSuggestions = current.suggestionOrder.tail ++ Seq(current.suggestionOrder.head)
+              val fallBack = Elf(current.pos, nextSuggestions)
+              fallBack
+            } else {
+              suggested
+            }
+          }
+          val value = secondHalf
+            .map(elf => (elf.pos, elf))
+          (value.toMap, res)
+
+        }
+      }
+    }
+    //logMap(after._1)
+    after._2
   }
 
   private def logMap(elfMap: Map[(Int, Int), Elf]) = {
@@ -83,11 +143,15 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   case class Elf(pos: (Int, Int), suggestionOrder: Seq[(Int, Int)]) {
 
+    def noMoves(elfPositions: Set[(Int, Int)], check: Map[(Int, Int), Seq[(Int, Int)]]): Boolean = {
+      check.values.flatten.map { case (dx, dy) => (pos._1 + dx, pos._2 + dy) }.forall(v => !elfPositions.contains(v))
+    }
+
     def suggestMove(elfPositions: Set[(Int, Int)], check: Map[(Int, Int), Seq[(Int, Int)]]): Elf = {
 
       val nextSuggestions = suggestionOrder.tail ++ Seq(suggestionOrder.head)
       val fallBack = Elf(this.pos, nextSuggestions)
-      if (check.values.flatten.map{case (dx, dy) => (pos._1 + dx, pos._2 + dy)}.forall(v => !elfPositions.contains(v))){
+      if (noMoves(elfPositions, check)) {
         fallBack
       } else {
         val options = suggestionOrder
@@ -98,7 +162,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
           })
 
         val first = options.headOption
-        first.map{case p@(dx, dy) =>
+        first.map { case p@(dx, dy) =>
           val nextPos = (pos._1 + dx, pos._2 + dy)
           Elf(nextPos, nextSuggestions)
         }.getOrElse(fallBack)
