@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (walls, directions, bz, start, end) = extractMap(strings)
     shortestPath((start, 0), end, bz, directions, walls)._2
