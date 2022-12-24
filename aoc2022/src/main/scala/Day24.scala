@@ -103,7 +103,7 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
           .filterNot(p => nextBlizz.exists(kv => kv._1 == p))
           .map(p => (p, pop._2 + 1))
         frontier.addAll(neighbors)
-        if (!currBlizz.exists(kv => kv._1 == pop._1)) {
+        if (!nextBlizz.exists(kv => kv._1 == pop._1)) {
           //wait
           frontier.addOne((pop._1, pop._2 + 1))
         }
