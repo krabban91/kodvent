@@ -49,17 +49,44 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
     val blizzards = mutable.HashMap[Int, Seq[((Int, Int), Char)]]()
     blizzards.put(0, blizzards0)
 
+    shortestPath((start, 0), end, blizzards, directions, v)._2
+  }
+
+  override def part2(strings: Seq[String]): Long = {
+    val v = strings.zipWithIndex.flatMap { case (s, y) => s.zipWithIndex.map { case (c, x) => ((x, y), c) } }.toMap
+    val directions = Map(
+      '>' -> (1, 0),
+      'v' -> (0, 1),
+      '<' -> (-1, 0),
+      '^' -> (0, -1))
+    val blizzards0: Seq[((Int, Int), Char)] = v.filter(kv => directions.contains(kv._2)).toSeq
+    val minY = v.keySet.map(_._2).min
+    val maxY = v.keySet.map(_._2).max
+
+    val start = v.find(kv => kv._1._2 == minY && kv._2 == '.').map(_._1).get
+    val end = v.find(kv => kv._1._2 == maxY && kv._2 == '.').map(_._1).get
+    val blizzards = mutable.HashMap[Int, Seq[((Int, Int), Char)]]()
+    blizzards.put(0, blizzards0)
+    val firstRun = shortestPath((start, 0), end, blizzards, directions, v)._2
+    val secondRun = shortestPath((end, firstRun), start, blizzards, directions, v)._2
+    val thirdRun = shortestPath((start, secondRun), end, blizzards, directions, v)._2
+    thirdRun
+  }
+
+  def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: mutable.HashMap[Int, Seq[((Int, Int), Char)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
     val frontier = mutable.PriorityQueue[((Int, Int), Int)]()(Ordering.by(v => (-(v._2))))
-    frontier.enqueue((start, 0))
+    frontier.enqueue(start)
     val visited = mutable.HashSet[((Int, Int), Seq[((Int, Int), Char)])]()
+    var out: ((Int, Int), Int) = null
     while (frontier.nonEmpty) {
       val pop = frontier.dequeue()
       val currBlizz = blizzards(pop._2)
-      if (currBlizz.exists(kv => kv._1 == pop._1)){
+      if (currBlizz.exists(kv => kv._1 == pop._1)) {
         //froze
       } else if (pop._1 == end) {
         // goal
-        return pop._2
+        out = pop
+        frontier.clear()
       } else if (visited.add((pop._1, currBlizz))) {
         // search
         if (!blizzards.contains(pop._2 + 1)) {
@@ -75,18 +102,13 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
           .filterNot(p => nextBlizz.exists(kv => kv._1 == p))
           .map(p => (p, pop._2 + 1))
         frontier.addAll(neighbors)
-        if (!currBlizz.exists(kv => kv._1 == pop._1)){
+        if (!currBlizz.exists(kv => kv._1 == pop._1)) {
           //wait
           frontier.addOne((pop._1, pop._2 + 1))
         }
-
-
       }
     }
-    -v.size
+    out
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
-  }
 }
