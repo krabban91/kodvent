@@ -75,37 +75,37 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
 
   private def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: mutable.HashMap[Int, Seq[((Int, Int), Char)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
-    val frontier = mutable.PriorityQueue[((Int, Int), Int)]()(Ordering.by(v => (-(v._2))))
-    frontier.enqueue(start)
+    val frontier = mutable.PriorityQueue[(((Int, Int), Int), Int)]()(Ordering.by(v => (-(v._1._2 + v._2))))
+    frontier.enqueue((start, heuristic(start._1, end)))
     val visited = mutable.HashSet[((Int, Int), Seq[((Int, Int), Char)])]()
     var out: ((Int, Int), Int) = null
     while (frontier.nonEmpty) {
-      val pop = frontier.dequeue()
-      val currBlizz = blizzards(pop._2)
-      if (currBlizz.exists(kv => kv._1 == pop._1)) {
+      val ((pos, minute), heur) = frontier.dequeue()
+      val currBlizz = blizzards(minute)
+      if (currBlizz.exists(kv => kv._1 == pos)) {
         //froze
-      } else if (pop._1 == end) {
+      } else if (pos == end) {
         // goal
-        out = pop
+        out = (pos, minute)
         frontier.clear()
-      } else if (visited.add((pop._1, currBlizz))) {
+      } else if (visited.add((pos, currBlizz))) {
         // search
-        if (!blizzards.contains(pop._2 + 1)) {
-          val nextMinuteMap = nextBlizzardsMap(blizzards(pop._2), v, directions)
-          blizzards.put(pop._2 + 1, nextMinuteMap)
+        if (!blizzards.contains(minute + 1)) {
+          val nextMinuteMap = nextBlizzardsMap(blizzards(minute), v, directions)
+          blizzards.put(minute + 1, nextMinuteMap)
         }
 
-        val nextBlizz = blizzards(pop._2 + 1)
+        val nextBlizz = blizzards(minute + 1)
 
         val neighbors = directions.values
-          .map { case (dx, dy) => (pop._1._1 + dx, pop._1._2 + dy) }
+          .map { case (dx, dy) => (pos._1 + dx, pos._2 + dy) }
           .filterNot(p => v.getOrElse(p, '#') == '#')
           .filterNot(p => nextBlizz.exists(kv => kv._1 == p))
-          .map(p => (p, pop._2 + 1))
+          .map(p => ((p, minute + 1), heuristic(p, end)))
         frontier.addAll(neighbors)
-        if (!nextBlizz.exists(kv => kv._1 == pop._1)) {
+        if (!nextBlizz.exists(kv => kv._1 == pos)) {
           //wait
-          frontier.addOne((pop._1, pop._2 + 1))
+          frontier.addOne(((pos, minute + 1), heur))
         }
       }
     }
