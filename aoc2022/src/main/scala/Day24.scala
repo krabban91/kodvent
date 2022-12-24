@@ -17,15 +17,18 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       '<' -> (-1, 0),
       '^' -> (0, -1))
     val blizzards0: Seq[((Int, Int), Char)] = v.filter(kv => directions.contains(kv._2)).toSeq
+    val bz = (0 to 1000).foldLeft((blizzards0, Map[Int, Set[(Int, Int)]]())){ case ((curr, allPos), i) =>
+      val next = nextBlizzardsMap(curr, v, directions)
+      val curLocs = Map(i -> curr.map(_._1).toSet)
+      (next, allPos ++ curLocs)
+    }
     val minY = v.keySet.map(_._2).min
     val maxY = v.keySet.map(_._2).max
 
     val start = v.find(kv => kv._1._2 == minY && kv._2 == '.').map(_._1).get
     val end = v.find(kv => kv._1._2 == maxY && kv._2 == '.').map(_._1).get
-    val blizzards = mutable.HashMap[Int, Seq[((Int, Int), Char)]]()
-    blizzards.put(0, blizzards0)
 
-    shortestPath((start, 0), end, blizzards, directions, v)._2
+    shortestPath((start, 0), end, bz._2, directions, v)._2
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -36,6 +39,11 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
       '<' -> (-1, 0),
       '^' -> (0, -1))
     val blizzards0: Seq[((Int, Int), Char)] = v.filter(kv => directions.contains(kv._2)).toSeq
+    val bz = (0 to 1000).foldLeft((blizzards0, Map[Int, Set[(Int, Int)]]())){ case ((curr, allPos), i) =>
+      val next = nextBlizzardsMap(curr, v, directions)
+      val curLocs = Map(i -> curr.map(_._1).toSet)
+      (next, allPos ++ curLocs)
+    }
     val minY = v.keySet.map(_._2).min
     val maxY = v.keySet.map(_._2).max
 
@@ -43,9 +51,9 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
     val end = v.find(kv => kv._1._2 == maxY && kv._2 == '.').map(_._1).get
     val blizzards = mutable.HashMap[Int, Seq[((Int, Int), Char)]]()
     blizzards.put(0, blizzards0)
-    val firstRun = shortestPath((start, 0), end, blizzards, directions, v)._2
-    val secondRun = shortestPath((end, firstRun), start, blizzards, directions, v)._2
-    val thirdRun = shortestPath((start, secondRun), end, blizzards, directions, v)._2
+    val firstRun = shortestPath((start, 0), end, bz._2, directions, v)._2
+    val secondRun = shortestPath((end, firstRun), start, bz._2, directions, v)._2
+    val thirdRun = shortestPath((start, secondRun), end, bz._2, directions, v)._2
     thirdRun
   }
 
@@ -74,15 +82,15 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
   private def heuristic(start: (Int, Int), end: (Int, Int)): Int = math.abs(start._1 - end._1) + math.abs(start._2 - end._2)
 
 
-  private def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: mutable.HashMap[Int, Seq[((Int, Int), Char)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
+  private def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: Map[Int, Set[(Int, Int)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
     val frontier = mutable.PriorityQueue[(((Int, Int), Int), Int)]()(Ordering.by(v => (-(v._1._2 + v._2))))
     frontier.enqueue((start, heuristic(start._1, end)))
-    val visited = mutable.HashSet[((Int, Int), Seq[((Int, Int), Char)])]()
+    val visited = mutable.HashSet[((Int, Int), Set[(Int, Int)])]()
     var out: ((Int, Int), Int) = null
     while (frontier.nonEmpty) {
       val ((pos, minute), heur) = frontier.dequeue()
       val currBlizz = blizzards(minute)
-      if (currBlizz.exists(kv => kv._1 == pos)) {
+      if (currBlizz.contains(pos)) {
         //froze
       } else if (pos == end) {
         // goal
@@ -90,20 +98,16 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
         frontier.clear()
       } else if (visited.add((pos, currBlizz))) {
         // search
-        if (!blizzards.contains(minute + 1)) {
-          val nextMinuteMap = nextBlizzardsMap(blizzards(minute), v, directions)
-          blizzards.put(minute + 1, nextMinuteMap)
-        }
 
         val nextBlizz = blizzards(minute + 1)
 
         val neighbors = directions.values
           .map { case (dx, dy) => (pos._1 + dx, pos._2 + dy) }
           .filterNot(p => v.getOrElse(p, '#') == '#')
-          .filterNot(p => nextBlizz.exists(kv => kv._1 == p))
+          .filterNot(p => nextBlizz.contains(p))
           .map(p => ((p, minute + 1), heuristic(p, end)))
         frontier.addAll(neighbors)
-        if (!nextBlizz.exists(kv => kv._1 == pos)) {
+        if (!nextBlizz.contains(pos)) {
           //wait
           frontier.addOne(((pos, minute + 1), heur))
         }
