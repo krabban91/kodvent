@@ -9,30 +9,6 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  def nextBlizzardsMap(blizzard: Seq[((Int, Int), Char)], v: Map[(Int, Int), Char], directions: Map[Char, (Int, Int)]): Seq[((Int, Int), Char)] = {
-    val minX = v.keySet.map(_._1).min
-    val maxX = v.keySet.map(_._1).max
-    val minY = v.keySet.map(_._2).min
-    val maxY = v.keySet.map(_._2).max
-    blizzard.map { case ((x, y), c) =>
-      val (dx, dy) = directions(c)
-      val possible@(px, py) = (x + dx, y + dy)
-      val pos = if (v(possible) == '#') {
-        c match {
-          case '>' => (minX + 1, py)
-          case 'v' => (px, minY + 1)
-          case '<' => (maxX - 1, py)
-          case '^' => (px, maxY - 1)
-        }
-      } else {
-        possible
-      }
-      (pos, c)
-    }
-  }
-
-  def heuristic(start: (Int, Int), end: (Int, Int)): Int = math.abs(start._1 - end._1) + math.abs(start._2 - end._2)
-
   override def part1(strings: Seq[String]): Long = {
     val v = strings.zipWithIndex.flatMap { case (s, y) => s.zipWithIndex.map { case (c, x) => ((x, y), c) } }.toMap
     val directions = Map(
@@ -73,7 +49,32 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
     thirdRun
   }
 
-  def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: mutable.HashMap[Int, Seq[((Int, Int), Char)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
+  private def nextBlizzardsMap(blizzard: Seq[((Int, Int), Char)], v: Map[(Int, Int), Char], directions: Map[Char, (Int, Int)]): Seq[((Int, Int), Char)] = {
+    val minX = v.keySet.map(_._1).min
+    val maxX = v.keySet.map(_._1).max
+    val minY = v.keySet.map(_._2).min
+    val maxY = v.keySet.map(_._2).max
+    blizzard.map { case ((x, y), c) =>
+      val (dx, dy) = directions(c)
+      val possible@(px, py) = (x + dx, y + dy)
+      val pos = if (v(possible) == '#') {
+        c match {
+          case '>' => (minX + 1, py)
+          case 'v' => (px, minY + 1)
+          case '<' => (maxX - 1, py)
+          case '^' => (px, maxY - 1)
+        }
+      } else {
+        possible
+      }
+      (pos, c)
+    }
+  }
+
+  private def heuristic(start: (Int, Int), end: (Int, Int)): Int = math.abs(start._1 - end._1) + math.abs(start._2 - end._2)
+
+
+  private def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: mutable.HashMap[Int, Seq[((Int, Int), Char)]], directions: Map[Char, (Int, Int)], v: Map[(Int, Int), Char]) = {
     val frontier = mutable.PriorityQueue[((Int, Int), Int)]()(Ordering.by(v => (-(v._2))))
     frontier.enqueue(start)
     val visited = mutable.HashSet[((Int, Int), Seq[((Int, Int), Char)])]()
