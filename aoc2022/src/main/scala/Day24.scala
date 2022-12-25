@@ -65,29 +65,28 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
 
   private def shortestPath(start: ((Int, Int), Int), end: (Int, Int), blizzards: Map[Int, Set[(Int, Int)]], directions: Map[Char, (Int, Int)], walls: Set[(Int, Int)]) = {
-    val frontier = mutable.PriorityQueue[((Int, Int), Int, Int)]()(Ordering.by(v => (-(v._2 + v._3))))
-    frontier.enqueue((start._1, start._2, heuristic(start._1, end)))
-    val visited = mutable.HashSet[((Int, Int), Set[(Int, Int)])]()
+    val frontier = mutable.PriorityQueue[(((Int, Int), Int), Int)]()(Ordering.by(v => (-(v._1._2 + v._2))))
+    frontier.enqueue((start, heuristic(start._1, end)))
+    val visited = mutable.HashSet[((Int, Int), Int)]()
     var out: ((Int, Int), Int) = null
     while (frontier.nonEmpty) {
-      val (pos, minute, heur) = frontier.dequeue()
-      val currBlizz = blizzards(minute)
+      val (state@(pos, minute), heur) = frontier.dequeue()
       if (pos == end) {
         // goal
         out = (pos, minute)
         frontier.clear()
-      } else if (visited.add((pos, currBlizz))) {
+      } else if (visited.add(state)) {
         // search
         val nextBlizz = blizzards(minute + 1)
         val neighbors = directions.values
           .map { case (dx, dy) => (pos._1 + dx, pos._2 + dy) }
           .filterNot(walls.contains)
           .filterNot(nextBlizz.contains)
-          .map(p => (p, minute + 1, heuristic(p, end)))
+          .map(p => ((p, minute + 1), heuristic(p, end)))
         frontier.addAll(neighbors)
         if (!nextBlizz.contains(pos)) {
           //wait
-          frontier.addOne((pos, minute + 1, heur))
+          frontier.addOne(((pos, minute + 1), heur))
         }
       }
     }
