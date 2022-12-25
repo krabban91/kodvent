@@ -7,24 +7,19 @@ object Day25 extends App with AoCPart1StringTest {
   }
 
   def toSNAFU(v: Long): String = {
-    var divider = math.pow(5, 20).toLong
-
-    while (v / divider == 0) {
-      divider = divider / 5
-    }
-    var tests = Seq((v, ""))
-    while (divider != 0) {
-      tests = tests.flatMap { case (inValue, outS) => Seq("=", "-", "0", "1", "2")
-        .map {
-          case "=" => (inValue + (2 * divider), outS + "=")
-          case "-" => (inValue + (1 * divider), outS + "-")
-          case s => (inValue - (s.toLong * divider), outS + s)
+    val mapper = Seq(("=", -2), ("-", -1), ("0", 0), ("1", 1), ("2", 2))
+    (0 to 20).foldRight(Seq((v, ""))){ case (i, l) =>
+      l.flatMap{ case e@(inV, outS) =>
+        val divider = math.pow(5, i).toLong
+        if(outS == "" && inV / divider == 0) {
+          Seq(e)
+        } else {
+          mapper
+            .map { case (c, m) => (inV - (m * divider), outS + c)}
+            .filter(kv => math.abs(kv._1) <= divider)
         }
-        .filter(kv => math.abs(kv._1) <= divider)
       }
-      divider = divider / 5
     }
-    tests
       .find(_._1 == 0)
       .map(_._2).get
   }
