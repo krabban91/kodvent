@@ -80,16 +80,15 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
     val valves = in.filterNot(_._2.flowRate == 0).keySet
     val minutesBetween: Map[String, Iterable[((String, String), Int)]] = calculateDistances(in)
     // state (((myLoc, minute), (elefantLoc, minute)), openValves, minute)
-    val startS = Seq(((((in("AA"), 0), (in("AA"), 0)), Set[String](), 0), 0))
+    val startS = ((((in("AA"), 0), (in("AA"), 0)), Set[String](), 0), 0)
     // goal -> (_ , keys)
-    val front = mutable.PriorityQueue[Seq[((((Valve, Int), (Valve, Int)), Set[String], Int), Int)]]()(Ordering.by(v => (-v.last._1._3, v.last._2)))
+    val front = mutable.PriorityQueue[((((Valve, Int), (Valve, Int)), Set[String], Int), Int)]()(Ordering.by(v => (-v._1._3, v._2)))
     val vis = mutable.HashSet[(Set[Valve], Set[String], Int)]()
     front.enqueue((startS))
-    var res: Seq[((((Valve, Int), (Valve, Int)), Set[String], Int), Int)] = null
-    val potent = mutable.HashMap[Seq[((((Valve, Int), (Valve, Int)), Set[String], Int), Int)], Int]()
+    var res: ((((Valve, Int), (Valve, Int)), Set[String], Int), Int) = null
+
     while (front.nonEmpty) {
-      val l = front.dequeue()
-      val (pop, accum) = l.last
+      val (pop, accum) = front.dequeue()
       val ((me, elefant), opened, minute) = pop
 
       if (minute > minutes) {
@@ -98,27 +97,25 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
       } else if (minute == minutes) {
         if (accum != 0) {
           val lastAdd = 0 * opened.map(in(_).flowRate).sum
-          potent.put(l, accum + lastAdd)
+          res = (pop, accum + lastAdd)
           front.clear()
         }
       } else {
         val state = ((Set(me._1, elefant._1)), opened, minute)
         if (vis.add(state)) {
-          val combined = duoStates(in, accum, minutes, valves, minutesBetween, l, me, elefant, opened, minute)
+          val combined = duoStates(in, accum, minutes, valves, minutesBetween, me, elefant, opened, minute)
           front.addAll(combined)
         }
       }
     }
-    val sorted = potent.toSeq.sortBy(_._2).reverse
-    res = sorted.maxBy(_._2)._1
-    res.last._2
+    res._2
     // 2542 is too high
     // 2344 is too low
     // wait 1 minute
   }
 
 
-  private def duoStates(in: Map[String, Valve], accum: Int, minutes: Int, valves: Set[String], minutesBetween: Map[String, Iterable[((String, String), Int)]], l: Seq[((((Valve, Int), (Valve, Int)), Set[String], Int), Int)], me: (Valve, Int), elefant: (Valve, Int), opened: Set[String], minute: Int): Seq[Seq[((((Day16.Valve, Int), (Day16.Valve, Int)), Set[String], Int), Int)]]  = {
+  private def duoStates(in: Map[String, Valve], accum: Int, minutes: Int, valves: Set[String], minutesBetween: Map[String, Iterable[((String, String), Int)]], me: (Valve, Int), elefant: (Valve, Int), opened: Set[String], minute: Int): Seq[((((Day16.Valve, Int), (Day16.Valve, Int)), Set[String], Int), Int)]  = {
     //new state
     val meStates: Seq[(Valve, Int, Option[String])] = if (me._2 == minute)
       states(minutes, valves, minutesBetween, me._1, opened, minute, in) else Seq((me._1, me._2, None))
@@ -141,7 +138,7 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
             val nextOpen = opened ++ Set(meOp, elOp).flatten
             ((((newMe, meMin), (el, elMin)), nextOpen, math.min(meMin, elMin)), acc)
           }
-      }.distinct.map(v => l ++ Seq(v))
+      }.distinct
     combined
   }
 
