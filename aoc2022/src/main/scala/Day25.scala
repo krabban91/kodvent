@@ -2,9 +2,6 @@ import aoc.string.AoCPart1StringTest
 
 object Day25 extends App with AoCPart1StringTest {
 
-  printResultPart1Test
-  printResultPart1
-
   override def part1(strings: Seq[String]): String = {
     toSNAFU(strings.map(fromSNAFU).sum)
   }
