@@ -13,6 +13,10 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     sides.count(wet.contains)
   }
 
+  private def readInput(strings: Seq[String]): Seq[(Int, Int, Int)] = {
+    strings.map(_.split(",")).map(l => (l.head.toInt, l.tail.head.toInt, l.last.toInt))
+  }
+
   private def exposedSides(points: Seq[(Int, Int, Int)]): Seq[Seq[(Int, Int, Int)]] = {
     points.map { case current@(x, y, z) =>
       val others = points.filterNot(_ == current)
@@ -22,20 +26,7 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  private def readInput(strings: Seq[String]): Seq[(Int, Int, Int)] = {
-    strings.map(_.split(",")).map(l => (l.head.toInt, l.tail.head.toInt, l.last.toInt))
-  }
-
-  def directions = Seq(
-    (-1, 0, 0),
-    (1, 0, 0),
-    (0, -1, 0),
-    (0, 1, 0),
-    (0, 0, -1),
-    (0, 0, 1),
-  )
-
-  def emitSteam(droplets: Seq[(Int, Int, Int)]): Set[(Int, Int, Int)] = {
+  private def emitSteam(droplets: Seq[(Int, Int, Int)]): Set[(Int, Int, Int)] = {
     val visited = mutable.HashSet[(Int, Int, Int)]()
     val (xMin, xMax) = (droplets.map(_._1).min - 1, droplets.map(_._1).max + 1)
     val (yMin, yMax) = (droplets.map(_._2).min - 1, droplets.map(_._2).max + 1)
@@ -55,4 +46,14 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     }
     visited.toSet
   }
+
+  private def directions = Seq(
+    (-1, 0, 0),
+    (1, 0, 0),
+    (0, -1, 0),
+    (0, 1, 0),
+    (0, 0, -1),
+    (0, 0, 1),
+  )
+
 }
