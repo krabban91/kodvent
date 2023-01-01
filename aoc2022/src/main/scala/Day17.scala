@@ -53,11 +53,15 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
           currentRock.rock
             .map(_._1)
-            .map(y => (y + 2, (y to y + 1).map(tower.getOrElse(_, 0)).reduce(_ | _)))
+            .map(y => (y + 4, (y to y + 3).map(tower.getOrElse(_, 0)).reduce(_ | _)))
             .collectFirst { case (y, value) if value == 127 => y }
             .foreach(lockedPoint => {
               (tower.keys.max to lockedPoint by -1).foreach(i => tower.remove(i).foreach(lockedTower.append))
-              findLoop(lockedTower).foreach { case (start, size) => return calculateHeight(goalRocks, allRocks, start, size) }
+              findLoop(lockedTower).foreach { case (start, size) =>
+                println(s"Loop found starting at $start. loop size: $size")
+                logMap(tower)
+                return calculateHeight(goalRocks, allRocks, start, size)
+              }
             })
         } else {
           currentRock = currentRock.moveVertical(1)
@@ -67,6 +71,14 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     val ys = tower.keys
     // building negatively
     -ys.min.toLong
+  }
+
+  def logMap(rocks: mutable.HashMap[Int, Int]): Unit = {
+    println(s"Tower height: ${-rocks.keys.min}, current dropSize: ${rocks.size}. ")
+    println("The mutable part of the tower:")
+    rocks.toSeq.sortBy(_._1).foreach{case (i, v) =>
+      val str = Integer.toBinaryString(v)
+      println(f"${"0"*(7-str.length)}${str} ${-i}")}
   }
 
   private def calculateHeight(goalRocks: Long, allRocks: mutable.HashMap[Int, Seq[Int]], start: Int, size: Int): Long = {
