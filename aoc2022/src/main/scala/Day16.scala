@@ -9,20 +9,20 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
     val time = 30
 
     val minutesBetween: Map[String, Iterable[((String, String), Int)]] = calculateDistances(in)
-    val start = ("AA", in.filterNot(_._2.flowRate == 0).keySet, time)
-    val frontier = mutable.PriorityQueue[((String, Set[String], Int), Int)]()(Ordering.by(v => (v._1._3, v._2)))
-    val visited = mutable.HashSet[(String, Set[String], Int)]()
-    frontier.enqueue((start, 0))
+    val start = SoloState("AA", in.filterNot(_._2.flowRate == 0).keySet, time, 0)
+    val frontier = mutable.PriorityQueue[SoloState]()(Ordering.by(v => (-v.minute, v.accum)))
+    val visited = mutable.HashSet[SoloState]()
+    frontier.enqueue(start)
     var max: Int = -1
     while (frontier.nonEmpty) {
-      val ((me, toOpen, minute), accum) = frontier.dequeue()
+      val state@SoloState(me, toOpen, minute, accum) = frontier.dequeue()
       if (accum > max) {
         max = accum
       }
-      if (minute > 0 && visited.add((me, toOpen, minute))) {
+      if (minute > 0 && visited.add(state)) {
         val next = neighbors(minutesBetween, me, toOpen, minute, in)
         if (upperBound(accum, next) >= max) {
-          val moves = soloEffort(next, toOpen, accum)
+          val moves = state.next(next)
           frontier.addAll(moves)
         }
       }
@@ -34,61 +34,47 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
     val in = strings.map(Valve(_)).map(i => (i.name, i)).toMap
     val time = 26
     val minutesBetween: Map[String, Iterable[((String, String), Int)]] = calculateDistances(in)
-    val start = ((("AA", time), ("AA", time)), in.filterNot(_._2.flowRate == 0).keySet, time)
-    val frontier = mutable.PriorityQueue[((((String, Int), (String, Int)), Set[String], Int), Int)]()(Ordering.by(v => v._1._3))
-    val visited = mutable.HashSet[(Set[String], Set[String], Int)]()
-    frontier.enqueue((start, 0))
+    val start = PairState(("AA", time), ("AA", time), in.filterNot(_._2.flowRate == 0).keySet, time, 0)
+    val frontier = mutable.PriorityQueue[PairState]()(Ordering.by(v => (-v.minute, v.accum)))
+    val visited = mutable.HashSet[PairState]()
+    frontier.enqueue(start)
     var max: Int = -1
     while (frontier.nonEmpty) {
-      val (((me, elephant), toOpen, minute), accum) = frontier.dequeue()
+      val state@PairState(me, elephant, toOpen, minute, accum) = frontier.dequeue()
       if (accum > max) {
         max = accum
       }
-      if (minute > 0 && visited.add((Set(me._1, elephant._1), toOpen, minute))) {
-        val myNext = if (me._2 == minute) neighbors(minutesBetween, me._1, toOpen, minute, in) else Seq((me._1, me._2, None))
-        val elephantNext = if (elephant._2 == minute) neighbors(minutesBetween, elephant._1, toOpen, minute, in) else Seq((elephant._1, elephant._2, None))
+      if (minute > 0 && visited.add(state)) {
+        val myNext = if (me._2 == minute) neighbors(minutesBetween, me._1, toOpen, minute, in) else Seq(Move(me._1, me._2, None))
+        val elephantNext = if (elephant._2 == minute) neighbors(minutesBetween, elephant._1, toOpen, minute, in) else Seq(Move(elephant._1, elephant._2, None))
         if (upperBound(accum, myNext, elephantNext) >= max) {
-          frontier.addAll(jointEffort(myNext, elephantNext, toOpen, accum))
+          frontier.addAll(state.next(myNext, elephantNext))
         }
       }
     }
     max
   }
 
-  private def neighbors(minutesBetween: Map[String, Iterable[((String, String), Int)]], me: String, toOpen: Set[String], minute: Int, in: Map[String, Valve]) = {
+  private def neighbors(minutesBetween: Map[String, Iterable[((String, String), Int)]], me: String, toOpen: Set[String], minute: Int, in: Map[String, Valve]): Seq[Move] = {
     minutesBetween(me)
       .map(v => (v._1._2, minute - v._2))
       .filter(v => v._2 >= 0)
       .filter(v => toOpen(v._1))
-      .map(v => (v._1, v._2, Some(v._1, v._2 * in(v._1).flowRate)))
-      .toSeq ++ Seq((me, 0, None))
+      .map(v => Move(v._1, v._2, Some(Open(v._1, v._2 * in(v._1).flowRate))))
+      .toSeq ++ Seq(Move(me, 0, None))
   }
 
-  def upperBound(curr: Int, next: Seq[(String, Int, Option[(String, Int)])]): Int = {
-    curr + next.flatMap(_._3.map(_._2)).sum
+  def upperBound(curr: Int, next: Seq[Move]): Int = {
+    curr + next.flatMap(_.opened.map(_.pressure)).sum
   }
 
-  def upperBound(curr: Int, myNext: Seq[(String, Int, Option[(String, Int)])], elephantNext: Seq[(String, Int, Option[(String, Int)])]): Int = {
-    val elephantLookup = elephantNext.flatMap(_._3).toMap
-    val meLookup = myNext.flatMap(_._3).toMap
+  def upperBound(curr: Int, myNext: Seq[Move], elephantNext: Seq[Move]): Int = {
+    val elephantLookup = elephantNext.flatMap(_.opened).map(o => (o.name, o.pressure)).toMap
+    val meLookup = myNext.flatMap(_.opened).map(o => (o.name, o.pressure)).toMap
     curr + (elephantLookup.keySet ++ meLookup.keySet)
       .map(k => math.max(elephantLookup.getOrElse(k, 0), meLookup.getOrElse(k, 0)))
       .sum
   }
-
-  private def soloEffort(next: Seq[(String, Int, Option[(String, Int)])], toOpen: Set[String], accum: Int): Seq[((String, Set[String], Int), Int)] = next
-    .map { case (me, min, op) => ((me, toOpen -- Seq(op).flatMap(_.map(_._1)), min), accum + op.map(_._2).getOrElse(0)) }
-
-  private def jointEffort(myNext: Seq[(String, Int, Option[(String, Int)])], elephantNext: Seq[(String, Int, Option[(String, Int)])], toOpen: Set[String], accum: Int): Seq[((((String, Int), (String, Int)), Set[String], Int), Int)] = myNext
-    .flatMap { case (newMe, meMin, meOp) =>
-      elephantNext
-        .filterNot(v => v._3.isDefined && v._3.map(_._1) == meOp.map(_._1))
-        .map { case (el, elMin, elOp) =>
-          val acc = accum + Seq(meOp, elOp).flatMap(_.map(_._2)).sum
-          val nextOpen = toOpen -- Seq(meOp, elOp).flatMap(_.map(_._1))
-          ((((newMe, meMin), (el, elMin)), nextOpen, math.max(meMin, elMin)), acc)
-        }
-    }.distinct
 
   private def calculateDistances(in: Map[String, Valve]) = {
     val minutesBetween = in.keys.map(from => (from, in.filter(_._2.flowRate != 0).keys.filter(_ != from).map(to => {
@@ -113,6 +99,27 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
     minutesBetween
   }
 
+  case class Move(name: String, minute: Int, opened: Option[Open])
+
+  case class Open(name: String, pressure: Int)
+
+  case class SoloState(name: String, toOpen: Set[String], minute: Int, accum: Int) {
+    def next(next: Seq[Move]): Seq[SoloState] = next
+      .map { case Move(me, min, op) => SoloState(me, toOpen -- Seq(op).flatMap(_.map(_.name)), min, accum + op.map(_.pressure).getOrElse(0)) }
+
+  }
+  case class PairState(me: (String, Int), elephant: (String, Int), toOpen: Set[String], minute: Int, accum: Int) {
+    def next(myNext: Seq[Move], elephantNext: Seq[Move]): Seq[PairState] = myNext
+      .flatMap { case Move(newMe, meMin, meOp) =>
+        elephantNext
+          .filterNot(v => v.opened.isDefined && v.opened.map(_.name) == meOp.map(_.name))
+          .map { case Move(el, elMin, elOp) =>
+            val acc = accum + Seq(meOp, elOp).flatMap(_.map(_.pressure)).sum
+            val nextOpen = toOpen -- Seq(meOp, elOp).flatMap(_.map(_.name))
+            PairState((newMe, meMin), (el, elMin), nextOpen, math.max(meMin, elMin), acc)
+          }
+      }
+  }
 
   case class Valve(name: String, flowRate: Int, tunnels: Seq[String]) {
     override def toString: String = name
