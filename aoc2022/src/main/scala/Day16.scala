@@ -4,43 +4,20 @@ import scala.collection.mutable
 
 object Day16 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(strings: Seq[String]): Long = {
-    val in = strings.map(Valve(_)).map(i => (i.name, i)).toMap
-    val time = 30
+  override def part1(strings: Seq[String]): Long = openValves(30, 0, strings)
 
+  override def part2(strings: Seq[String]): Long = openValves(26, 26, strings)
+
+  def openValves(myTime: Int, elephantTime: Int, input: Seq[String]): Int = {
+    val in = input.map(Valve(_)).map(i => (i.name, i)).toMap
     val minutesBetween: Map[String, Iterable[((String, String), Int)]] = calculateDistances(in)
-    val start = SoloState("AA", in.filterNot(_._2.flowRate == 0).keySet, time, 0)
-    val frontier = mutable.PriorityQueue[SoloState]()(Ordering.by(v => (-v.minute, v.accum)))
-    val visited = mutable.HashSet[SoloState]()
+    val start = State(("AA", myTime), ("AA", elephantTime), in.filterNot(_._2.flowRate == 0).keySet, math.max(myTime, elephantTime), 0)
+    val frontier = mutable.PriorityQueue[State]()(Ordering.by(v => (-v.minute, v.accum)))
+    val visited = mutable.HashSet[State]()
     frontier.enqueue(start)
     var max: Int = -1
     while (frontier.nonEmpty) {
-      val state@SoloState(me, toOpen, minute, accum) = frontier.dequeue()
-      if (accum > max) {
-        max = accum
-      }
-      if (minute > 0 && visited.add(state)) {
-        val next = neighbors(minutesBetween, me, toOpen, minute, in)
-        if (upperBound(accum, next) >= max) {
-          val moves = state.next(next)
-          frontier.addAll(moves)
-        }
-      }
-    }
-    max
-  }
-
-  override def part2(strings: Seq[String]): Long = {
-    val in = strings.map(Valve(_)).map(i => (i.name, i)).toMap
-    val time = 26
-    val minutesBetween: Map[String, Iterable[((String, String), Int)]] = calculateDistances(in)
-    val start = PairState(("AA", time), ("AA", time), in.filterNot(_._2.flowRate == 0).keySet, time, 0)
-    val frontier = mutable.PriorityQueue[PairState]()(Ordering.by(v => (-v.minute, v.accum)))
-    val visited = mutable.HashSet[PairState]()
-    frontier.enqueue(start)
-    var max: Int = -1
-    while (frontier.nonEmpty) {
-      val state@PairState(me, elephant, toOpen, minute, accum) = frontier.dequeue()
+      val state@State(me, elephant, toOpen, minute, accum) = frontier.dequeue()
       if (accum > max) {
         max = accum
       }
@@ -103,20 +80,15 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
 
   case class Open(name: String, pressure: Int)
 
-  case class SoloState(name: String, toOpen: Set[String], minute: Int, accum: Int) {
-    def next(next: Seq[Move]): Seq[SoloState] = next
-      .map { case Move(me, min, op) => SoloState(me, toOpen -- Seq(op).flatMap(_.map(_.name)), min, accum + op.map(_.pressure).getOrElse(0)) }
-
-  }
-  case class PairState(me: (String, Int), elephant: (String, Int), toOpen: Set[String], minute: Int, accum: Int) {
-    def next(myNext: Seq[Move], elephantNext: Seq[Move]): Seq[PairState] = myNext
+  case class State(me: (String, Int), elephant: (String, Int), toOpen: Set[String], minute: Int, accum: Int) {
+    def next(myNext: Seq[Move], elephantNext: Seq[Move]): Seq[State] = myNext
       .flatMap { case Move(newMe, meMin, meOp) =>
         elephantNext
           .filterNot(v => v.opened.isDefined && v.opened.map(_.name) == meOp.map(_.name))
           .map { case Move(el, elMin, elOp) =>
             val acc = accum + Seq(meOp, elOp).flatMap(_.map(_.pressure)).sum
             val nextOpen = toOpen -- Seq(meOp, elOp).flatMap(_.map(_.name))
-            PairState((newMe, meMin), (el, elMin), nextOpen, math.max(meMin, elMin), acc)
+            State((newMe, meMin), (el, elMin), nextOpen, math.max(meMin, elMin), acc)
           }
       }
   }
