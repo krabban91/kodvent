@@ -8,15 +8,9 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val points = readInput(strings)
-    val (xmin, xmax) = (points.map(_._1).min, points.map(_._1).max)
-    val (ymin, ymax) = (points.map(_._2).min, points.map(_._2).max)
-    val (zmin, zmax) = (points.map(_._3).min, points.map(_._3).max)
-    val limits = (xmin, xmax, ymin, ymax, zmin, zmax)
     val sides = exposedSides(points).flatten
-
-    val escapesFrom = mutable.HashMap[(Int, Int, Int), Boolean]()
-    val sideSet = sides.toSet.filter(p => reachesExterior(p, points, escapesFrom, limits))
-    sides.count(sideSet.contains)
+    val wet = sides.toSet.intersect(emitSteam(points))
+    sides.count(wet.contains)
   }
 
   private def exposedSides(points: Seq[(Int, Int, Int)]): Seq[Seq[(Int, Int, Int)]] = {
@@ -28,7 +22,7 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  private def readInput(strings: Seq[String]) = {
+  private def readInput(strings: Seq[String]): Seq[(Int, Int, Int)] = {
     strings.map(_.split(",")).map(l => (l.head.toInt, l.tail.head.toInt, l.last.toInt))
   }
 
@@ -41,30 +35,24 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     (0, 0, 1),
   )
 
-  def reachesExterior(p: (Int, Int, Int), droplets: Seq[(Int, Int, Int)], escapesFrom: mutable.HashMap[(Int, Int, Int), Boolean], limits: (Int, Int, Int, Int, Int, Int)) = {
-    val (xmin, xmax, ymin, ymax, zmin, zmax) = limits
-
-    val frontier = mutable.PriorityQueue[(Int, Int, Int)]()
-    frontier.enqueue(p)
-    var escaped = false
+  def emitSteam(droplets: Seq[(Int, Int, Int)]): Set[(Int, Int, Int)] = {
     val visited = mutable.HashSet[(Int, Int, Int)]()
+    val (xMin, xMax) = (droplets.map(_._1).min - 1, droplets.map(_._1).max + 1)
+    val (yMin, yMax) = (droplets.map(_._2).min - 1, droplets.map(_._2).max + 1)
+    val (zMin, zMax) = (droplets.map(_._3).min - 1, droplets.map(_._3).max + 1)
+    val frontier = mutable.PriorityQueue[(Int, Int, Int)]()
+    frontier.enqueue((xMin, yMin, zMin))
     while (frontier.nonEmpty) {
       val pop@(x, y, z) = frontier.dequeue()
-      if (x < xmin || y < ymin || z < zmin || x > xmax || y > ymax || z > zmax) {
-        escaped = true
-        frontier.clear()
-      } else if (escapesFrom.contains(pop)) {
-        escaped = escapesFrom(pop)
-        frontier.clear()
-      } else if (visited.add(pop)) {
+      if (visited.add(pop)) {
         val moves = directions
           .map { case (dx, dy, dz) => (x + dx, y + dy, z + dz) }
+          .filterNot { case (x1, y1, z1) => x1 < xMin || xMax < x1 || y1 < yMin || yMax < y1 || z1 < zMin || zMax < z1 }
           .filterNot(visited.contains)
           .filterNot(droplets.contains)
         frontier.addAll(moves)
       }
     }
-    visited.foreach(v => escapesFrom.put(v, escaped))
-    escaped
+    visited.toSet
   }
 }
