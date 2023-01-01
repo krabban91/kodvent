@@ -12,19 +12,19 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
     val in = Valve.parse(input)
     val paths: Map[String, Seq[Path]] = Path.calculate(in)
     val start = State(("AA", myTime), ("AA", elephantTime), in.filterNot(_._2.flowRate == 0).keySet, math.max(myTime, elephantTime), 0)
-    val frontier = mutable.PriorityQueue[State]()(Ordering.by(v => (-v.minute, v.releasedPressure)))
+    val frontier = mutable.PriorityQueue[State]()(Ordering.by(_.releasedPressure))
     val visited = mutable.HashSet[State]()
     frontier.enqueue(start)
     var max: Int = -1
     while (frontier.nonEmpty) {
-      val state@State(me, elephant, toOpen, minute, accum) = frontier.dequeue()
-      if (accum > max) {
-        max = accum
+      val state@State(me, elephant, toOpen, minute, released) = frontier.dequeue()
+      if (released > max) {
+        max = released
       }
-      if (minute > 0 && visited.add(state)) {
+      if (visited.add(state) && minute > 0) {
         val myNext = if (me._2 == minute) Move.neighbors(paths, me._1, toOpen, minute) else Seq(Move(me._1, me._2, None))
         val elephantNext = if (elephant._2 == minute) Move.neighbors(paths, elephant._1, toOpen, minute) else Seq(Move(elephant._1, elephant._2, None))
-        if (Move.upperBound(accum, myNext, elephantNext) >= max) {
+        if (Move.upperBound(released, myNext, elephantNext) >= max) {
           frontier.addAll(state.next(myNext, elephantNext))
         }
       }
@@ -86,8 +86,7 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
         .map(v => (v.to, minute - v.cost, v.flowRate))
         .filter(v => v._2 >= 0)
         .filter(v => toOpen(v._1))
-        .map(v => Move(v._1, v._2, Some(Open(v._1, v._2 * v._3))))
-        .toSeq ++ Seq(Move(current, 0, None))
+        .map(v => Move(v._1, v._2, Some(Open(v._1, v._2 * v._3)))) ++ Seq(Move(current, 0, None))
     }
   }
 
