@@ -15,17 +15,15 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   private def fallingRocks(v: String, goalRocks: Long): Long = {
-    val rockIntMap = mutable.HashMap[Int, Int]()
+    val tower = mutable.HashMap[Int, Int]()
     val lockedTower = mutable.ListBuffer[Int]()
-    var longestDrop = 0
     val minX = 0
     val maxX = 7
     var inputIndex = 0
     var rockCount = 0L
-    val loopFinder = mutable.ListBuffer[Int]()
     val allRocks = mutable.HashMap[Int, Seq[Int]]()
     while (rockCount < goalRocks) {
-      val topOfTower = if (rockIntMap.isEmpty) 0 else rockIntMap.keys.min
+      val topOfTower = if (tower.isEmpty) 0 else tower.keys.min
       val startY = topOfTower - 3
       var currentRock = Tetris.newPiece(rockCount, startY)
       var moving = true
@@ -34,52 +32,39 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
         val i = inputIndex % v.length
         v(i) match {
           case '<' =>
-            if (!currentRock.collidesLeft(rockIntMap, minX, maxX)) {
+            if (!currentRock.collidesLeft(tower, minX)) {
               currentRock = currentRock.moveHorizontal(-1)
             }
           case '>' =>
-            if (!currentRock.collidesRight(rockIntMap, minX, maxX)) {
+            if (!currentRock.collidesRight(tower, maxX)) {
               currentRock = currentRock.moveHorizontal(1)
             }
         }
 
         inputIndex += 1
 
-        if (currentRock.collidesDown(rockIntMap, minX, maxX)) {
+        if (currentRock.collidesDown(tower)) {
           moving = false
-          currentRock.numRock.foreach { case (y, v) =>
-            val value = rockIntMap.getOrElse(y, 0) | v
-            rockIntMap.put(y, value)
-            if (-y >= loopFinder.size) {
-              loopFinder.append(value)
-              allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
-            } else {
-              loopFinder.updated(-y, value)
-              allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
-            }
+          currentRock.rock.foreach { case (y, v) =>
+            tower.put(y, tower.getOrElse(y, 0) | v)
+            allRocks.put(-y, allRocks.getOrElse(-y, Seq()) ++ Seq(rockCount.toInt + 1))
           }
           rockCount += 1
 
-          currentRock.numRock
+          currentRock.rock
             .map(_._1)
-            .map(y => (y + 2, (y to y + 1).map(rockIntMap.getOrElse(_, 0)).reduce(_ | _)))
-            .collectFirst {
-              case (y, value) if value == 127 => y
-            }
+            .map(y => (y + 2, (y to y + 1).map(tower.getOrElse(_, 0)).reduce(_ | _)))
+            .collectFirst { case (y, value) if value == 127 => y }
             .foreach(lockedPoint => {
-              val mapMax = rockIntMap.keys.max
-              (mapMax to lockedPoint by -1).foreach(i => rockIntMap.remove(i).foreach(lockedTower.append))
-
-              findLoop(lockedTower).foreach{ case (start, size) =>
-                return calculateHeight(goalRocks, allRocks, start, size)
-              }
+              (tower.keys.max to lockedPoint by -1).foreach(i => tower.remove(i).foreach(lockedTower.append))
+              findLoop(lockedTower).foreach { case (start, size) => return calculateHeight(goalRocks, allRocks, start, size) }
             })
         } else {
           currentRock = currentRock.moveVertical(1)
         }
       }
     }
-    val ys = rockIntMap.keys
+    val ys = tower.keys
     // building negatively
     -ys.min.toLong
   }
@@ -118,7 +103,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
         val newRemainder = lockedTower.dropRight(chunkSize)
         val toFindIn = newRemainder.sliding(chunkSize).toSeq
         val found = toFindIn.zipWithIndex.findLast(kv => kv._1 == biggerChunk)
-        found.map{ case (_, start) => (start, chunkSize)}
+        found.map { case (_, start) => (start, chunkSize) }
       })
     } else None
   }
@@ -130,46 +115,26 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
     def width: Int
 
-    def rock: Seq[(Int, Int)] = shape.map { case (x, y) => (x + location._1, y + location._2) }
-
     def moveVertical(y: Int): Tetris
 
     def moveHorizontal(x: Int): Tetris
 
-    def shape: Seq[(Int, Int)]
+    def shape: Seq[Int]
 
-    def numShape: Seq[Int]
+    def rock: Seq[(Int, Int)] = shape.zipWithIndex.map { case (v, dy) => (dy + location._2, v >> location._1) }
 
-    def numRock: Seq[(Int, Int)] = numShape.zipWithIndex.map { case (v, dy) => (dy + location._2, v >> location._1) }
+    def collidesDown(rockIntMap: mutable.HashMap[Int, Int]): Boolean = location._2 + height == 0 ||
+      rock.exists { case (y, v) => (v & rockIntMap.getOrElse(y + 1, 0)) > 0 }
 
-    def collidesDown(rockIntMap: mutable.HashMap[Int, Int], minX: Int, maxX: Int): Boolean = {
-      if (location._2 + height == 0) {
-        true
-      } else {
-        numRock.exists { case (y, v) => (v & rockIntMap.getOrElse(y + 1, 0)) > 0 }
-      }
-    }
+    def collidesLeft(rockIntMap: mutable.HashMap[Int, Int], minX: Int): Boolean = location._1 == minX ||
+      rock.exists { case (y, v) => ((v << 1) & rockIntMap.getOrElse(y, 0)) > 0 }
 
-    def collidesLeft(rockIntMap: mutable.HashMap[Int, Int], minX: Int, maxX: Int): Boolean = {
-      if (location._1 == minX) {
-        true
-      } else {
-        numRock.exists { case (y, v) => ((v << 1) & rockIntMap.getOrElse(y, 0)) > 0 }
-      }
-    }
-
-    def collidesRight(rockIntMap: mutable.HashMap[Int, Int], minX: Int, maxX: Int): Boolean = {
-      if (location._1 + width == maxX) {
-        true
-      } else {
-        numRock.exists { case (y, v) => ((v >> 1) & rockIntMap.getOrElse(y, 0)) > 0 }
-      }
-    }
+    def collidesRight(rockIntMap: mutable.HashMap[Int, Int], maxX: Int): Boolean = location._1 + width == maxX ||
+      rock.exists { case (y, v) => ((v >> 1) & rockIntMap.getOrElse(y, 0)) > 0 }
   }
 
   case class Minus(location: (Int, Int)) extends Tetris {
-    val shape = Seq((0, 0), (1, 0), (2, 0), (3, 0))
-    val numShape = Seq(Integer.parseInt("1111000", 2))
+    val shape = Seq(Integer.parseInt("1111000", 2))
 
     def height: Int = 1
 
@@ -182,8 +147,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class Plus(location: (Int, Int)) extends Tetris {
-    val shape = Seq((1, 0), (0, 1), (1, 1), (2, 1), (1, 2))
-    val numShape = Seq(
+    val shape = Seq(
       Integer.parseInt("0100000", 2),
       Integer.parseInt("1110000", 2),
       Integer.parseInt("0100000", 2))
@@ -198,8 +162,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class ReverseL(location: (Int, Int)) extends Tetris {
-    val shape = Seq((2, 0), (2, 1), (0, 2), (1, 2), (2, 2))
-    val numShape = Seq(
+    val shape = Seq(
       Integer.parseInt("0010000", 2),
       Integer.parseInt("0010000", 2),
       Integer.parseInt("1110000", 2))
@@ -214,8 +177,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class Pipe(location: (Int, Int)) extends Tetris {
-    val shape = Seq((0, 0), (0, 1), (0, 2), (0, 3))
-    val numShape = Seq(
+    val shape = Seq(
       Integer.parseInt("1000000", 2),
       Integer.parseInt("1000000", 2),
       Integer.parseInt("1000000", 2),
@@ -231,8 +193,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   case class Box(location: (Int, Int)) extends Tetris {
-    val shape = Seq((0, 0), (0, 1), (1, 0), (1, 1))
-    val numShape = Seq(
+    val shape = Seq(
       Integer.parseInt("1100000", 2),
       Integer.parseInt("1100000", 2))
 
