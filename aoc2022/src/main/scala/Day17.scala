@@ -4,15 +4,9 @@ import scala.collection.mutable
 
 object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
-  override def part1(strings: Seq[String]): Long = {
-    val v = strings.head
-    fallingRocks(v, 2022)
-  }
+  override def part1(strings: Seq[String]): Long = fallingRocks(strings.head, 2022)
 
-  override def part2(strings: Seq[String]): Long = {
-    val v = strings.head
-    fallingRocks(v, 1000000000000L)
-  }
+  override def part2(strings: Seq[String]): Long = fallingRocks(strings.head, 1000000000000L)
 
   private def fallingRocks(v: String, goalRocks: Long): Long = {
     val tower = mutable.HashMap[Int, Int]()
@@ -76,9 +70,10 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   def logMap(rocks: mutable.HashMap[Int, Int]): Unit = {
     println(s"Tower height: ${-rocks.keys.min}, current dropSize: ${rocks.size}. ")
     println("The mutable part of the tower:")
-    rocks.toSeq.sortBy(_._1).foreach{case (i, v) =>
+    rocks.toSeq.sortBy(_._1).foreach { case (i, v) =>
       val str = Integer.toBinaryString(v)
-      println(f"${"0"*(7-str.length)}${str} ${-i}")}
+      println(f"${"0" * (7 - str.length)}${str} ${-i}")
+    }
   }
 
   private def calculateHeight(goalRocks: Long, allRocks: mutable.HashMap[Int, Seq[Int]], start: Int, size: Int): Long = {
