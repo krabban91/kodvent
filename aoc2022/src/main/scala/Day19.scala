@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = geodeCount(strings.map(Blueprint(_)), 24)
     .map { case (bp, best) => best * bp.id }.sum
 
