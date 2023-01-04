@@ -4,25 +4,25 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
-    val v = strings.map(v => Expression(v)).map(v => (v.name, v)).toMap
-    v("root").value(v).toLong
+    val monkeys = strings.map(v => Expression(v)).map(v => (v.name, v)).toMap
+    monkeys("root").value(monkeys).toLong
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val v = strings.map(v => Expression(v)).map(v => (v.name, v)).toMap
+    val monkeys = strings.map(v => Expression(v)).map(v => (v.name, v)).toMap
 
     var test = 0L
     var stepSize = (1e12).toLong
-    var result = tryYelling(0L, v)
-    val direction = math.signum(result - tryYelling(1L, v)).toLong
+    var result = tryYelling(0L, monkeys)
+    val direction = math.signum(result - tryYelling(1L, monkeys)).toLong
     while (result != 0) {
       while (result < 0) {
         test -= stepSize * direction
-        result = tryYelling(test, v)
+        result = tryYelling(test, monkeys)
       }
       while (result > 0) {
         test += stepSize * direction
-        result = tryYelling(test, v)
+        result = tryYelling(test, monkeys)
       }
       stepSize /= 10
     }
