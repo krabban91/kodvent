@@ -5,94 +5,53 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
   override def part1(strings: Seq[String]): Long = {
     val (map, ops) = parseInput(strings)
 
-
-    var loc = map.filter(kv => kv._1._2 == 0 && kv._2 == '.').minBy(_._1._1)._1
-    var dir = (1, 0)
-
-    ops._1.foreach { case op@(steps, turn) =>
-      (1 to steps).foreach(i => {
-        val nextPos = move(loc, dir)
-        val nextTile = map.getOrElse(nextPos, " ")
-        if (nextTile == '.') {
-          //move
-          loc = nextPos
-        } else if (nextTile == '#') {
-          //halt
-        } else {
-          //wrap around
-          val wrapped = dir match {
-            case (1, 0) => map.filter(kv => kv._1._2 == nextPos._2)
-              .minBy(_._1._1)._1
-            case (0, 1) => map.filter(kv => kv._1._1 == nextPos._1)
-              .minBy(_._1._2)._1
-            case (-1, 0) => map.filter(kv => kv._1._2 == nextPos._2)
-              .maxBy(_._1._1)._1
-            case (0, -1) => map.filter(kv => kv._1._1 == nextPos._1)
-              .maxBy(_._1._2)._1
-          }
-          val wrappedTile = map(wrapped)
-          if (wrappedTile == '#') {
-            //halt
-          } else {
-            loc = wrapped
-          }
+    val startPos = map.filter(kv => kv._1._2 == 0 && kv._2 == '.').minBy(_._1._1)._1
+    val (_, (x, y), endDir) = exploreMap(startPos, (0, 0), ops, (locPos, locMap, dir) => {
+      val nextPos@(x, y) = move(locPos, dir)
+      Some(nextPos).filter(p => map.contains(p)).map((locMap, _, dir)).orElse({
+        val wrapped = dir match {
+          case (1, 0) => map.keys.filter(_._2 == y).minBy(_._1)
+          case (0, 1) => map.keys.filter(_._1 == x).minBy(_._2)
+          case (-1, 0) => map.keys.filter(_._2 == y).maxBy(_._1)
+          case (0, -1) => map.keys.filter(_._1 == x).maxBy(_._2)
         }
+        Some(locMap, wrapped, dir)
       })
-      turn match {
-        case "L" =>
-          dir = left(dir)
-        case "R" =>
-          dir = right(dir)
-        case "S" => //last op
-      }
-    }
-    val dirMap = directions.zipWithIndex.toMap
-    val password = 1000 * (loc._2 + 1) + 4 * (loc._1 + 1) + dirMap(dir)
-
-    password
+        .filterNot(t => map(t._2) == '#')
+    })
+    password(endDir, x, y)
   }
 
   override def part2(strings: Seq[String]): Long = {
     val (map, ops) = parseInput(strings)
     val mod = if (strings.head.length < 50) 4 else 50
-    val maps: Map[(Int, Int), Map[(Int, Int), Char]] = slicedMap(mod, map)
     val edges = if (mod == 4) testEdges else realEdges
 
-    var locMap = maps.keys.minBy(v => (v._2, v._1))
-    var locPos = maps(locMap).filter(_._2 == '.').minBy(v => (v._1._2, v._1._1))._1
-    var dir = (1, 0)
+    val maps: Map[(Int, Int), Map[(Int, Int), Char]] = slicedMap(mod, map)
+    val startMap = maps.keys.minBy(v => (v._2, v._1))
 
-    ops._1.foreach { case op@(steps, turn) =>
-      (1 to steps).foreach(_ => {
-        val nextP = move(locPos, dir)
-        maps(locMap).get(nextP).map(c => (locMap, nextP, dir, c)).orElse({
-          val (nextMap, times) = edges.getOrElse((locMap, dir), (move(locMap, dir), (invCompass(dir), invCompass(dir))))
-          val wrappedT = passOverEdge(nextP, mod, times)
-          val wrappedDir = compass(times._2)
-          Some((nextMap, wrappedT, wrappedDir, maps(nextMap)(wrappedT)))
-        })
-          .filterNot(_._4 == '#')
-          .foreach { case (nextMap, nextLoc, nextDir, c) =>
-            locPos = nextLoc
-            locMap = nextMap
-            dir = nextDir
-          }
+    val startPos = maps(startMap).filter(kv => kv._1._2 == 0 && kv._2 == '.').minBy(_._1._1)._1
+    val (endMap, endPos, endDir) = exploreMap(startPos, startMap, ops, (locPos, locMap, dir) => {
+      val nextPos = move(locPos, dir)
+      Some(nextPos).filter(p => maps(locMap).contains(p)).map((locMap, _, dir)).orElse({
+        val (nextMap, orientation) = edges.getOrElse((locMap, dir), (move(locMap, dir), (invCompass(dir), invCompass(dir))))
+        val wrappedT = passOverEdge(nextPos, mod, orientation)
+        val wrappedDir = compass(orientation._2)
+        Some(nextMap, wrappedT, wrappedDir)
       })
-      turn match {
-        case "L" =>
-          dir = left(dir)
-        case "R" =>
-          dir = right(dir)
-        case "S" => //last op
-      }
-    }
-    val dirMap = directions.zipWithIndex.toMap
-    val (cx, cy) = convertCoords(mod, locMap, locPos)
-    val password = 1000 * (cy + 1) + 4 * (cx + 1) + dirMap(dir)
-    password
+        .filterNot(t => maps(t._1)(t._2) == '#')
+    })
+
+    val (cx, cy) = convertCoords(mod, endMap, endPos)
+    password(endDir, cx, cy)
   }
 
-  private def parseInput(strings: Seq[String]): (Map[(Int, Int), Char], (Seq[(Int, String)], String)) = {
+  private def password(endDir: (Int, Int), cx: Int, cy: Int): Int = {
+    val dirMap = directions.zipWithIndex.toMap
+    1000 * (cy + 1) + 4 * (cx + 1) + dirMap(endDir)
+  }
+
+  private def parseInput(strings: Seq[String]): (Map[(Int, Int), Char], Seq[(Int, String)]) = {
     val grouped = groupsSeparatedByTwoNewlines(strings)
     val map = grouped.head.split("\n")
       .filter(_.nonEmpty).zipWithIndex.flatMap { case (s, y) => s.zipWithIndex.map { case (c, x) => ((x, y), c) } }.filterNot(_._2 == ' ').toMap
@@ -102,8 +61,30 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
       } else {
         (l, s + c)
       }
-    }
+    }._1
     (map, ops)
+  }
+
+  private def exploreMap(startPos: (Int, Int), startMap: (Int, Int), operations: Seq[(Int, String)], nextLocation: ((Int, Int), (Int, Int), (Int, Int)) => Option[((Int, Int), (Int, Int), (Int, Int))]): ((Int, Int), (Int, Int), (Int, Int)) = {
+    var locMap = startMap
+    var locPos = startPos
+    var dir = (1, 0)
+    operations.foreach { case (steps, turn) =>
+      (1 to steps).foreach(_ => {
+        nextLocation(locPos, locMap, dir)
+          .foreach { case (nextMap, nextLoc, nextDir) =>
+            locPos = nextLoc
+            locMap = nextMap
+            dir = nextDir
+          }
+      })
+      turn match {
+        case "L" => dir = compass(left(invCompass(dir)))
+        case "R" => dir = compass(right(invCompass(dir)))
+        case "S" => //last op
+      }
+    }
+    (locMap, locPos, dir)
   }
 
   private def move(locPos: (Int, Int), dir: (Int, Int)) = {
@@ -170,9 +151,9 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
     )
   }
 
-  def passOverEdge(pos: (Int, Int), mod: Int, style: (Char, Char)): (Int, Int) = {
+  def passOverEdge(pos: (Int, Int), mod: Int, orientation: (Char, Char)): (Int, Int) = {
     val (x, y) = pos
-    style match {
+    orientation match {
       case ('S', 'S') => (x, 0)
       case ('N', 'N') => (x, mod - 1)
       case ('W', 'W') => (mod - 1, y)
@@ -216,7 +197,7 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
 
   private def invCompass = Map(compass('E') -> 'E', compass('S') -> 'S', compass('W') -> 'W', compass('N') -> 'N')
 
-  private def left = Map(compass('E') -> compass('N'), compass('S') -> compass('E'), compass('W') -> compass('S'), compass('N') -> compass('W'))
+  private def left = Map('E' -> 'N', 'S' -> 'E', 'W' -> 'S', 'N' -> 'W')
 
-  private def right = Map(compass('E') -> compass('S'), compass('S') -> compass('W'), compass('W') -> compass('N'), compass('N') -> compass('E'))
+  private def right = Map('E' -> 'S', 'S' -> 'W', 'W' -> 'N', 'N' -> 'E')
 }
