@@ -1,4 +1,3 @@
-import Day19.{ScanResult, inputs}
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import krabban91.kodvent.kodvent.utilities.{Distances, Point3D}
 
@@ -6,11 +5,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 object Day19 extends App with AoCPart1Test with AoCPart2Test {
-
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
     val scanners = inputs(strings)
@@ -56,7 +50,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
     def rotations: Seq[((Int, Int, Int), ScanResult)] = {
       val flips = ListBuffer[((Int, Int, Int), (Int, Int, Int))]()
       var nextX = (1, 2, 3)
-      var revX = (1,2,3)
+      var revX = (1, 2, 3)
       for (i <- (0 until 4)) {
         val t = (nextX, revX)
         flips += t
@@ -68,7 +62,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
         revX = (revX._1, revX._3, -revX._2)
       }
       var nextY = (1, 2, 3)
-      var revY = (1,2,3)
+      var revY = (1, 2, 3)
       for (i <- (0 until 4)) {
         val t = (nextY, revY)
         flips += t
@@ -100,6 +94,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
     def pointFrom(is: (Int, Int, Int), p: Point3D): Point3D = {
       new Point3D(getPoint(is._1, p), getPoint(is._2, p), getPoint(is._3, p))
     }
+
     def getPoint(i: Int, p: Point3D): Int = i match {
       case 1 => p.getX
       case 2 => p.getY
@@ -140,11 +135,12 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
                 p.getZ - diff.getZ))
               (ScanResult(res.id, oAdjusted), diff)
             })
-            .map((t._1, _))})
+            .map((t._1, _))
+        })
         .find(_ => true)
         .flatMap(t => t._2._1
           .rotations
-          .flatMap(res => this.overlaps(res._2, count).map(v =>(res._1, (res._2, v))))
+          .flatMap(res => this.overlaps(res._2, count).map(v => (res._1, (res._2, v))))
           .find(_ => true)
           .map(tt => {
             val (revMap, (oldRes, oldDiff)) = t
@@ -155,7 +151,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
               p.getZ - diff.getZ))
             (ScanResult(res.id, oAdjusted), pointFrom(revMap, oldDiff.add(pointFrom(nRev, diff))))
           })
-        .find(_ => true))
+          .find(_ => true))
 
     }
 
