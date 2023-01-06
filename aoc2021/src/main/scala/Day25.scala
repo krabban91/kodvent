@@ -7,8 +7,6 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 
 object Day25 extends App with AoCPart1Test {
 
-  printResultPart1Test
-  printResultPart1
   private val debug = false
 
   override def part1(strings: Seq[String]): Long = {
