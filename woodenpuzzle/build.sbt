@@ -7,7 +7,7 @@ ThisBuild / organizationName := "kodvent"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "aoc2022",
+    name := "woodenpuzzle",
     libraryDependencies ++= Seq(
       scalaTest % Test,
       combinators % Compile,
