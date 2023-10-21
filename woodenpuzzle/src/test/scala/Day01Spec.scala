@@ -35,6 +35,10 @@ class Day01Spec extends AnyFlatSpec with Matchers {
     groupsSeparatedByTwoNewlines(Day01.getInputTest).filter(_.nonEmpty).map(_.strip())
   }
 
+  private def cleanInputReal = {
+    groupsSeparatedByTwoNewlines(Day01.getInput).filter(_.nonEmpty).map(_.strip())
+  }
+
   "Puzzle" should "be able to place a piece, example 1" in {
     val input = cleanInput
     val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
@@ -96,6 +100,27 @@ class Day01Spec extends AnyFlatSpec with Matchers {
   }
 
 
+  // Validation test pieces
+  cleanInput.zipWithIndex.foreach{case (input, i) =>
+    val piece = Piece(input = input, index = i, isRotated = false)
+    s"Test Piece ${piece.pieceName}" should "have a valid shape" in {
+      piece.isValid shouldBe true
+
+
+    }
+  }
+  // Validation real pieces
+  cleanInputReal.zipWithIndex.foreach { case (input, i) =>
+    val piece = Piece(input = input, index = i, isRotated = false)
+    s"Real Piece ${piece.pieceName}" should "have a valid shape" in {
+      if (!piece.isValid) {
+        println(s"piece $piece is invalid")
+      }
+      piece.isValid shouldBe true
+
+    }
+  }
+
 
 
   "Part1 Test" should "be correct" in {
@@ -103,7 +128,9 @@ class Day01Spec extends AnyFlatSpec with Matchers {
     val result = Day01.part1TestResult
     solutions.contains(result) shouldBe true
   }
+
   "Part1" should "be correct" in {
+
     Day01.part1Result shouldEqual "-1"
   }
 }

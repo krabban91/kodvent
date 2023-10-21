@@ -283,6 +283,7 @@ oxoxo--
 --oxoxo
 --x----
 oxoxoxo
+--x----
 --oxo--
 
 --------o-o

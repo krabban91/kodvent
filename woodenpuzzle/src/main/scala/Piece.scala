@@ -17,11 +17,11 @@ case class Piece(input: String, index: Int, isRotated: Boolean) {
   }
 
   private def placingPosition = {
-    parsed(0).toSeq.sortBy(_._1).find{case (_, c) => c != '-'}
+    parsed(0).toSeq.sortBy(_._1).find { case (_, c) => c != '-' }
   }
 
   def placeBy: Option[(Int, Int)] = {
-    placingPosition.map{ case (x, _) => (x, 0)}
+    placingPosition.map { case (x, _) => (x, 0) }
   }
 
   def isRotatedCirclePiece: Boolean = {
@@ -29,15 +29,14 @@ case class Piece(input: String, index: Int, isRotated: Boolean) {
   }
 
 
-
   def covers: Set[(Int, Int)] = {
     grid.filter(_._2 != '-').keySet
   }
 
 
-  def pieceName: String = s"$index${if(isRotated)"D" else "U"}"
+  def pieceName: String = s"$index${if (isRotated) "D" else "U"}"
 
-  def rotated : Piece = {
+  def rotated: Piece = {
     val rotatedInput = input.split("\n").map(_.reverse).reverse.mkString("\n")
     Piece(rotatedInput, index, !isRotated)
   }
@@ -45,5 +44,13 @@ case class Piece(input: String, index: Int, isRotated: Boolean) {
   override def toString: String = {
     val header = s"Piece #$pieceName"
     s"$header\n$input"
+  }
+
+  def isValid: Boolean = {
+    covers.nonEmpty &&
+      covers.forall { case (x, y) =>
+        val c = grid((x, y))
+        !Seq(grid.get((x - 1, y)), grid.get((x + 1, y)), grid.get((x, y - 1)), grid.get((x, y + 1))).flatten.contains(c)
+      }
   }
 }

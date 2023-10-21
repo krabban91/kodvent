@@ -31,14 +31,14 @@ object Day01 extends App with AoCPart1StringTest {
       }
       if (visited.add(steps)) {
         if (visited.size % 10000 == 0) {
-          val curSeconds = (System.nanoTime() - startTime).toDouble/1e9
+          val curSeconds = (System.nanoTime() - startTime).toDouble / 1e9
           println(s"Visited.size=${visited.size},\tcovered=$covered,\tsteps=$steps\t(time elapsed: ${timeTakenString(curSeconds)})")
         }
         val nextIsCircle = puzzle.nextIsCirclePiece
         val candidates = if (nextIsCircle) ps.filter(_.isCirclePiece) ++ ps.filter(_.isRotatedCirclePiece).map(_.rotated) else ps.filterNot(_.isCirclePiece) ++ ps.filterNot(_.isRotatedCirclePiece).map(_.rotated)
         val viable = candidates.filter(c => puzzle.canPlace(c))
         val next = viable
-          .map{piece =>
+          .map { piece =>
             val puzzle1 = puzzle.place(piece)
             (steps + piece.pieceName, ps.filterNot(_.index == piece.index), puzzle1, covered + piece.covers.size)
           }
@@ -50,6 +50,6 @@ object Day01 extends App with AoCPart1StringTest {
   }
 
   private def timeTakenString(curSeconds: Double) = {
-    s"${curSeconds.toInt/3600}h${curSeconds.toInt/60}m${(curSeconds%60).toInt}s"
+    s"${curSeconds.toInt / 3600}h${(curSeconds.toInt / 60) % 60}m${(curSeconds % 60).toInt}s"
   }
 }
