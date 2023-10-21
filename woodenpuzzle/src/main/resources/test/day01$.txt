@@ -8,7 +8,7 @@ oxo
 --x
 --o
 
-ox
+xox
 
 oxoxox
 x----o
