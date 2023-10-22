@@ -1,4 +1,4 @@
-import Day01.groupsSeparatedByTwoNewlines
+import Day01.{cleaned, groupsSeparatedByTwoNewlines}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -32,11 +32,11 @@ class Day01Spec extends AnyFlatSpec with Matchers {
   }
 
   private def cleanInput = {
-    groupsSeparatedByTwoNewlines(Day01.getInputTest).filter(_.nonEmpty).map(_.strip())
+    cleaned(Day01.getInputTest)
   }
 
   private def cleanInputReal = {
-    groupsSeparatedByTwoNewlines(Day01.getInput).filter(_.nonEmpty).map(_.strip())
+    cleaned(Day01.getInput)
   }
 
   "Puzzle" should "be able to place a piece, example 1" in {
@@ -44,6 +44,8 @@ class Day01Spec extends AnyFlatSpec with Matchers {
     val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
     val piece0 = pieces.filter(_.pieceName == "0U").head
     val piece1 = pieces.filter(_.pieceName == "1U").head
+    val piece2 = pieces.filter(_.pieceName == "2U").head
+
     val puzzle = input.takeRight(1).map(Puzzle).head.place(piece0)
     val pos = puzzle.nextPosition
     pos.isDefined shouldBe true
@@ -60,6 +62,7 @@ class Day01Spec extends AnyFlatSpec with Matchers {
         |o---ox
         |xoxoxo""".stripMargin.strip()
     out.input.size shouldBe puzzle.input.size
+    out.hasSolution(Seq(piece2)) shouldBe true
   }
 
   "Puzzle" should "be able to place a piece, example 2" in {
@@ -99,6 +102,85 @@ class Day01Spec extends AnyFlatSpec with Matchers {
     p.placeBy shouldBe Some((0,0))
   }
 
+  "Piece" should "isRotated circle position" in {
+    val p = Piece("xo", 0, false)
+    p.isCirclePiece shouldBe false
+    p.placeBy shouldBe Some((0, 0))
+    p.isRotatedCirclePiece shouldBe true
+    p.rotated.isCirclePiece shouldBe true
+    p.rotated.placeBy shouldBe Some((0, 0))
+  }
+
+  "Piece" should "isRotated circle position 2" in {
+    val p = Piece("-x\nxo", 0, false)
+    p.isCirclePiece shouldBe false
+    p.placeBy shouldBe Some((1, 0))
+    p.isRotatedCirclePiece shouldBe true
+    p.rotated.isCirclePiece shouldBe true
+    p.rotated.placeBy shouldBe Some((0, 0))
+  }
+
+  "Piece + puzzle" should "fits shifted" in {
+    val p = Piece("-x\nxo", 0, false)
+    val puzzle = Puzzle("oxox\nxo-o\no--x\nxoxo")
+    p.isCirclePiece shouldBe false
+    p.placeBy shouldBe Some((1, 0))
+    p.isRotatedCirclePiece shouldBe true
+    p.rotated.isCirclePiece shouldBe true
+    p.rotated.placeBy shouldBe Some((0, 0))
+    puzzle.nextPosition shouldBe Some((2, 1))
+    puzzle.canPlace(p) shouldBe true
+    puzzle.canPlace(p.rotated) shouldBe false
+    val out = puzzle.place(p)
+    out.input shouldBe
+      """|oxox
+         |xoxo
+         |oxox
+         |xoxo""".stripMargin.strip()
+  }
+  "Piece + puzzle" should "fits rotated" in {
+    val p = Piece("-x\nxo", 0, false)
+    val puzzle = Puzzle("oxox\nx--o\no-ox\nxoxo")
+    p.isCirclePiece shouldBe false
+    p.placeBy shouldBe Some((1, 0))
+    p.isRotatedCirclePiece shouldBe true
+    p.rotated.isCirclePiece shouldBe true
+    p.rotated.placeBy shouldBe Some((0, 0))
+    puzzle.nextPosition shouldBe Some((1, 1))
+    puzzle.canPlace(p) shouldBe false
+    puzzle.canPlace(p.rotated) shouldBe true
+    val out = puzzle.place(p.rotated)
+    out.input shouldBe
+      """|oxox
+         |xoxo
+         |oxox
+         |xoxo""".stripMargin.strip()
+  }
+  "puzzle piece count" should "for test case be 3" in {
+    val input = cleanInput
+    val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
+    pieces.size shouldBe 3
+  }
+
+  "puzzle piece count" should "for real case be 52" in {
+    val input = cleanInputReal
+    val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
+    pieces.size shouldBe 52
+  }
+
+  "puzzle piece coverage" should "match for test" in {
+    val input = cleanInput
+    val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
+    val puzzle = input.takeRight(1).map(Puzzle).head
+    pieces.map(_.covers.size).sum shouldBe puzzle.unCovered
+  }
+
+  "puzzle piece coverage" should "match for real" in {
+    val input = cleanInputReal
+    val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
+    val puzzle = input.takeRight(1).map(Puzzle).head
+    pieces.map(_.covers.size).sum shouldBe puzzle.unCovered
+  }
 
   // Validation test pieces
   cleanInput.zipWithIndex.foreach{case (input, i) =>
