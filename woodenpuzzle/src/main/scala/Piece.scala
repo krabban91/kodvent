@@ -25,7 +25,7 @@ case class Piece(input: String, index: Int, isRotated: Boolean) {
   }
 
   def isRotatedCirclePiece: Boolean = {
-    parsed(maxY).toSeq.sortBy(_._1).map(_._2).find(c => c != '-').contains('o')
+    parsed(maxY).toSeq.sortBy(_._1).map(_._2).findLast(c => c != '-').contains('o')
   }
 
 
