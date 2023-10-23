@@ -1,8 +1,17 @@
 case class Piece(input: String, index: Int, isRotated: Boolean) {
+  private val lines = input.split("\n").filter(_.nonEmpty)
 
   private val parsed = {
-    val lines = input.split("\n").filter(_.nonEmpty)
     lines.indices.map(i => (i, lines(i).indices.map(j => (j, lines(i)(j))).toMap)).toMap
+  }
+
+  def countOs: Int = {
+    lines.map(_.count(_ == 'o')).sum
+  }
+
+  def countXs: Int = {
+    lines.map(_.count(_ == 'x')).sum
+
   }
 
   private val grid = {

@@ -165,7 +165,7 @@ class Day01Spec extends AnyFlatSpec with Matchers {
   "puzzle piece count" should "for real case be 52" in {
     val input = cleanInputReal
     val pieces = input.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
-    pieces.size shouldBe 52
+    pieces.size shouldBe 53
   }
 
   "puzzle piece coverage" should "match for test" in {
@@ -212,7 +212,11 @@ class Day01Spec extends AnyFlatSpec with Matchers {
   }
 
   "Part1" should "be correct" in {
-
-    Day01.part1Result shouldEqual "-1"
+    val solutions = Seq(
+      "7D3D0D33D39U28U10D5D42U9D36D43U40U12U49U52D50D29U41U2D13D37U45U11U6U21U27D17U31D18D19U20U34U26D24U47U35U46D22U1D51U8U16U25U38U30U44U15U32D4U48U23U14D",
+      "14U23D32U25D15D44D48D4D16D30D38D1U24D22D8D51D34D46U47D26U18U31U27D11D45D20D19U35D17D21D37D49D2U29D6D50U13U40D41D42D52U12D28D9U43D36U33U0U3U7U5U10U39D"
+    )
+    val result = Day01.part1Result
+    solutions.contains(result) shouldBe true
   }
 }

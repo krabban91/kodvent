@@ -18,12 +18,12 @@ object Day01 extends App with AoCPart1StringTest {
     //val startP = tiles.takeRight(1).map(Puzzle).head
     startP.input.length
     println(s"Legend of all pieces below:\n\n${pieces.groupBy(_.covers.size).toSeq.sortBy(_._1).map(t => s"### Groups of size ${t._1}:\n ${t._2.sortBy(_.input).mkString("\n")}").mkString("\n\n")}")
-    val frontier = mutable.PriorityQueue[(String, Seq[Piece], Puzzle, Int, Int)]()(Ordering.by { case (steps, _, _, covered, placed) => covered })
+    val frontier = mutable.PriorityQueue[(String, Seq[Piece], Puzzle, Int, Int, Int)]()(Ordering.by { case (steps, _, _, covered, placed, step) => step })
     val visited = mutable.HashSet[String]()
-    val start = ("", pieces, startP, 0, 0)
+    val start = ("", pieces, startP, 0, 0, startP.step)
     frontier.enqueue(start)
     while (frontier.nonEmpty) {
-      val current@(steps, ps, puzzle, covered, placed) = frontier.dequeue()
+      val current@(steps, ps, puzzle, covered, placed, step) = frontier.dequeue()
       //println(s"Map State as following: \n$grid")
       if (covered > bestCoverage) {
         bestCoverage = covered
@@ -56,9 +56,9 @@ object Day01 extends App with AoCPart1StringTest {
         val next = viable
           .map { piece =>
             val puzzle1 = puzzle.place(piece)
-            (steps + piece.pieceName, ps.filterNot(_.index == piece.index), puzzle1, covered + piece.covers.size, placed + 1)
+            (steps + piece.pieceName, ps.filterNot(_.index == piece.index), puzzle1, covered + piece.covers.size, placed + 1, puzzle1.step)
           }
-          .filter { case (_, pcs, nextPz, _, _) => nextPz.hasSolution(pcs)}
+          .filter { case (_, pcs, nextPz, _, _, _) => nextPz.hasSolution(pcs)}
         //print(next)
         frontier.addAll(next)
       }
