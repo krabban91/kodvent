@@ -7,8 +7,13 @@ case class Puzzle(input: String) {
   }
 
 
+
   private val lines: Seq[String] = toLines(input)
 
+  def step: Int = {
+    val w = lines(0).length
+    nextPosition.map{ case (x, y) => x + y * w}.getOrElse(input.length)
+  }
   private val parsed = {
     val l = lines
     l.indices.map(y => (y, l(y).indices.map(x => (x, l(y)(x))).toMap)).toMap
