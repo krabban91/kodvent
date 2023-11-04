@@ -14,10 +14,10 @@ object Day01 extends App with AoCPart1StringTest {
     var bestCount = 0
     val tiles = cleaned(strings)
     val pieces = tiles.dropRight(1).zipWithIndex.map { case (s, i) => Piece(s, i, isRotated = false) }
-    val startP = tiles.takeRight(1).map(s => Piece(s, 0, isRotated = false).rotated.input).map(Puzzle).head
-    //val startP = tiles.takeRight(1).map(Puzzle).head
+    //val startP = tiles.takeRight(1).map(s => Piece(s, 0, isRotated = false).rotated.input).map(Puzzle).head
+    val startP = tiles.takeRight(1).map(Puzzle).head
     startP.input.length
-    println(s"Legend of all pieces below:\n\n${pieces.groupBy(_.covers.size).toSeq.sortBy(_._1).map(t => s"### Groups of size ${t._1}:\n ${t._2.sortBy(_.input).mkString("\n")}").mkString("\n\n")}")
+    println(s"Legend of all pieces below:\n\n${pieces.mkString("\n\n")}")
     val frontier = mutable.PriorityQueue[(String, Seq[Piece], Puzzle, Int, Int, Int)]()(Ordering.by { case (steps, _, _, covered, placed, step) => step })
     val visited = mutable.HashSet[String]()
     val start = ("", pieces, startP, 0, 0, startP.step)

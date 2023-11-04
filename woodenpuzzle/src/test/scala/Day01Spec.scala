@@ -1,4 +1,5 @@
 import Day01.{cleaned, groupsSeparatedByTwoNewlines}
+import aoc.input.Inputs
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -217,6 +218,16 @@ class Day01Spec extends AnyFlatSpec with Matchers {
       "14U23D32U25D15D44D48D4D16D30D38D1U24D22D8D51D34D46U47D26U18U31U27D11D45D20D19U35D17D21D37D49D2U29D6D50U13U40D41D42D52U12D28D9U43D36U33U0U3U7U5U10U39D"
     )
     val result = Day01.part1Result
+    solutions.contains(result) shouldBe true
+  }
+
+  "Small Puzzle" should "be correct" in {
+    val solutions = Seq(
+      "2D24U37D38U17U13U34D19U4D33U22U35U31D14U18U28D20U32U1U30U12U26D36U25U7U8U15U27U10U16U21D0D23U3U11U6U29D39D9U5D",
+      "5U9D29U11D6D27D39U36D0U10D25D3D23D15D21U26U12U32D20D8D7U16D30D35D22D33D14D1D31U28U38D18D19D13D4U24D34U37U2U17D"
+    )
+
+    val result = Day01.part1(new Inputs{}.read("small_puzzle.txt"))
     solutions.contains(result) shouldBe true
   }
 }
