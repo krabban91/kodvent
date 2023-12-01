@@ -1,12 +1,19 @@
 #!/usr/bin/env zsh
 set -euxo pipefail
 
-d=$( echo $1 | sed "s/^0//")
-l=$2
-r=$3
-echo "{\"level\": $l, \"answer\": \"$r\"}" | curl -f https://adventofcode.com/2023/day/$d/answer -H "cookie: session=$AOC_ID"
+l=${2:-1}
+r=$1
+dd=${3:-$(gdate +%d)}
+d=$( echo $dd | sed "s/^0//")
+y=${4:-2023}
+python ./submit.py $d $l $r $y
+res=$?
+if test "$res" != "0"; then
+  echo "failed with $res"
+  exit $res
+fi
 
 git add -u
-git commit -m ":sparkles: Year 2023 Day $1 - Completed part $l"
+git commit -m ":sparkles: Year $y Day $dd - Completed part $l"
 
-open https://adventofcode.com/2023/day/$d
+open https://adventofcode.com/$y/day/$d
