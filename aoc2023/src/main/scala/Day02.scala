@@ -7,9 +7,9 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  case class Game(id: Long, blues: Int, reds: Int,  greens: Int) {
+  case class Game(id: Long, blues: Seq[Int], reds: Seq[Int],  greens: Seq[Int]) {
     def stays(blue: Int, red: Int, green: Int): Boolean = {
-      blues<= blue && reds <= red && greens <= green
+      blues.forall(_<= blue) && reds.forall(_ <= red) && greens.forall(_ <= green)
     }
   }
 
@@ -22,8 +22,8 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
         g.map(_.strip)
           .map(count)
           .reduce(+)
-      }.reduce(+)
-      Game(id, counts._1, counts._2, counts._3)
+      }.foldLeft(Seq[(Int, Int, Int)]()){case (l, v) => l ++ Seq(v)}
+      Game(id, counts.map(_._1), counts.map(_._2), counts.map(_._3))
     }
   }
 
