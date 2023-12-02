@@ -1,5 +1,7 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
+import scala.util.parsing.combinator.RegexParsers
+
 object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
   printResultPart1Test
@@ -17,17 +19,28 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
+  case class Counts(b: Seq[Int], r: Seq[Int], g: Seq[Int])
+
+  object Counts extends RegexParsers {
+    def blue: Parser[Counts] = """green (\d+)""".r ^^ { v => Counts(Seq(v.toInt), Seq(), Seq()) }
+    def red: Parser[Counts] = """red (\d+)""".r ^^ { v => Counts(Seq(), Seq(v.toInt), Seq()) }
+    def green: Parser[Counts] = """blue (\d+)""".r ^^ { v => Counts(Seq(), Seq(), Seq(v.toInt)) }
+    def toss: Parser[Counts] = green | blue | red
+    def round: Parser[Counts] = rep(", " ~ toss) ^^ { l =>l.map(_._2).foldLeft(Counts(Seq(), Seq(), Seq())){case (l, v) => Counts(l.b ++ v.b, l.r++v.r, l.g ++ v.g)} }
+    def game: Parser[Counts] = rep("; " ~ round) ^^ { l =>l.map(_._2).foldLeft(Counts(Seq(), Seq(), Seq())){case (l, v) => Counts(l.b ++ v.b, l.r++v.r, l.g ++ v.g)} }
+
+    def apply(s: String) = parseAll(game, s).get
+  }
+
   object Game{
+    private val patternGame = """Game (\d+): (.+)""".r
+
     def apply(input: String): Game = {
+
       val v = input.split(":")
       val id = v.head.split(" ").last.strip().toLong
-      val rounds = v.last.split(";")
-      val counts = rounds.map{ s => val g = s.split(",")
-        g.map(_.strip)
-          .map(count)
-          .reduce(+)
-      }.foldLeft(Seq[(Int, Int, Int)]()){case (l, v) => l ++ Seq(v)}
-      Game(id, counts.map(_._1), counts.map(_._2), counts.map(_._3))
+      val counts = Counts(v.last)
+      Game(id, counts.b, counts.r, counts.g)
     }
   }
 

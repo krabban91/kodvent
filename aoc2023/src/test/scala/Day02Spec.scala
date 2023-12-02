@@ -14,4 +14,7 @@ class Day02Spec extends AnyFlatSpec with Matchers {
   "Part2" should "be correct" in {
     Day02.part2Result shouldEqual 66909
   }
+  "pattern" should "match" in {
+
+  }
 }
