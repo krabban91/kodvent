@@ -11,6 +11,10 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
     def stays(blue: Int, red: Int, green: Int): Boolean = {
       blues.forall(_<= blue) && reds.forall(_ <= red) && greens.forall(_ <= green)
     }
+
+    def power(): Long = {
+      blues.max.toLong * reds.max.toLong * greens.max.toLong
+    }
   }
 
   object Game{
@@ -51,6 +55,8 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    strings.map(Game(_))
+      .map(_.power)
+      .sum
   }
 }
