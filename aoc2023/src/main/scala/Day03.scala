@@ -7,14 +7,13 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  case class Gear(number: Long, adjacent: String, gearLocation: Option[(Int, Int)]) {
+  private case class Part(number: Long, adjacent: String, gearLocation: Option[(Int, Int)]) {
     def hasSymbol: Boolean = adjacent.filterNot(_.isDigit).exists(_ != '.')
   }
 
   override def part1(strings: Seq[String]): Long = {
     val res = deriveGears(strings)
     val value = res.filter(_.hasSymbol)
-    println(value)
     value.map(_.number).sum
   }
 
@@ -32,7 +31,7 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
     strings.indices.flatMap { y =>
       val line = strings(y)
       val mask = line.indices.map(x => (x, line(x).isDigit))
-      mask.foldLeft(Seq[Gear]()) { case (l, (x, isDig)) =>
+      mask.foldLeft(Seq[Part]()) { case (l, (x, isDig)) =>
         if (isDig) {
           if (x == 0 || !line(x - 1).isDigit) {
             val n = mask.drop(x).takeWhile { case (x, d) => d }.map(_._1)
@@ -42,7 +41,7 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
             val adj = value
               .filterNot { case (dx, dy) => y == dy && dx >= x && dx <= x + n.size - 1 }
               .map { case (dx, dy) => ((dx, dy), strings(dy)(dx)) }
-            l ++ Seq(Gear(v, adj.foldLeft("") { case (s, v) => s"$s${v._2}" }, adj.find(_._2=='*').map(_._1)))
+            l ++ Seq(Part(v, adj.foldLeft("") { case (s, v) => s"$s${v._2}" }, adj.find(_._2=='*').map(_._1)))
           } else {
             l
           }
