@@ -32,7 +32,7 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
             val n = mask.drop(x).takeWhile { case (x, d) => d }.map(_._1)
             val v = n.foldLeft("") { case (s, v) => s"$s${line(v)}" }.toLong
             val value = (math.max(0, y - 1) to math.min(strings.length - 1, y + 1))
-              .flatMap(dy => (math.max(0, x - 1) to math.min(x + n.size + 1, line.length - 1)).map((_, dy)))
+              .flatMap(dy => (math.max(0, x - 1) to math.min(x + n.size, line.length - 1)).map((_, dy)))
             val adj = value
               .filterNot { case (dx, dy) => y == dy && dx >= x && dx <= x + n.size - 1 }
               .map { case (dx, dy) => strings(dy)(dx) }
