@@ -12,14 +12,10 @@ object Day04 extends App with AoCPart1Test with AoCPart2Test {
   override def part1(strings: Seq[String]): Long = strings.map(ScratchCard(_)).map(_.points).sum
 
   override def part2(strings: Seq[String]): Long = {
-    val cards = strings.map(ScratchCard(_)).groupBy(_.id).map(t => (t._1, t._2.head))
+    val cards = strings.map(ScratchCard(_)).sortBy(_.id)
     val held = mutable.HashMap[Int, Long]()
-    cards.foreach{ case (k, v) => held.put(k, 1)}
-    cards.keys.toSeq.sorted.foreach { i =>
-      val card = cards(i)
-      val m = card.matching
-      (0 until m).foreach(v => held(i+v+1) = held(i+v+1) + held(i))
-    }
+    cards.foreach(card => held.put(card.id, 1))
+    cards.foreach { card => (0 until card.matching).foreach(v => held(card.id + v + 1) = held(card.id + v + 1) + held(card.id)) }
     held.values.sum
   }
 
