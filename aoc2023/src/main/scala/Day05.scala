@@ -1,5 +1,4 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
-
 import scala.collection.mutable
 
 object Day05 extends App with AoCPart1Test with AoCPart2Test {
@@ -34,11 +33,14 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
 
   private def lookup(seeds: Seq[Seq[Long]], maps: Map[String, Mapping]) = {
     var out = Long.MaxValue
-    var i = 0
+    var i = 0L
     var j = 0
     val t = mutable.HashMap[String, Long]()
-    seeds.foreach(_.foreach { s =>
-      s
+
+    seeds.toList.foreach{s =>
+      println(s"started ${s.head} -> ${s.last}")
+      val t0 = System.nanoTime()
+      s.foreach { s =>
       var from = "seed"
       var v = s
       t.put(from, s)
@@ -56,8 +58,12 @@ object Day05 extends App with AoCPart1Test with AoCPart2Test {
       }
       i = i+1
       t.clear()
-    })
-    println(s"${seeds.size}, calculated $i values. decr $j times.")
+    }
+      val t1 = System.nanoTime()
+      val sec = (t1 - t0) / 1e9
+      println(s"completed ${s.head} -> ${s.last}. took $sec seconds")
+    }
+    println(s"${seeds.size} (${seeds.map(_.size).sum}), calculated $i values. decr $j times.")
     out
   }
 
