@@ -8,16 +8,19 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   case class CamelCard(hand: String, bid: Long) {
-    def numberOfSameKind: Seq[(Char, Int)] = {
+
+    def value(rank: Int): Long = bid * rank
+
+    private def numberOfSameKind: Seq[(Char, Int)] = {
       val x0 = hand.distinct
       x0.map(v => (v, hand.count(c => c == v)))
     }
 
-    def handCounts: Seq[(Char, Int)] = {
+    private def handCounts: Seq[(Char, Int)] = {
       numberOfSameKind.sortBy(v => (v._2, v._1)).reverse
     }
 
-    def jokeredHandCounts: Seq[(Char, Int)] = {
+    private def jokeredHandCounts: Seq[(Char, Int)] = {
       val hc = handCounts
       val xj = hc.find(_._1 == 'J').map(_._2).getOrElse(0)
       val filtered = hc.filterNot(_._1 == 'J')
@@ -46,25 +49,16 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test {
     }
 
     private def comparing(x: CamelCard, y: CamelCard, part2: Boolean = false): Int = {
-      val x0Adj = if (part2) x.jokeredHandCounts else x.handCounts
-      val y0Adj = if (part2) y.jokeredHandCounts else y.handCounts
-      val xcAdj = x0Adj.map(_._2).sorted
-      val ycAdj = y0Adj.map(_._2).sorted
+      val xCounts = if (part2) x.jokeredHandCounts else x.handCounts
+      val yCounts = if (part2) y.jokeredHandCounts else y.handCounts
 
-      if (xcAdj == ycAdj) {
+      if (xCounts.map(_._2).sorted == yCounts.map(_._2).sorted) {
         CamelCardHandOrdering.compare(x.hand, y.hand, part2)
-      } else if (ycAdj == Seq(4, 1)) {
-        //edge case 4 of a kind vs full house
+      } else if (xCounts.map(_._2).max > yCounts.map(_._2).max) {
         1
-      } else if (xcAdj == Seq(4, 1)) {
-        //edge case 4 of a kind vs full house
-        -1
-      } else if (x0Adj.map(_._2).max > y0Adj.map(_._2).max) {
-        1
-      } else if (x0Adj.size < y0Adj.size) {
+      } else if (xCounts.size < yCounts.size) {
         1
       } else {
-        // y is better
         -1
       }
     }
@@ -80,13 +74,9 @@ object Day07 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  override def part1(strings: Seq[String]): Long = {
-    val value = strings.map(CamelCard(_)).sorted(CamelCard.Ordering)
-    value.zipWithIndex.map { case (c, i) => c.bid * (i + 1L) }.sum
-  }
+  override def part1(strings: Seq[String]): Long = strings.map(CamelCard(_)).sorted(CamelCard.Ordering)
+    .zipWithIndex.map { case (c, i) => c.value(i + 1) }.sum
 
-  override def part2(strings: Seq[String]): Long = {
-    val value = strings.map(CamelCard(_)).sorted(CamelCard.Ordering2)
-    value.zipWithIndex.map { case (c, i) => c.bid * (i + 1L) }.sum
-  }
+  override def part2(strings: Seq[String]): Long = strings.map(CamelCard(_)).sorted(CamelCard.Ordering2)
+    .zipWithIndex.map { case (c, i) => c.value(i + 1) }.sum
 }
