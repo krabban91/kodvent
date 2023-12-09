@@ -21,7 +21,7 @@ object Day09 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  def extrapolate(input: Seq[Seq[Seq[Long]]]): Seq[Long] = {
+  def extrapolateRight(input: Seq[Seq[Seq[Long]]]): Seq[Long] = {
     input.map{ls =>
       ls.foldRight(0L){ case (l, v) =>
         l.last + v
@@ -29,14 +29,25 @@ object Day09 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
+  def extrapolateLeft(input: Seq[Seq[Seq[Long]]]): Seq[Long] = {
+    input.map { ls =>
+      ls.map(_.head).foldRight(0L) { case (l, v) =>
+        l - v
+      }
+    }
+  }
+
   override def part1(strings: Seq[String]): Long = {
     val input = strings.map(_.split(" ").map(_.toLong).toSeq)
     val calculated = differences(input)
-    val extrapolated = extrapolate(calculated)
+    val extrapolated = extrapolateRight(calculated)
     extrapolated.sum
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val input = strings.map(_.split(" ").map(_.toLong).toSeq)
+    val calculated = differences(input)
+    val extrapolated = extrapolateLeft(calculated)
+    extrapolated.sum
   }
 }
