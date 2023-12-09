@@ -31,8 +31,8 @@ object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
   def extrapolateLeft(input: Seq[Seq[Seq[Long]]]): Seq[Long] = {
     input.map { ls =>
-      ls.foldLeft(0L) { case (v, l) =>
-        l.head - v
+      ls.map(_.head).foldRight(0L) { case (l, v) =>
+        l - v
       }
     }
   }
