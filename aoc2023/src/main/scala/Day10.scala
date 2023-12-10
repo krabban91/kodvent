@@ -66,7 +66,6 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
     val map = parse(strings)
     val (_, maxD) = loopStartingWith(map, 'S')
     maxD
-
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -75,40 +74,18 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
     exploreInterior(loop, map).size
   }
 
-  def around(p: (Int, Int)) = Seq((-1, 0), (1, 0), (0, -1), (0, 1))
+  private def around(p: (Int, Int)) = Seq((-1, 0), (1, 0), (0, -1), (0, 1))
     .map { case p2@(dx, dy) => (p2, (p._1 + dx, p._2 + dy)) }
 
-  def exploreInterior(loop: Map[(Int, Int), Char], map: Map[(Int, Int), Char]): Set[(Int, Int)] = {
+  private def exploreInterior(loop: Map[(Int, Int), Char], map: Map[(Int, Int), Char]): Set[(Int, Int)] = {
     val toCheck = map.keySet -- loop.keySet
     val tl = toCheck.minBy(v => (v._2, v._1))
-    val regions = mutable.HashSet[Set[(Int, Int)]]()
-    val f = mutable.PriorityQueue[(Int, Int)]()(Ordering.by(_._2))
-    f.addAll(toCheck)
-    while (f.nonEmpty) {
-      val pop = f.dequeue()
-      val ns = around(pop)
-        .filter(a => map.contains(a._2))
-        .filterNot(a => loop.contains(a._2))
-      val rs = ns.flatMap(a => regions.find(_.contains(a._2))).toSet
-      if (rs.isEmpty) {
-        //new reg
-        val newReg = Set[(Int, Int)](pop)
-        regions.add(newReg)
-      } else if (rs.size > 1) {
-        // join regs
-        rs.foreach(r => regions.remove(r))
-        val joined = rs.flatten ++ Set(pop)
-        regions.add(joined)
-      } else {
-        // one reg
-        regions.remove(rs.head)
-        regions.add(rs.head ++ Set(pop))
-      }
-    }
+    val regions: Set[Set[(Int, Int)]] = allRegions(toCheck, loop, map)
 
-    val skipOuter = regions.toSet.filterNot(s => s.contains((0, 0)))
+    regionsInsideLoop(loop, regions).flatten
+  }
 
-
+  private def regionsInsideLoop(loop: Map[(Int, Int), Char], regions: Set[Set[(Int, Int)]]) = {
     val inside = mutable.HashSet[Set[(Int, Int)]]()
 
     val topLeft = loop.toSeq.minBy(v => (v._1._2, v._1._1))
@@ -163,7 +140,6 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 .foreach(s => inside.add(s))
             }
             c match {
-
               case '-' =>
                 val nextDirection = direction
                 val next = (x - 1, y)
@@ -172,9 +148,7 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (0, -1)
                 val next = (x, y - 1)
                 frontier.addOne(next, loop(next), nextDirection)
-
               case 'F' =>
-
                 val nextDirection = (0, 1)
                 val next = (x, y + 1)
                 frontier.addOne(next, loop(next), nextDirection)
@@ -184,8 +158,6 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                     .foreach(s => inside.add(s))
                 }
               case _ => println(s"shouldn't happen: $pop")
-
-
             }
           case (0, 1) =>
 
@@ -204,7 +176,7 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (1, 0)
                 val next = (x + 1, y)
                 frontier.addOne(next, loop(next), nextDirection)
-                val below = (x, y+1)
+                val below = (x, y + 1)
                 if (!loop.contains(below)) {
                   regions.find(s => s.contains(below))
                     .foreach(s => inside.add(s))
@@ -249,9 +221,34 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
 
       }
     }
-    val flatten = inside.toSet.flatten
-    val outside = regions.flatten -- flatten
-    val outsideG = regions -- inside.toSet
-    flatten
+    inside.toSet
+  }
+
+  private def allRegions(toCheck: Set[(Int, Int)], loop: Map[(Int, Int), Char], map: Map[(Int, Int), Char]) = {
+    val regions = mutable.HashSet[Set[(Int, Int)]]()
+    val f = mutable.PriorityQueue[(Int, Int)]()(Ordering.by(_._2))
+    f.addAll(toCheck)
+    while (f.nonEmpty) {
+      val pop = f.dequeue()
+      val ns = around(pop)
+        .filter(a => map.contains(a._2))
+        .filterNot(a => loop.contains(a._2))
+      val rs = ns.flatMap(a => regions.find(_.contains(a._2))).toSet
+      if (rs.isEmpty) {
+        //new reg
+        val newReg = Set[(Int, Int)](pop)
+        regions.add(newReg)
+      } else if (rs.size > 1) {
+        // join regs
+        rs.foreach(r => regions.remove(r))
+        val joined = rs.flatten ++ Set(pop)
+        regions.add(joined)
+      } else {
+        // one reg
+        regions.remove(rs.head)
+        regions.add(rs.head ++ Set(pop))
+      }
+    }
+    regions.toSet
   }
 }
