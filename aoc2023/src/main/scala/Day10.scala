@@ -30,6 +30,7 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
   def loopStartingWith(l: Map[(Int, Int), Char], str: Char): (Map[(Int, Int), Char], Long) = {
     val (start, s) = l.find { case (_, c) => c == str }.get
     val nextTo = connectsTo(s, start)
+      .filter(l.contains)
     val connected = nextTo.map(p => (p, connectsTo(l(p), p)))
       .filter(_._2.contains(start))
     val dx = connected.map(_._1).map(p => (p._1 - start._1, p._2 - start._2))
@@ -120,9 +121,6 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
       val pop@(p@(x, y), c, direction) = frontier.dequeue()
       if (!visited.contains(p)) {
         visited.put(p, c)
-        val surr = around(p)
-          .filter(a => map.contains(a._2))
-          .filterNot(a => visited.contains(a._2))
         direction match {
           case (1, 0) =>
             val below = (x, y + 1)
@@ -139,10 +137,16 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (0, -1)
                 val next = (x, y - 1)
                 frontier.addOne(next, loop(next), nextDirection)
+                val rightOf = (x + 1, y)
+                if (!loop.contains(rightOf)) {
+                  regions.find(s => s.contains(rightOf))
+                    .foreach(s => inside.add(s))
+                }
               case '7' =>
                 val nextDirection = (0, 1)
                 val next = (x, y + 1)
                 frontier.addOne(next, loop(next), nextDirection)
+
               case _ =>
                 if (pop._1 == topLeft._1) {
                   val nextDirection = direction
@@ -174,6 +178,11 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (0, 1)
                 val next = (x, y + 1)
                 frontier.addOne(next, loop(next), nextDirection)
+                val leftOf = (x - 1, y)
+                if (!loop.contains(leftOf)) {
+                  regions.find(s => s.contains(leftOf))
+                    .foreach(s => inside.add(s))
+                }
               case _ => println(s"shouldn't happen: $pop")
 
 
@@ -195,7 +204,11 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (1, 0)
                 val next = (x + 1, y)
                 frontier.addOne(next, loop(next), nextDirection)
-
+                val below = (x, y+1)
+                if (!loop.contains(below)) {
+                  regions.find(s => s.contains(below))
+                    .foreach(s => inside.add(s))
+                }
               case 'J' =>
                 val nextDirection = (-1, 0)
                 val next = (x - 1, y)
@@ -226,12 +239,19 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
                 val nextDirection = (-1, 0)
                 val next = (x - 1, y)
                 frontier.addOne(next, loop(next), nextDirection)
+                val above = (x, y - 1)
+                if (!loop.contains(above)) {
+                  regions.find(s => s.contains(above)).foreach(s => inside.add(s))
+                }
               case _ => println(s"shouldn't happen: $pop")
             }
         }
 
       }
     }
-    inside.toSet.flatten
+    val flatten = inside.toSet.flatten
+    val outside = regions.flatten -- flatten
+    val outsideG = regions -- inside.toSet
+    flatten
   }
 }
