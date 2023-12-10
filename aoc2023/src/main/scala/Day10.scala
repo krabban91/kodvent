@@ -81,7 +81,7 @@ object Day10 extends App with AoCPart1Test with AoCPart2Test {
     val frontier = mutable.PriorityQueue[((Int, Int), Char, (Int, Int))]()(Ordering.by(_._3))
     val visited = mutable.HashMap[(Int, Int), Char]()
     val topLeft = loop.toSeq.minBy(v => (v._1._2, v._1._1))
-    frontier.addOne(((topLeft._1._1 + 1, topLeft._1._2+1), topLeft._2, (1, 0)))
+    frontier.addOne(((topLeft._1._1 - 1, topLeft._1._2+1), topLeft._2, (1, 0)))
     while (frontier.nonEmpty) {
       val pop@(p@(x, y), c, direction) = frontier.dequeue()
       if (!visited.contains(p)) {
