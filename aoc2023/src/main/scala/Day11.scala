@@ -11,7 +11,7 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val parsed = strings.zipWithIndex.flatMap {case (s, y) => s.zipWithIndex.map{case (c, x) => ((x, y), c)}}.filter(_._2 == '#').map(_._1)
-    distances(parsed, 1)
+    distances(parsed, 2)
   }
 
   private def distances(parsed: Seq[(Int, Int)], unit: Int) = {
@@ -24,7 +24,7 @@ object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
     (0 to maxY).foreach(y => if (!galaxies.exists(t => t._1._2 == y)) {
       val toUpdate = galaxies.filter(t => t._1._2 > y)
-      toUpdate.foreach { case (k, (dx, dy)) => galaxies.put(k, (dx, dy + unit-1)) }
+      toUpdate.foreach { case (k, (dx, dy)) => galaxies.put(k, (dx, dy + 1 * unit - 1)) }
     } else {
       ()
     })
