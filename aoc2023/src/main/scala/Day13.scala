@@ -15,3 +15,4 @@ object Day13 extends App with AoCPart1Test with AoCPart2Test {
     -1
   }
 }
+
