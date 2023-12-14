@@ -62,10 +62,11 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
         val (start, value) = states(curr)
         val length = cycle - start
         val mod = l % length
-        cycles.put(l, cycles(mod))
+        cycles.put(l, cycles(start + mod))
         cycle = l
 
-        // 1000000000L = start + cycle * x + mod
+        // 1000000000L = start + cycleLength * x + mod
+        // = start + mod
       } else {
         cycles.put(cycle, v)
         states.put(curr, (cycle, v))
