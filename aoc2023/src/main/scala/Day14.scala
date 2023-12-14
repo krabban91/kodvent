@@ -54,16 +54,20 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
     var cycles = mutable.HashMap[Long, Long]()
     var output = -1L
     val l = 1000000000L
+    var foundCycle = false
     while (cycle < l) {
       cycle = cycle + 1
       directions.indices.foreach(i => curr = rollRocks(walls, curr, directions(i), sorting(i)))
       val v = value(curr, maxY)
-      if (states.contains(curr)) {
+      if (!foundCycle && states.contains(curr)) {
         val (start, value) = states(curr)
         val length = cycle - start
-        val mod = l % length
-        cycles.put(l, cycles(start + mod))
-        cycle = l
+        val found = cycle
+        val rem = l - cycle
+        val mod = rem % length
+        foundCycle = true
+        cycle = l - mod
+        cycles.put(cycle, cycles(start + mod))
 
         // 1000000000L = start + cycleLength * x + mod
         // = start + mod
