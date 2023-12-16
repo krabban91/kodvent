@@ -1,3 +1,4 @@
+import implicits.Tuples.{EAST, NORTH, SOUTH, WEST, RichTuples2Longs}
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 import scala.collection.mutable
@@ -43,10 +44,10 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
     val still = mutable.HashSet[(Long, Long)]()
     rolling.addAll(rocks)
     while (rolling.nonEmpty) {
-      val pop@(x, y) = rolling.dequeue()
-      val next = (x + direction._1, y + direction._2)
-      if (isBorder(direction, maxX, maxY, x, y) || walls.contains(next) || still.contains(next)) {
-        still.add(pop)
+      val pos = rolling.dequeue()
+      val next = pos + direction
+      if (isBorder(pos, direction, maxX, maxY) || walls.contains(next) || still.contains(next)) {
+        still.add(pos)
       } else {
         rolling.enqueue(next)
       }
@@ -54,7 +55,8 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
     still.toSet
   }
 
-  private def isBorder(direction: (Long, Long), maxX: Long, maxY: Long, x: Long, y: Long) = {
+  private def isBorder(pos: (Long, Long), direction: (Long, Long), maxX: Long, maxY: Long) = {
+    val (x, y) = pos
     (if (direction._1 == 0) {
       if (direction._2 < 0) {
         y == 0
@@ -71,7 +73,7 @@ object Day14 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   private def spinRocks(walls: Set[(Long, Long)], rocks: Set[(Long, Long)]): Set[(Long, Long)] = {
-    val directions = Seq((0L, -1L), (-1L, 0L), (0L, 1L), (1L, 0L))
+    val directions = Seq(NORTH, WEST, SOUTH, EAST)
     val sorting = Seq(Ordering.by[(Long, Long), Long](-_._2), Ordering.by[(Long, Long), Long](-_._1), Ordering.by[(Long, Long), Long](_._2), Ordering.by[(Long, Long), Long](_._1))
     directions.indices.foldLeft(rocks) { case (curr, i) => rollRocks(walls, curr, directions(i), sorting(i)) }
   }
