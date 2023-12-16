@@ -9,17 +9,29 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  override def part1(strings: Seq[String]): Long = followLight(parse(strings)).size
+  override def part1(strings: Seq[String]): Long = followLight(((0,0), (1, 0)), parse(strings)).size
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val m = parse(strings)
+    val minX = m.map(_._1._1).min
+    val maxX = m.map(_._1._1).max
+    val maxY = m.map(_._1._2).max
+    val minY = m.map(_._1._2).min
+    val borders = (minX to maxX)
+      .flatMap(x => (minY to maxY).map(y => (x, y)))
+      .filter{ case (x, y) => x == minX || x == maxX || y == minY || y == maxY }
+    val (n, s, e, w) = ((0L, -1L), (0L, 1L), (1L, 0L), (-1L, 0L))
+    val starts = borders.flatMap(p => Set((p, n)).filter(_ => p._2 == maxY) ++
+      Set((p, s)).filter(_ => p._2 == minY) ++
+      Set((p, e)).filter(_ => p._1 == minX) ++
+      Set((p, w)).filter(_ => p._1 == maxX))
+    starts.map(followLight(_, m)).map(_.size).max
   }
 
-  private def followLight(m: Map[(Long, Long), Char]) = {
+  private def followLight(start: ((Long, Long), (Long, Long)), m: Map[(Long, Long), Char]) = {
     val energized = mutable.HashMap[(Long, Long), Set[(Long, Long)]]()
     val (n, s, e, w) = ((0L, -1L), (0L, 1L), (1L, 0L), (-1L, 0L))
     val frontier: mutable.PriorityQueue[((Long, Long), (Long, Long))] = mutable.PriorityQueue[((Long, Long), (Long, Long))]()(Ordering.by(_._1))
-    val start = ((0L, 0L), e)
     frontier.addOne(start)
     while (frontier.nonEmpty) {
       val pop@(p@(x, y), dir@(dx, dy)) = frontier.dequeue()
