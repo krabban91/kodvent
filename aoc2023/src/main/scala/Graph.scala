@@ -2,8 +2,9 @@ import scala.collection.mutable
 
 object Graph {
 
-  def shortestPath[Point](start: Point, end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): Long = {
-    val queue = mutable.PriorityQueue[(Point, Long, Long)]((start, 0L, heuristic(start)))(Ordering.by(v => -(v._2 + v._3)))
+  def shortestPath[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): Long = {
+    val queue = mutable.PriorityQueue[(Point, Long, Long)]()(Ordering.by(v => -(v._2 + v._3)))
+    queue.addAll(starts.map(p => (p, 0L, heuristic(p))))
     val visited = mutable.HashSet[Point]()
     while (queue.nonEmpty) {
       val pop = queue.dequeue()
