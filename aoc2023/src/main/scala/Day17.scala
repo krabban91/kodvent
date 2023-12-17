@@ -1,4 +1,6 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
+import implicits.Tuples._
+import scala.collection.mutable
 
 object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -7,11 +9,29 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
+  case class CityLocation(pos: (Long, Long), direction: (Long, Long), sameDirection: Long) {
+    def neighbors(city: Map[(Long, Long), Long]): Seq[(CityLocation, Long)] = {
+      val directions = Seq(NORTH, SOUTH, WEST, EAST).filterNot(d => (sameDirection >= 3 && d == direction) || d == direction * (-1L, -1L))
+      val next = directions.map(d => (d + pos, d)).filter{ case (p, d) =>city.contains(p)}
+
+      next.map{ case (p, d) => (CityLocation(p, d, if (d == direction) sameDirection + 1 else 1), city(p))}
+
+    }
+
+  }
+
   override def part1(strings: Seq[String]): Long = {
-    -1
+    val city = parse(strings)
+    val start = CityLocation((0L, 0L), (0L, 0L), 0L)
+    val end = (city.keySet.map(_._1).max, city.keySet.map(_._2).max)
+    Graph.shortestPath[CityLocation](start, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(city))
   }
 
   override def part2(strings: Seq[String]): Long = {
     -1
+  }
+
+  private def parse(strings: Seq[String]) = {
+    strings.zipWithIndex.flatMap { case (str, y) => str.zipWithIndex.map { case (c, x) => ((x.toLong, y.toLong), s"$c".toLong) } }.toMap
   }
 }
