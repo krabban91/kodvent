@@ -7,6 +7,7 @@ object Tuples {
   final val WEST: (Long, Long) = (-1L, 0L)
   final val SOUTH: (Long, Long) = (0L, 1L)
   final val EAST: (Long, Long) = (1L, 0L)
+  final val DIRECTIONS: Seq[(Long, Long)] = Seq(NORTH, SOUTH, WEST, EAST)
 
 
   implicit class RichTuples2Longs(val l: (Long, Long)) extends AnyVal {
