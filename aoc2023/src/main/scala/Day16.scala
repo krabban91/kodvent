@@ -35,8 +35,8 @@ object Day16 extends App with AoCPart1Test with AoCPart2Test {
           case ('/', `WEST`) | ('\\', `EAST`) => Set(SOUTH)
           case ('/', `SOUTH`) | ('\\', `NORTH`) => Set(WEST)
           case ('/', `NORTH`) | ('\\', `SOUTH`) => Set(EAST)
-          case ('-', `NORTH`) | ('-', `SOUTH`) => Set(WEST, EAST)
-          case ('|', `WEST`) | ('|', `EAST`) => Set(NORTH, SOUTH)
+          case ('-', `NORTH` | `SOUTH`) => Set(WEST, EAST)
+          case ('|', `WEST` | `EAST`) => Set(NORTH, SOUTH)
           case _ => Set(dir)
         }
         val next = nextDir
