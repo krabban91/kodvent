@@ -10,12 +10,17 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (city, starts, end) = parse(strings)
-    Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(false)(city))
+    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(false)(city))
+    printPath(city, path)
+    shortest
   }
+
 
   override def part2(strings: Seq[String]): Long = {
     val (city, starts, end) = parse(strings)
-    Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(true)(city))
+    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(true)(city))
+    printPath(city, path)
+    shortest
   }
 
   case class CityLocation(pos: (Long, Long), direction: (Long, Long), sameDirection: Long) {
@@ -42,5 +47,10 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
     val starts = Seq(CityLocation((0L, 0L), (0L, 1L), 0L), CityLocation((0L, 0L), (1L, 0L), 0L))
     val end = (strings.head.length.toLong, strings.length.toLong) - (1L, 1L)
     (map, starts, end)
+  }
+
+  private def printPath(city: Map[(Long, Long), Long], path: Seq[CityLocation]): Unit = {
+    val ds = Map(NORTH -> "^", EAST -> ">", SOUTH -> "v", WEST -> "<")
+    LogMap.printMapWithPath[Long, CityLocation](city, path, c => c.toString, v => (v.pos, ds(v.direction)))
   }
 }
