@@ -8,35 +8,24 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  override def part1(strings: Seq[String]): Long = {
-    val (city, starts, end) = parse(strings)
-    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(false)(city))
-    printPath(city, path)
-    shortest
-  }
+  override def part1(strings: Seq[String]): Long = solve(strings, 0, 3)
 
+  override def part2(strings: Seq[String]): Long = solve(strings, 4, 10)
 
-  override def part2(strings: Seq[String]): Long = {
+  private def solve(strings: Seq[String], min: Long, max: Long): Long = {
     val (city, starts, end) = parse(strings)
-    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(true)(city))
-    printPath(city, path)
+    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(city, min, max))
+    //printPath(city, path)
     shortest
   }
 
   case class CityLocation(pos: (Long, Long), direction: (Long, Long), sameDirection: Long) {
 
-    def neighbors(part2: Boolean): Map[(Long, Long), Long] => Seq[(CityLocation, Long)] = if (part2) neighbors2 else neighbors1
-
-    private def neighbors1(city: Map[(Long, Long), Long]): Seq[(CityLocation, Long)] = {
-      val directions = Seq(NORTH, SOUTH, WEST, EAST).filterNot(d => (sameDirection >= 3 && d == direction) || d == direction * (-1L, -1L))
-      val next = directions.map(d => (d + pos, d)).filter { case (p, d) => city.contains(p) }
-      next.map { case (p, d) => (CityLocation(p, d, if (d == direction) sameDirection + 1 else 1), city(p)) }
-    }
-
-    private def neighbors2(city: Map[(Long, Long), Long]): Seq[(CityLocation, Long)] = {
-      val directions = Seq(NORTH, SOUTH, WEST, EAST)
-        .filterNot(d => (sameDirection >= 10 && d == direction) || d == direction * (-1L, -1L))
-        .filter(d => sameDirection >= 4 || d == direction)
+    def neighbors(city: Map[(Long, Long), Long], min: Long, max: Long): Seq[(CityLocation, Long)] = {
+      val directions = DIRECTIONS
+        .filterNot(sameDirection >= max && _ == direction)
+        .filterNot(_ == direction * (-1L, -1L))
+        .filter(sameDirection >= min || _ == direction)
       val next = directions.map(d => (d + pos, d)).filter { case (p, d) => city.contains(p) }
       next.map { case (p, d) => (CityLocation(p, d, if (d == direction) sameDirection + 1 else 1), city(p)) }
     }
