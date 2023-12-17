@@ -16,7 +16,7 @@ object Graph {
         return (cost, path)
       }
       if (visited.add(pos)) {
-        neighbors.apply(pos)
+        neighbors(pos)
           .filterNot(t => visited.contains(t._1))
           .foreach{p =>
             queue.enqueue((p._1, cost + p._2, heuristic(p._1)))
@@ -25,6 +25,22 @@ object Graph {
       }
     }
     (Long.MaxValue, Seq())
+  }
+
+  def flood[Point](starts: Seq[Point], neighbors: Point => Seq[(Point, Long)]): Map[Point, Long] = {
+    val queue = mutable.PriorityQueue[(Point, Long)]()(Ordering.by(-_._2))
+    queue.addAll(starts.map((_, 0L)))
+    val visited = mutable.HashMap[Point, Long]()
+    while (queue.nonEmpty) {
+      val (pos, cost) = queue.dequeue()
+      if (!visited.contains(pos)) {
+        visited.put(pos, cost)
+        neighbors(pos)
+          .filterNot(t => visited.contains(t._1))
+          .foreach { p =>queue.enqueue((p._1, cost + p._2))}
+      }
+    }
+    visited.toMap
   }
 
   private def derivePath[Point](to: Point, cost: Long, paths: Map[(Point, Long), (Point, Long)]): Seq[Point] = {
