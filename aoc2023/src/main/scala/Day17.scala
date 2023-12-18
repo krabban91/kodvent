@@ -14,7 +14,7 @@ object Day17 extends App with AoCPart1Test with AoCPart2Test {
 
   private def solve(strings: Seq[String], min: Long, max: Long): Long = {
     val (city, starts, end) = parse(strings)
-    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end, p => p.pos manhattan end, p => p.neighbors(city, min, max))
+    val (shortest, path) = Graph.shortestPath[CityLocation](starts, p => p.pos == end && p.sameDirection >= min, p => p.pos manhattan end, p => p.neighbors(city, min, max))
     //printPath(city, path)
     shortest
   }
