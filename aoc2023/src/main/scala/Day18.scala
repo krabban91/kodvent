@@ -10,7 +10,17 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  case class Instruction(dir: (Long, Long), dist: Long, color: String)
+  case class Instruction(dir: (Long, Long), dist: Long, color: String) {
+    def fromHex: ((Long, Long), Long) = {
+      val distance = color.last match {
+        case '0' => EAST
+        case '1' => SOUTH
+        case '2' => WEST
+        case '3' => NORTH
+      }
+      (distance, java.lang.Long.parseLong(color.tail.dropRight(1), 16).toLong)
+    }
+  }
 
   object Instruction {
     def apply(string: String): Instruction = {
@@ -25,39 +35,55 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-
   override def part1(strings: Seq[String]): Long = {
     val input = strings.map(Instruction(_))
-    val boundaries = mutable.HashMap[(Long, Long), String]()
+    val ranges = mutable.ListBuffer[((Long, Long), (Long, Long))]()
+
     var start = ZERO2
     input.foreach { case Instruction(dir@(x, y), dist, color) =>
-      (0L until dist).foreach { i =>
-        boundaries.put(start, color)
-        start = start + dir
-      }
-    }
-    val rims = boundaries.toMap
-    //find point inside
-    LogMap.printMap[String](rims, v => "#")
-    val xMin = rims.keySet.map(_._1).min
-    val yInside = rims.keySet.map(_._2).min + 2
-    val bs = rims.keys.filter(_._2 == yInside).toSeq.sortBy(_._1).sliding(2).foldLeft(Seq[(Long, Long)]()){ case (l , vs) =>
-      val (h, t) = (vs.head, vs.last)
-      if (t._1 > h._1+1L) {
-        l ++ Seq((h + (1L, 0L)))
-      } else l
+      val next = start + dir * (dist, dist)
+      ranges.addOne((start, next))
+      start = next
     }
 
+    val a = area(ranges.toSeq)
+    // A = i + b/2 -1
+    // i = (A+1)- b/2
+    val b = bCount(ranges.toSeq)
+    val i = (a + 1) - b/2
+    i + b
+  }
 
-    val filled = Graph.flood[(Long, Long)](Seq(bs.head), p => {
-      DIRECTIONS.map(dp =>(dp + p)).filterNot(boundaries.contains).map((_, 1))
-    })
 
-    val i = rims.size + filled.size
-    i
+  def bCount(ranges: Seq[((Long, Long), (Long, Long))]): Long = {
+    ranges.map{ case (l, r) => l manhattan r }.sum
+  }
+
+  def area(ranges: Seq[((Long, Long),(Long, Long))]): Long = {
+    val coords = ranges.map(_._1) ++ Seq(ranges.last._2)
+    val points = (coords zip coords.tail) :+ (coords.last, coords.head)
+    //val points = ranges
+    val a = (points.map { case (a, b) => a._1 * b._2 - a._2 * b._1 }.sum / 2.0).toLong
+    a
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val input = strings.map(Instruction(_))
+    val ranges = mutable.ListBuffer[((Long, Long), (Long, Long))]()
+
+    var start = ZERO2
+    input.foreach { case inst@Instruction(_@(x, y), _, color) =>
+      val (dir, dist) = inst.fromHex
+      val next = start + dir * (dist, dist)
+      ranges.addOne((start, next))
+      start = next
+    }
+
+    val a = area(ranges.toSeq)
+    // A = i + b/2 -1
+    // i = (A+1)- b/2
+    val b = bCount(ranges.toSeq)
+    val i = (a + 1) - b / 2
+    i + b
   }
 }
