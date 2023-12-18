@@ -35,7 +35,7 @@ object LogMap {
       strB.append(s"$y".padTo(yWidth + 1, ' '))
       // line
       (minX to maxX).foreach { x =>
-        strB.append(map.getOrElse((x, y), default))
+        strB.append(map.get((x, y)).map(v).getOrElse(default))
       }
       strB.append("\n")
 
