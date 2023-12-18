@@ -2,6 +2,7 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import implicits.Tuples._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 object Day18 extends App with AoCPart1Test with AoCPart2Test {
 
@@ -9,6 +10,45 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2Test
   printResultPart1
   printResultPart2
+
+  override def part1(strings: Seq[String]): Long = solve(strings.map(Instruction(_)))
+
+
+  override def part2(strings: Seq[String]): Long = solve(strings.map(Instruction(_)), part2 = true)
+
+
+  def solve(instructions: Seq[Instruction], part2: Boolean = false): Long = {
+    val points = mutable.ListBuffer[(Long, Long)]()
+
+    var start = ZERO2
+    instructions.foreach { case in =>
+      val (dir, dist) = if (part2) in.fromHex else (in.dir, in.dist)
+      points.addOne(start)
+      val next = start + dir * (dist, dist)
+      start = next
+    }
+
+    picksTheorem(points)
+  }
+
+  private def picksTheorem(points: ListBuffer[(Long, Long)]): Long = {
+    // A = i + b/2 -1
+    // i = (A+1) - b/2
+    val a = area(points.toSeq)
+    val b = bCount(points.toSeq)
+    val i = (a + 1) - b / 2
+    i + b
+  }
+
+  def bCount(cords: Seq[(Long, Long)]): Long = {
+    (cords :+ cords.head).sliding(2).map { case l => l.head manhattan l.last }.sum
+  }
+
+  def area(coords: Seq[(Long, Long)]): Long = {
+    val points = (coords zip coords.tail) :+ (coords.last, coords.head)
+    (points.map { case (a, b) => a._1 * b._2 - a._2 * b._1 }.sum / 2.0).toLong
+  }
+
 
   case class Instruction(dir: (Long, Long), dist: Long, color: String) {
     def fromHex: ((Long, Long), Long) = {
@@ -35,55 +75,4 @@ object Day18 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  override def part1(strings: Seq[String]): Long = {
-    val input = strings.map(Instruction(_))
-    val ranges = mutable.ListBuffer[((Long, Long), (Long, Long))]()
-
-    var start = ZERO2
-    input.foreach { case Instruction(dir@(x, y), dist, color) =>
-      val next = start + dir * (dist, dist)
-      ranges.addOne((start, next))
-      start = next
-    }
-
-    val a = area(ranges.toSeq)
-    // A = i + b/2 -1
-    // i = (A+1)- b/2
-    val b = bCount(ranges.toSeq)
-    val i = (a + 1) - b/2
-    i + b
-  }
-
-
-  def bCount(ranges: Seq[((Long, Long), (Long, Long))]): Long = {
-    ranges.map{ case (l, r) => l manhattan r }.sum
-  }
-
-  def area(ranges: Seq[((Long, Long),(Long, Long))]): Long = {
-    val coords = ranges.map(_._1) ++ Seq(ranges.last._2)
-    val points = (coords zip coords.tail) :+ (coords.last, coords.head)
-    //val points = ranges
-    val a = (points.map { case (a, b) => a._1 * b._2 - a._2 * b._1 }.sum / 2.0).toLong
-    a
-  }
-
-  override def part2(strings: Seq[String]): Long = {
-    val input = strings.map(Instruction(_))
-    val ranges = mutable.ListBuffer[((Long, Long), (Long, Long))]()
-
-    var start = ZERO2
-    input.foreach { case inst@Instruction(_@(x, y), _, color) =>
-      val (dir, dist) = inst.fromHex
-      val next = start + dir * (dist, dist)
-      ranges.addOne((start, next))
-      start = next
-    }
-
-    val a = area(ranges.toSeq)
-    // A = i + b/2 -1
-    // i = (A+1)- b/2
-    val b = bCount(ranges.toSeq)
-    val i = (a + 1) - b / 2
-    i + b
-  }
 }
