@@ -14,4 +14,51 @@ class Day19Spec extends AnyFlatSpec with Matchers {
   "Part2" should "be correct" in {
     Day19.part2Result shouldEqual -1
   }
+
+  "ratingRange" should "split" in {
+    val (l,r) = Day19.RatingRange((50, 100), (1,1), (1,1), (1,1), 1).test(Day19.Rule("x", 55, false))
+    l.isDefined shouldBe true
+    l.get.x shouldBe (50, 54)
+    r.isDefined shouldBe true
+    r.get.x shouldBe (55, 100)
+  }
+  "ratingRange" should "split2" in {
+    val (l, r) = Day19.RatingRange((50, 100), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 105, false))
+    l.isDefined shouldBe true
+    l.get.x shouldBe(50, 100)
+    r.isDefined shouldBe false
+
+
+  }
+  "ratingRange" should "split3" in {
+    val (l, r) = Day19.RatingRange((50, 100), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 5, false))
+    l.isDefined shouldBe false
+    r.isDefined shouldBe true
+    r.get.x shouldBe(50, 100)
+
+  }
+
+  "ratingRange" should "splitg" in {
+    val (l, r) = Day19.RatingRange((50, 100), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 55, true))
+    l.isDefined shouldBe true
+    l.get.x shouldBe(56, 100)
+    r.isDefined shouldBe true
+    r.get.x shouldBe(50, 55)
+  }
+  "ratingRange" should "splitg2" in {
+    val (l, r) = Day19.RatingRange((50, 100), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 105, true))
+    l.isDefined shouldBe false
+    r.isDefined shouldBe true
+    r.get.x shouldBe(50, 100)
+
+
+  }
+  "ratingRange" should "splitg3" in {
+    val (l, r) = Day19.RatingRange((50, 100), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 5, true))
+    l.isDefined shouldBe true
+    l.get.x shouldBe(50, 100)
+    r.isDefined shouldBe false
+
+  }
+
 }
