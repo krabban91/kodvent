@@ -1,7 +1,5 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
-import implicits.Tuples._
-
 object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   printResultPart1Test
@@ -11,37 +9,55 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (workflows, ratings) = parse(strings)
-    ratings.map(_.map(evaluate(_, workflows)._1).sum).sum
+    val array = ratings.map(_.map(evaluate(_, workflows)))
+    array.map(_.map(_.map(_.sum).sum).sum).sum
   }
 
-  def limits: (Long, Long) = (0L, 4000L)
+  def limits: (Long, Long) = (1L, 4000L)
+
+  def overlaps(e: RatingRange, v: RatingRange): Boolean = {
+    overlaps(e.x, v.x) &&
+      overlaps(e.m, v.m) &&
+      overlaps(e.a, v.a) &&
+      overlaps(e.s, v.s)
+  }
+
+  def overlaps(e: (Long, Long), v: (Long, Long)): Boolean = {
+    (e._1 >= v._1 && e._1 <= v._2) ||
+      (e._2 >= v._1 && e._2 <= v._2)
+  }
+
 
   override def part2(strings: Seq[String]): Long = {
-    val (workflows, ratings) = parse(strings)
-    evaluate(RatingRange(limits, limits, limits, limits, 1), workflows)._2
+    val (workflows, _) = parse(strings)
+    val value = evaluate(RatingRange(limits, limits, limits, limits, 1), workflows)
+    val laps = (value.map(p => (p, value)).filter{ case (v, l) => l.filterNot(_ == v).exists(e => overlaps(e,v))})
+    value.map(_.permutations).sum
   }
 
-  def evaluate(ratingRange: RatingRange, workflows: Map[String, Workflow], curr: String = "in"): (Long, Long) = {
+  def evaluate(ratingRange: RatingRange, workflows: Map[String, Workflow], curr: String = "in"): Seq[RatingRange] = {
       if (curr == "A") {
-        return (ratingRange.sum, ratingRange.permutations)
+        Seq(ratingRange)
       } else if (curr == "R") {
-        return (0L, 0L)
+        Seq()
       } else {
         val workflow = workflows(curr)
-        workflow.conditions.foldLeft(((0L, 0L), Option(ratingRange))) { case ((o, range), c) =>
-          if (range.isDefined) {
-            val r = range.get
+        val tuple = workflow.conditions.foldLeft((Seq[RatingRange](), Seq[RatingRange](ratingRange))) { case ((completedRange, range), c) =>
+          val o = range.map { r =>
             val res = c match {
-              case Condition(None, thenDo) => (evaluate(r, workflows, thenDo), None);
+              case Condition(None, thenDo) => (evaluate(r, workflows, thenDo), Seq())
               case Condition(Some(rule), thenDo) =>
-                val ranges = ratingRange.test(rule)
-                (ranges._1.map(evaluate(_, workflows, thenDo)).getOrElse((0L,0L)), ranges._2)
+                val (matches, other) = r.test(rule)
+                val mapped = matches.map(evaluate(_, workflows, thenDo))
+                (mapped.getOrElse(Seq()), Seq(other).flatten)
             }
-            (o + res._1, res._2)
-          } else {
-            (o, None)
+            res
           }
-        }._1
+          val value = completedRange ++ o.flatMap(_._1)
+          val value1 = o.flatMap(_._2)
+          (value, value1)
+        }
+        tuple._1
     }
   }
 
