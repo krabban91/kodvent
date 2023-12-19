@@ -9,55 +9,36 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (workflows, ratings) = parse(strings)
-    val array = ratings.map(_.map(evaluate(_, workflows)))
-    array.map(_.map(_.map(_.sum).sum).sum).sum
+    ratings.map(_.map(evaluate(_, workflows).map(_.value).sum).sum).sum
   }
-
-  def limits: (Long, Long) = (1L, 4000L)
-
-  def overlaps(e: RatingRange, v: RatingRange): Boolean = {
-    overlaps(e.x, v.x) &&
-      overlaps(e.m, v.m) &&
-      overlaps(e.a, v.a) &&
-      overlaps(e.s, v.s)
-  }
-
-  def overlaps(e: (Long, Long), v: (Long, Long)): Boolean = {
-    (e._1 >= v._1 && e._1 <= v._2) ||
-      (e._2 >= v._1 && e._2 <= v._2)
-  }
-
 
   override def part2(strings: Seq[String]): Long = {
     val (workflows, _) = parse(strings)
-    val value = evaluate(RatingRange(limits, limits, limits, limits, 1), workflows)
-    val laps = (value.map(p => (p, value)).filter{ case (v, l) => l.filterNot(_ == v).exists(e => overlaps(e,v))})
+    val limits = (1L, 4000L)
+    val value = evaluate(RatingRange(limits, limits, limits, limits), workflows)
     value.map(_.permutations).sum
   }
 
   def evaluate(ratingRange: RatingRange, workflows: Map[String, Workflow], curr: String = "in"): Seq[RatingRange] = {
-      if (curr == "A") {
-        Seq(ratingRange)
-      } else if (curr == "R") {
-        Seq()
-      } else {
-        val workflow = workflows(curr)
-        val tuple = workflow.conditions.foldLeft((Seq[RatingRange](), Seq[RatingRange](ratingRange))) { case ((completedRange, range), c) =>
-          val o = range.map { r =>
-            val res = c match {
-              case Condition(None, thenDo) => (evaluate(r, workflows, thenDo), Seq())
-              case Condition(Some(rule), thenDo) =>
-                val (matches, other) = r.test(rule)
-                val mapped = matches.map(evaluate(_, workflows, thenDo))
-                (mapped.getOrElse(Seq()), Seq(other).flatten)
-            }
-            res
+    if (curr == "A") {
+      Seq(ratingRange)
+    } else if (curr == "R") {
+      Seq()
+    } else {
+      val workflow = workflows(curr)
+      workflow.conditions.foldLeft((Seq[RatingRange](), Seq[RatingRange](ratingRange))) { case ((completedRange, range), c) =>
+        val o = range.map { r =>
+          c match {
+            case Condition(None, thenDo) => (evaluate(r, workflows, thenDo), Seq())
+            case Condition(Some(rule), thenDo) =>
+              val (matches, other) = r.test(rule)
+              val mapped = matches.map(evaluate(_, workflows, thenDo)).getOrElse(Seq())
+              val unmapped = Seq(other).flatten
+              (mapped, unmapped)
           }
-          val value = completedRange ++ o.flatMap(_._1)
-          val value1 = o.flatMap(_._2)
-          (value, value1)
         }
-        tuple._1
+        (completedRange ++ o.flatMap(_._1),  o.flatMap(_._2))
+      }._1
     }
   }
 
@@ -68,7 +49,7 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
       .map(Workflow(_))
     val ratings = gs.last.split("\n").map(_.strip()).filter(_.nonEmpty)
       .map(Ratings(_))
-      .map { case Ratings(x, m, a, s) => Seq(RatingRange((x, x), (m, m), (a, a), (s, s), 1)) }
+      .map { case Ratings(x, m, a, s) => Seq(RatingRange((x, x), (m, m), (a, a), (s, s))) }
     (workflows.map(w => (w.name, w)).toMap, ratings)
   }
 
@@ -78,58 +59,39 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   case class Rule(category: String, limit: Long, gt: Boolean)
 
-  case class RatingRange(x: (Long, Long), m: (Long, Long), a: (Long, Long), s: (Long, Long), multiplier: Long) {
-    def sum: Long = (x._1 + m._1 + a._1 + s._1) * multiplier
+  case class RatingRange(x: (Long, Long), m: (Long, Long), a: (Long, Long), s: (Long, Long)) {
+    def value: Long = x._1 + m._1 + a._1 + s._1
+
     def permutations: Long = (x._2 - x._1 + 1) * (m._2 - m._1 + 1) * (a._2 - a._1 + 1) * (s._2 - s._1 + 1)
 
-    def test(rule: Rule): (Option[RatingRange],Option[RatingRange]) = {
-      if (rule.gt) {
-        //first matches, seconds doesn't
-        //(50, 100)
-        // rule: gt < 45 =>
-
-        val split = (v: (Long, Long)) => Seq(Some((math.max(rule.limit + 1, v._1), v._2)), Some((v._1, math.min(rule.limit, v._2))))
-          .map(_.filter { case (l, r) => r >= l })
-        rule.category match {
-          case "x" =>
-            val pair = split(x)
-              .map(_.map(nx => RatingRange(nx, m, a, s, multiplier)))
-            (pair.head, pair.last)
-          case "m" =>
-            val pair = split(m)
-              .map(_.map(nm => RatingRange(x, nm, a, s, multiplier)))
-            (pair.head, pair.last)
-          case "a" =>
-            val pair = split(a)
-              .map(_.map(na => RatingRange(x, m, na, s, multiplier)))
-            (pair.head, pair.last)
-          case "s" =>
-            val pair = split(s)
-              .map(_.map(ns => RatingRange(x, m, a, ns, multiplier)))
-            (pair.head, pair.last)
-        }
+    def test(rule: Rule): (Option[RatingRange], Option[RatingRange]) = {
+      val split = if (rule.gt) {
+        (v: (Long, Long)) =>
+          Seq(Some((math.max(rule.limit + 1, v._1), v._2)), Some((v._1, math.min(rule.limit, v._2))))
+            .map(_.filter { case (l, r) => r >= l })
       } else {
-        //first matches, seconds doesn't
-        val split = (v: (Long, Long)) => Seq(Some((v._1, math.min(rule.limit -1 , v._2))), Some((math.max(rule.limit, v._1), v._2)))
-          .map(_.filter { case (l, r) => r >= l })
-        rule.category match {
-          case "x" =>
-            val pair = split(x)
-              .map(_.map(nx => RatingRange(nx, m, a, s, multiplier)))
-            (pair.head, pair.last)
-          case "m" =>
-            val pair = split(m)
-              .map(_.map(nm => RatingRange(x, nm, a, s, multiplier)))
-            (pair.head, pair.last)
-          case "a" =>
-            val pair = split(a)
-              .map(_.map(na => RatingRange(x, m, na, s, multiplier)))
-            (pair.head, pair.last)
-          case "s" =>
-            val pair = split(s)
-              .map(_.map(ns => RatingRange(x, m, a, ns, multiplier)))
-            (pair.head, pair.last)
-        }
+        (v: (Long, Long)) =>
+          Seq(Some((v._1, math.min(rule.limit - 1, v._2))), Some((math.max(rule.limit, v._1), v._2)))
+            .map(_.filter { case (l, r) => r >= l })
+      }
+
+      rule.category match {
+        case "x" =>
+          val pair = split(x)
+            .map(_.map(nx => RatingRange(nx, m, a, s)))
+          (pair.head, pair.last)
+        case "m" =>
+          val pair = split(m)
+            .map(_.map(nm => RatingRange(x, nm, a, s)))
+          (pair.head, pair.last)
+        case "a" =>
+          val pair = split(a)
+            .map(_.map(na => RatingRange(x, m, na, s)))
+          (pair.head, pair.last)
+        case "s" =>
+          val pair = split(s)
+            .map(_.map(ns => RatingRange(x, m, a, ns)))
+          (pair.head, pair.last)
       }
     }
   }
