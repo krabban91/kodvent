@@ -11,34 +11,37 @@ object Day19 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (workflows, ratings) = parse(strings)
-    ratings.map(_.map(evaluate(_, workflows).map(_.sum).sum).sum).sum
+    ratings.map(_.map(evaluate(_, workflows)._1).sum).sum
   }
 
   def limits: (Long, Long) = (0L, 4000L)
 
   override def part2(strings: Seq[String]): Long = {
     val (workflows, ratings) = parse(strings)
-    evaluate(RatingRange(limits, limits, limits, limits, 1), workflows).map(_.permutations).sum
+    evaluate(RatingRange(limits, limits, limits, limits, 1), workflows)._2
   }
 
-  def evaluate(ratingRange: RatingRange, workflows: Map[String, Workflow], curr: String = "in"): Seq[RatingRange] = {
+  def evaluate(ratingRange: RatingRange, workflows: Map[String, Workflow], curr: String = "in"): (Long, Long) = {
       if (curr == "A") {
-        Seq(ratingRange)
+        return (ratingRange.sum, ratingRange.permutations)
       } else if (curr == "R") {
-        Seq()
+        return (0L, 0L)
       } else {
         val workflow = workflows(curr)
-        workflow.conditions.foldLeft((Seq(ratingRange))) { case (range, c) =>
-          range.flatMap { r =>
+        workflow.conditions.foldLeft(((0L, 0L), Option(ratingRange))) { case ((o, range), c) =>
+          if (range.isDefined) {
+            val r = range.get
             val res = c match {
-              case Condition(None, thenDo) => evaluate(r, workflows, thenDo);
+              case Condition(None, thenDo) => (evaluate(r, workflows, thenDo), None);
               case Condition(Some(rule), thenDo) =>
                 val ranges = ratingRange.test(rule)
-                ranges._1.map(evaluate(_, workflows, thenDo)).getOrElse(Seq()) ++ Seq(ranges._2).flatten
+                (ranges._1.map(evaluate(_, workflows, thenDo)).getOrElse((0L,0L)), ranges._2)
             }
-            res
+            (o + res._1, res._2)
+          } else {
+            (o, None)
           }
-        }
+        }._1
     }
   }
 
