@@ -58,7 +58,31 @@ class Day19Spec extends AnyFlatSpec with Matchers {
     l.isDefined shouldBe true
     l.get.x shouldBe(50, 100)
     r.isDefined shouldBe false
+  }
 
+  "ratingRange" should "splitmatch" in {
+    val (l, r) = Day19.RatingRange((50, 50), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 49, true))
+    l.isDefined shouldBe true
+    l.get.x shouldBe(50, 50)
+    r.isDefined shouldBe false
+  }
+  "ratingRange" should "splitmatch2" in {
+    val (l, r) = Day19.RatingRange((50, 50), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 51, false))
+    l.isDefined shouldBe true
+    l.get.x shouldBe(50, 50)
+    r.isDefined shouldBe false
+  }
+  "ratingRange" should "splitmatch1" in {
+    val (l, r) = Day19.RatingRange((50, 50), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 51, true))
+    r.isDefined shouldBe true
+    r.get.x shouldBe(50, 50)
+    l.isDefined shouldBe false
+  }
+  "ratingRange" should "splitmatch3" in {
+    val (l, r) = Day19.RatingRange((50, 50), (1, 1), (1, 1), (1, 1), 1).test(Day19.Rule("x", 49, false))
+    r.isDefined shouldBe true
+    r.get.x shouldBe(50, 50)
+    l.isDefined shouldBe false
   }
 
 }
