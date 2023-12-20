@@ -10,9 +10,12 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
+    val debug = false
     val invs = strings.filter(_.startsWith("%")).map(FlipFlop(_))
     val broadcast = Broadcast(strings.find(_.startsWith("broadcaster")).get)
-    val conjs = strings.filter(_.startsWith("&")).map(s => Conjunction(s, (invs :+ broadcast).filter(v => v.targets.contains(s))))
+    val tmpC = strings.filter(_.startsWith("&")).map(s => Conjunction(s, (invs :+ broadcast).filter(v => v.targets.contains(s.split("->").head.strip().stripPrefix("&")))))
+    val allNodes = (invs.map(n => (n.id, n)).toMap ++ tmpC.map(n => (n.id, n)).toMap ++ Map((broadcast.id -> broadcast)))
+    val conjs = tmpC.map(c => Conjunction(c.id, allNodes.values.filter(_.targets.contains(c.id)).map(v => (v.id, false)).toMap, c.targets))
     var highPulses = 0L
     var lowPulses = 0L
     (1 to 1000).foldLeft((broadcast, invs, conjs)) { case (computer@(bc, in, c), time) =>
@@ -22,19 +25,20 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
       //simulate button
       val toHandle = mutable.Queue[(Node, Boolean, String)]()
       toHandle.append((bc, false, "button"))
+      if (debug){println(s"button --low-> ${bc.name} ($time)")}
       lowPulses += 1L
       while (toHandle.nonEmpty) {
         val pop@(n, high, from) = toHandle.dequeue()
         val (repeat, next, targets) = n.pulse(high, from)
         if (repeat.isDefined) {
-          val value = targets.flatMap(nodes.get).map((_, repeat.get, n.id))
-          //value.foreach {case (n, b, s) => println(s"$s --${if(b)"high" else "low"}--> ${n.name}")}
+          val value = targets.map(v => (v, nodes.get(v))).map((_, repeat.get, n.id))
+          if (debug) {value.foreach {case ((id, n), b, s) => println(s"$s --${if(b)"high" else "low"}--> ${id}")}}
           if (repeat.get) {
             highPulses += value.size
           } else {
             lowPulses += value.size
           }
-          toHandle.addAll(value)
+          toHandle.addAll(value.collect{ case ((_, Some(n)), bool, str) => (n, bool, str) })
           nodes.put(n.id, next)
         }
         //println(nodes)
@@ -90,7 +94,8 @@ object Day20 extends App with AoCPart1Test with AoCPart2Test {
     override def pulse(high: Boolean, from: String): (Option[Boolean], Node, Seq[String]) = {
       // c sends high when should be low
       val inputs = inputPulses ++ Map(from -> high)
-      (Some(!inputs.values.forall(v => v)), Conjunction(id, inputs, targets), targets)
+      val someBoolean = Some(!inputs.values.forall(v => v))
+      (someBoolean, Conjunction(id, inputs, targets), targets)
 
     }
     override def name: String = s"&$id"
