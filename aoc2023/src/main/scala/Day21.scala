@@ -1,10 +1,6 @@
-import Day21.neighbors2
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
-import com.google.gson.{Gson, JsonParser}
 import implicits.Tuples._
 
-import java.io.{DataOutputStream, File, FileOutputStream, FileWriter}
-import java.util
 import scala.collection.mutable
 
 object Day21 extends App with AoCPart1Test with AoCPart2Test {
@@ -16,17 +12,14 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (map, start) = parse(strings)
-
-
-
-    val value = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors (p, map), 64)
-      value.size
+    val value = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors(p, map), 64)
+    value.size
 
   }
 
-  def primeFactors(stepGoal: Int):Seq[Int] = {
+  def primeFactors(stepGoal: Int): Seq[Int] = {
     var n = 2
-    while ( stepGoal % n != 0) {
+    while (stepGoal % n != 0) {
       n += 1
     }
     if (n == stepGoal) {
@@ -38,130 +31,110 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
 
   override def part2(strings: Seq[String]): Long = {
-    val (map, start) = parse(strings)
+    val (map, start@(sx, sy)) = parse(strings)
     val (w, h) = (strings.head.length, strings.length)
-    println(s"node count: ${map.filter(kv => kv._2 == "." || kv._2 == "S").size}")
+    val (dEdgeX, dEdgeY) = (sx + 1, sy + 1)
+    val dCorner = dEdgeX + dEdgeY
+
+    // after that, it is always w or h. for now: assume w == h
+
     val stepGoal = 26501365
-    val factors = primeFactors(stepGoal)
-    val stepSize = factors.dropRight(1).product
-    val reachingDynamic = mutable.HashMap[(Long, Long), Map[(Long, Long), Set[(Long, Long)]]]()
-
-    val out = (1 to factors.last).foldLeft(Map(start -> Set((0L, 0L)))) { case (out, time) =>
-      println(time)
-      move(out, reachingDynamic, map, w, h, stepSize)
-    }
-    out.map(kv => kv._2.size).sum
-  }
-
-  def newReaching(k : (Long, Long), map: Map[(Long, Long), String], w: Long, h: Long, stepSize: Long): Map[(Long, Long), Set[(Long, Long)]] = {
-    //println(s"reaching for ${k}")
-    Graph.stepAround[((Long, Long), (Long, Long))](Seq((k, (0L, 0L))), p => neighbors2(p, map, w, h), stepSize)
-      .groupBy(_._1).map(kv => (kv._1, kv._2.map(_._2).toSet))
-  }
-
-  def reachingInterface(p: (Long, Long), map: Map[(Long, Long), String], w: Long, h: Long, stepSize: Long): Map[(Long, Long), Set[(Long, Long)]] = {
-
-    import scala.jdk.CollectionConverters._
-
-    val fileName = s"data/x${p._1}y${p._2}.json"
-    val file = new File(fileName)
-    val g = new Gson()
-    val clazz = new util.HashMap[String, util.ArrayList[String]]().getClass
-    if (file.exists()) {
-      val name = scala.io.Source.fromFile(fileName)
-      // read
-      val value = name.getLines().toSeq.head
-      name.close()
-      println(s"$p\t reading json")
-      g.fromJson(value, clazz).asScala.toMap.map{kv =>
-        val tuple: (Long, Long) = parseTuple(kv._1)
-        (tuple, kv._2.asScala.toSet.map(parseTuple))
-      }
-    } else {
-      //write
-      var writer: FileWriter = null
-      try {
-        writer = new FileWriter(fileName)
-        val m = newReaching(p, map, w, h, stepSize)
-        //println(s"$p\t writing json")
-        val java = m.toSeq.map(kv => (stringTuple(kv._1), kv._2.map(stringTuple).asJava)).asJava
-        g.toJson(java, writer)
-        m
-      } finally {
-        if (writer != null) {
-          writer.close()
+    // -1, -1
+    // 1, -1
+    // -1, 1
+    // 1, 1
+    val cs = (stepGoal - dCorner)
+    val cm = cs % w
+    val cc = cs / w // plus 0 for the incomplete ones?
+    val cregions = (0L to cc).map(_ + 1L).sum
+    val cstepsLeft = 260 - cm
+    val cIncomplete = cstepsLeft / w + 1
+    val cincompleteRegions = (cc -1) + (cc) + (cc + 1)
+    // the c
+    val ccompleteRegions = cregions - cincompleteRegions
+    val corners = Seq((0L, 0L), (w - 1L, 0L), (0L, h - 1L), (w - 1L, h - 1L))
+    val cornerStates = corners.map(p => (p, gatherState(p, map, w)))
+    val cornerLocs = cornerStates.map{ case (p, m) =>
+      val loop = m.toSeq.sortBy(_._1).takeRight(2)
+      val loopStart = loop.head._1
+      (0 to 2).map{i =>
+        val left = i * w + cm
+        val locs = if (left < loopStart) {
+          m(left)
+        } else {
+          val mod = (left % loopStart) % 2
+          loop(mod.toInt)._2
         }
+        val incompl = locs * (cc + 1 - i)
+        val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
+        incompl + compl
       }
-
     }
-  }
+    // 0, -1
+    // -1, 0
+    // 0, 1
+    // 1, 0
+    val middles = Seq((sx, 0L), (0L, sy), (sx, h - 1L), (w - 1L, sy))
+    val midStates = middles.map(p => (p, gatherState(p, map, w)))
 
-  private def stringTuple(p: (Long, Long)): String = {
-    s"${p._1},${p._1}"
-  }
-
-  private def parseTuple(str: String): (Long, Long) = {
-    val spl = str.split(",");
-    val tuple = (spl.head.toLong, spl.last.toLong)
-    tuple
-  }
-
-  def move(current: Map[(Long, Long), Set[(Long, Long)]], reaching: mutable.HashMap[(Long, Long), Map[(Long, Long), Set[(Long, Long)]]], map: Map[(Long, Long), String], w: Long, h: Long, stepSize: Long): Map[(Long, Long), Set[(Long, Long)]] = {
-    val tot = current.size
-    var curr = 1
-    val nextPoses = mutable.HashMap[(Long, Long), mutable.HashSet[(Long, Long)]]()
-    current.foreach { case (p, maps) =>
-
-      if (!reaching.contains(p)) {
-        reaching.put(p, newReaching(p, map, w, h, stepSize))
-        println(s"${curr} / $tot\t-> $p reached")
+    val ms = (stepGoal - dEdgeX)
+    val mm = ms % w
+    val mc = ms / w // plus 0 for the incomplete ones?
+    val mregions = (0L to mc).map(_ + 1L).sum
+    val mstepsLeft = 260 - cm
+    val mIncomplete = mstepsLeft / w + 1
+    val mincompleteRegions = (cc - 1) + (cc) + (cc + 1)
+    // the m
+    val mcompleteRegions = mregions - mincompleteRegions
+    val midLocs = cornerStates.map { case (p, m) =>
+      val loop = m.toSeq.sortBy(_._1).takeRight(2)
+      val loopStart = loop.head._1
+      (0 to 2).map { i =>
+        val left = i * w + cm
+        val locs = if (left < loopStart) {
+          m(left)
+        } else {
+          val mod = (left % loopStart) % 2
+          loop(mod.toInt)._2
+        }
+        val incompl = locs * (cc + 1 - i)
+        val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
+        incompl + compl
       }
-      //val next = reachingInterface(p, map, w, h, stepSize)
-      //val nn = reachingInterface(p, map, w, h, stepSize)
-      val next = reaching(p)
-      println(s"${curr} / $tot\t-> $p reached ${next.size} points")
-      //val withOffsets =
-      maps.foreach(m0 =>
-        next.foreach { case (pos, m1) =>
-          if(!nextPoses.contains(pos)) {
-            nextPoses.put(pos, mutable.HashSet())
-          }
-          nextPoses(pos).addAll(m1.map(_ + m0))
-        })
-        //.groupBy(_._1).map{case (k, vs) => (k, vs.flatMap(_._2))}
-      //println(s"${curr} / $tot\t-> $p grouped")
-      curr += 1
-      //withOffsets
     }
-    //val value: Map[(Long, Long), Set[((Long, Long), Set[(Long, Long)])]] = v.toSet.groupBy(v => v._1)
-    //println(s"all keys grouped (value.size=${value.size})")
 
-    //val value1 = value.map { case (k, vs) => (k, vs.flatMap(_._2)) }
-    //println(s"all keys reduced (value1.size=${value1.size})")
-    //value1
-    nextPoses.map(kv => (kv._1, kv._2.toSet)).toMap
+    println(s"node count: ${map.count(kv => kv._2 == "." || kv._2 == "S")}")
+
+    val centerStates = gatherState(start, map, w)
+    val centerloop = centerStates.toSeq.sortBy(_._1).takeRight(2)
+    val centerloopStart = centerloop.head._1
+    val compl = centerloop(((stepGoal % centerloopStart) % 2).toInt)._2 * 1
+    compl
+
+    compl + midLocs.map(_.sum).sum + cornerLocs.map(_.sum).sum
   }
 
+
+  def gatherState(start: (Long, Long), map: Map[(Long, Long), String], w: Long): Map[Long, Long] = {
+
+    var it = 0
+    val out = mutable.HashMap[Long, Long]()
+    var curr = Set(start)
+    val allStates = mutable.HashSet[Set[(Long, Long)]]()
+    while (!allStates.contains(curr)) {
+      out.put(it, curr.size)
+      allStates.add(curr)
+      val next = curr.flatMap(neighbors(_, map).map(_._1))
+      it += 1
+      curr = next
+    }
+    out.put(it, curr.size)
+    out.toMap
+  }
 
   def neighbors(p: (Long, Long), map: Map[(Long, Long), String]): Seq[((Long, Long), Long)] = {
     DIRECTIONS.map(_ + p).filter(map.get(_).exists(v => v == "." || v == "S")).map((_, 1))
   }
-
-  def neighbors2(p: ((Long, Long), (Long, Long)), map: Map[(Long, Long), String], width: Long, height: Long): Seq[(((Long, Long), (Long, Long)), Long)] = {
-    DIRECTIONS.map { d =>
-      val v = d + p._1
-      val newP = (v + (width, height)) % (width, height)
-      val newMap = v match {
-        case (x, y) if x < 0 => (p._2) + (-1L, 0)
-        case (x, y) if y < 0 => (p._2) + (0, -1L)
-        case (x, y) if x >= width => (p._2) + (1L, 0)
-        case (x, y) if y >= height => (p._2) + (0, 1L)
-        case point => (p._2)
-      }
-      (newP, newMap)
-    }.filter(v => map.get(v._1).exists(v => v == "." || v == "S")).map((_, 1))
-  }
-
 
   private def parse(strings: Seq[String]) = {
     val map = strings.zipWithIndex.flatMap { case (str, y) => str.zipWithIndex.map { case (c, x) => ((x.toLong, y.toLong), s"$c") } }.toMap
