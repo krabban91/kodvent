@@ -51,26 +51,27 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // 3662092424185928 is too high
     // 1846521620165984 is also too high
     // 615519377087821 is too high
-    // 615513342882862
+    // 615513342882862 not the right answer
+    // 615513291903955 not the right answer
     val sum = midLocs.sum
     val sum1 = cornerLocs.sum
     center + sum + sum1
   }
 
 
-  private def centerLocations(map: Map[(Long, Long), String], start: (Long, Long), w: Int, stepGoal: Int) = {
+  def centerLocations(map: Map[(Long, Long), String], start: (Long, Long), w: Int, stepGoal: Int) = {
     val centerStates = gatherState(start, map, w)
     val centerloop = centerStates.toSeq.sortBy(_._1).takeRight(3)
     val centerloopStart = centerloop.head._1
     val compl = if (stepGoal < centerStates.size) {
       centerStates(stepGoal)
     } else {
-      centerloop(((stepGoal % centerloopStart + 1) % 2).toInt)._2
+      centerloop(((stepGoal % centerloopStart) % 2).toInt)._2
     }
     compl
   }
 
-  private def cornerLocations(map: Map[(Long, Long), String], w: Int, h: Int, dCorner: Long, stepGoal: Long): Seq[Long] = {
+  def cornerLocations(map: Map[(Long, Long), String], w: Int, h: Int, dCorner: Long, stepGoal: Long): Seq[Long] = {
     // -1, -1
     // 1, -1
     // -1, 1
@@ -82,7 +83,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
       return Seq(0L)
     }
     val cm = cs % w
-    val cc = cs / w // plus 1 for the incomplete ones?
+    val cc = cs / w + 1// plus 1 for the incomplete ones?
     val cregions = (0L until cc).map(_ + 1L).sum
     val cloop = cornerStates.head._2.toSeq.sortBy(_._1).takeRight(3)
     val cloopStart = cloop.head._1
@@ -104,7 +105,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
         } else if (left < loopStart) {
           m(left)
         } else {
-          val mod = (left % loopStart + 1) % 2
+          val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
         locs * incompleteMul
@@ -116,7 +117,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     cornerLocs
   }
 
-  private def middleLocations(map: Map[(Long, Long), String], sx: Long, sy: Long, w: Int, h: Int, dEdgeX: Long, stepGoal: Long): Seq[Long] = {
+  def middleLocations(map: Map[(Long, Long), String], sx: Long, sy: Long, w: Int, h: Int, dEdgeX: Long, stepGoal: Long): Seq[Long] = {
     // 0, -1
     // -1, 0
     // 0, 1
@@ -128,7 +129,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val ms = (stepGoal - dEdgeX)
     if (ms < 0) return Seq(0)
     val mm = ms % w
-    val mc = ms / w // plus 1 for the incomplete ones?
+    val mc = ms / w + 1// plus 1 for the incomplete ones?
     val mregions = mc
     val mincompleteRegions = if (mc > 0) math.min(3, mc) else 0
     // the m
@@ -143,7 +144,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
         } else if (left < loopStart) {
           m(left)
         } else {
-          val mod = (left % loopStart + 1) % 2
+          val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
         locs
@@ -178,7 +179,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     DIRECTIONS.map(_ + p).filter(map.get(_).exists(v => v == "." || v == "S")).map((_, 1))
   }
 
-  private def parse(strings: Seq[String]) = {
+  def parse(strings: Seq[String]) = {
     val map = strings.zipWithIndex.flatMap { case (str, y) => str.zipWithIndex.map { case (c, x) => ((x.toLong, y.toLong), s"$c") } }.toMap
     val start = map.find(_._2 == "S").map(_._1).get
 
