@@ -18,7 +18,7 @@ object Graph {
       if (visited.add(pos)) {
         neighbors(pos)
           .filterNot(t => visited.contains(t._1))
-          .foreach{p =>
+          .foreach { p =>
             queue.enqueue((p._1, cost + p._2, heuristic(p._1)))
             cameFrom.put((p._1, cost + p._2), (pos, cost))
           }
@@ -37,17 +37,37 @@ object Graph {
         visited.put(pos, cost)
         neighbors(pos)
           .filterNot(t => visited.contains(t._1))
-          .foreach { p =>queue.enqueue((p._1, cost + p._2))}
+          .foreach { p => queue.enqueue((p._1, cost + p._2)) }
       }
     }
     visited.toMap
+  }
+
+  def stepAround[Point](starts: Seq[Point], neighbors: Point => Seq[(Point, Long)], steps: Long): Seq[Point] = {
+    val queue = mutable.PriorityQueue[(Point, Long)]()(Ordering.by(-_._2))
+    queue.addAll(starts.map((_, 0L)))
+    val visited = mutable.HashSet[(Point, Long)]()
+    while (queue.nonEmpty) {
+      val pop@(pos, cost) = queue.dequeue()
+      if (cost > steps) {
+        // continue
+      } else {
+        if (visited.add((pop))) {
+          neighbors(pos)
+            .map(p => (p._1, p._2 + cost))
+            .filterNot(visited.contains)
+            .foreach(p => queue.enqueue(p))
+        }
+      }
+    }
+    visited.toSeq.filter(_._2 == steps).map(_._1).distinct
   }
 
   private def derivePath[Point](to: Point, cost: Long, paths: Map[(Point, Long), (Point, Long)]): Seq[Point] = {
     val out = mutable.ListBuffer[Point]()
     var loc = (to, cost)
     out.addOne(loc._1)
-    while(paths.contains(loc)) {
+    while (paths.contains(loc)) {
       loc = paths(loc)
       out.addOne(loc._1)
     }
