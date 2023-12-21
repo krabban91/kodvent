@@ -43,6 +43,12 @@ object Tuples {
     def /(r: (Long, Long)): (Long, Long) = l div r
 
     def square: (Long, Long) = l mul l
+
+
+    def mod(r: (Long, Long)): (Long, Long) = (l._1 % r._1, l._2 % r._2)
+
+    def %(r: (Long, Long)): (Long, Long) = l mod r
+
   }
 
   implicit class RichTuples3Longs(val l: (Long, Long, Long)) extends AnyVal {
