@@ -39,6 +39,32 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // after that, it is always w or h. for now: assume w == h
 
     val stepGoal = 26501365
+    val cornerLocs: Seq[Long] = cornerLocations(map, w, h, dCorner, stepGoal)
+    val midLocs: Seq[Long] = middleLocations(map, sx, sy, w, h, dEdgeX, stepGoal)
+
+    println(s"node count: ${map.count(kv => kv._2 == "." || kv._2 == "S")}")
+
+    val centerStates = gatherState(start, map, w)
+    val centerloop = centerStates.toSeq.sortBy(_._1).takeRight(3)
+    val centerloopStart = centerloop.head._1
+    val compl = if (stepGoal < centerStates.size) {
+      centerStates(stepGoal)
+    } else {
+      centerloop(((stepGoal % centerloopStart) % 2).toInt)._2 * 1
+    }
+
+
+    // 3662092424185928 is too high
+    // 1846521620165984 is also too high
+    // 615519377087821
+    // same implementation gave 130577 for 64 steps
+    val sum = midLocs.sum
+    val sum1 = cornerLocs.sum
+    compl + sum + sum1
+  }
+
+
+  private def cornerLocations(map: Map[(Long, Long), String], w: Int, h: Int, dCorner: Long, stepGoal: Long): Seq[Long] = {
     // -1, -1
     // 1, -1
     // -1, 1
@@ -46,20 +72,26 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val corners = Seq((0L, 0L), (w - 1L, 0L), (0L, h - 1L), (w - 1L, h - 1L))
     val cornerStates = corners.map(p => (p, gatherState(p, map, w)))
     val cs = (stepGoal - dCorner)
+    if (cs < 0) {
+      return Seq(0L)
+    }
     val cm = cs % w
-    val cc = cs / w // plus 0 for the incomplete ones?
-    val cregions = (0L until cc).map(_ + 0L).sum
+    val cc = cs / w + 1 // plus 1 for the incomplete ones?
+    val cregions = (0L until cc).map(_ + 1L).sum
     val cloop = cornerStates.head._2.toSeq.sortBy(_._1).takeRight(3)
     val cloopStart = cloop.head._1
-    val cstepsLeft = cloopStart - cm
-    val cIncomplete = cstepsLeft / w + 1
-    val cincompleteRegions = (cc -1) + (cc) + (cc + 1)
+    val incomplete = if (cc > 0) math.min(3, cc) else 0
+
+    val completeI = cc - incomplete
+    val complete = (0L until completeI).map(_ + 1).sum
+    val cincompleteRegions = cregions - complete
     // the c
-    val ccompleteRegions = cregions - cincompleteRegions
-    val cornerLocs = cornerStates.map{ case (p, m) =>
+    val ccompleteRegions = complete
+    val cornerLocs = cornerStates.map { case (p, m) =>
       val loop = cloop
       val loopStart = cloopStart
-      (0 to 2).map{i =>
+      val incompl = (0L until incomplete).map { i =>
+        val incompleteMul = completeI + 1 + (incomplete - i - 1)
         val left = i * w + cm
         val locs = if (left < 0) {
           0L
@@ -69,11 +101,16 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
           val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
-        val incompl = locs * cincompleteRegions
-        val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
-        incompl + compl
+        locs * incompleteMul
+        // todo, fix this
       }
+      val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
+      incompl.sum + compl
     }
+    cornerLocs
+  }
+
+  private def middleLocations(map: Map[(Long, Long), String], sx: Long, sy: Long, w: Int, h: Int, dEdgeX: Long, stepGoal: Long): Seq[Long] = {
     // 0, -1
     // -1, 0
     // 0, 1
@@ -82,20 +119,19 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val midStates = middles.map(p => (p, gatherState(p, map, w)))
     val mloop = midStates.head._2.toSeq.sortBy(_._1).takeRight(3)
     val mloopStart = mloop.head._1
-    val mstepsLeft = mloopStart - cm
     val ms = (stepGoal - dEdgeX)
+    if (ms < 0) return Seq(0)
     val mm = ms % w
-    val mc = ms / w // plus 0 for the incomplete ones?
+    val mc = ms / w + 1 // plus 1 for the incomplete ones?
     val mregions = mc
-    val mIncomplete = mstepsLeft / w + 1
     val mincompleteRegions = if (mc > 0) math.min(3, mc) else 0
     // the m
     val mcompleteRegions = mregions - mincompleteRegions
-    val midLocs = cornerStates.map { case (p, m) =>
+    val midLocs = midStates.map { case (p, m) =>
       val loop = mloop
       val loopStart = mloopStart
-      (0 to 2).map { i =>
-        val left = i * w + cm
+      val incompl = (0L until mincompleteRegions).map { i =>
+        val left = i * w + mm
         val locs = if (left < 0) {
           0L
         } else if (left < loopStart) {
@@ -104,26 +140,13 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
           val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
-        val incompl = locs * mincompleteRegions
-        val compl = loop((cm % 2).toInt)._2 * mcompleteRegions
-        incompl + compl
+        locs
       }
+      val compl = loop((mm % 2).toInt)._2 * mcompleteRegions
+      incompl.sum + compl
     }
-
-    println(s"node count: ${map.count(kv => kv._2 == "." || kv._2 == "S")}")
-
-    val centerStates = gatherState(start, map, w)
-    val centerloop = centerStates.toSeq.sortBy(_._1).takeRight(2)
-    val centerloopStart = centerloop.head._1
-    val compl = if (stepGoal < centerStates.size) {centerStates(stepGoal)} else {centerloop(((stepGoal % centerloopStart) % 2).toInt)._2 * 1}
-
-
-    // 3662092424185928 is too high
-    // 1846521620165984
-    // same implementation gave 130577 for 64 steps
-    compl + midLocs.map(_.sum).sum + cornerLocs.map(_.sum).sum
+    midLocs
   }
-
 
   def gatherState(start: (Long, Long), map: Map[(Long, Long), String], w: Long): Map[Long, Long] = {
 
@@ -135,7 +158,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     while (!allStates.contains(curr)) {
       out.put(it, curr.size)
       allStates.add(curr)
-      curr.foreach(p => if(!distances.contains(p)) distances.put(p, it))
+      curr.foreach(p => if (!distances.contains(p)) distances.put(p, it))
       val next = curr.flatMap(neighbors(_, map).map(_._1))
       it += 1
       curr = next
