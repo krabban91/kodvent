@@ -43,29 +43,33 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // 1, -1
     // -1, 1
     // 1, 1
+    val corners = Seq((0L, 0L), (w - 1L, 0L), (0L, h - 1L), (w - 1L, h - 1L))
+    val cornerStates = corners.map(p => (p, gatherState(p, map, w)))
     val cs = (stepGoal - dCorner)
     val cm = cs % w
     val cc = cs / w // plus 0 for the incomplete ones?
-    val cregions = (0L to cc).map(_ + 1L).sum
-    val cstepsLeft = 260 - cm
+    val cregions = (0L until cc).map(_ + 0L).sum
+    val cloop = cornerStates.head._2.toSeq.sortBy(_._1).takeRight(3)
+    val cloopStart = cloop.head._1
+    val cstepsLeft = cloopStart - cm
     val cIncomplete = cstepsLeft / w + 1
     val cincompleteRegions = (cc -1) + (cc) + (cc + 1)
     // the c
     val ccompleteRegions = cregions - cincompleteRegions
-    val corners = Seq((0L, 0L), (w - 1L, 0L), (0L, h - 1L), (w - 1L, h - 1L))
-    val cornerStates = corners.map(p => (p, gatherState(p, map, w)))
     val cornerLocs = cornerStates.map{ case (p, m) =>
-      val loop = m.toSeq.sortBy(_._1).takeRight(2)
-      val loopStart = loop.head._1
+      val loop = cloop
+      val loopStart = cloopStart
       (0 to 2).map{i =>
         val left = i * w + cm
-        val locs = if (left < loopStart) {
+        val locs = if (left < 0) {
+          0L
+        } else if (left < loopStart) {
           m(left)
         } else {
           val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
-        val incompl = locs * (cc + 1 - i)
+        val incompl = locs * cincompleteRegions
         val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
         incompl + compl
       }
@@ -76,29 +80,32 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // 1, 0
     val middles = Seq((sx, 0L), (0L, sy), (sx, h - 1L), (w - 1L, sy))
     val midStates = middles.map(p => (p, gatherState(p, map, w)))
-
+    val mloop = midStates.head._2.toSeq.sortBy(_._1).takeRight(3)
+    val mloopStart = mloop.head._1
+    val mstepsLeft = mloopStart - cm
     val ms = (stepGoal - dEdgeX)
     val mm = ms % w
     val mc = ms / w // plus 0 for the incomplete ones?
-    val mregions = (0L to mc).map(_ + 1L).sum
-    val mstepsLeft = 260 - cm
+    val mregions = mc
     val mIncomplete = mstepsLeft / w + 1
-    val mincompleteRegions = (cc - 1) + (cc) + (cc + 1)
+    val mincompleteRegions = if (mc > 0) math.min(3, mc) else 0
     // the m
     val mcompleteRegions = mregions - mincompleteRegions
     val midLocs = cornerStates.map { case (p, m) =>
-      val loop = m.toSeq.sortBy(_._1).takeRight(2)
-      val loopStart = loop.head._1
+      val loop = mloop
+      val loopStart = mloopStart
       (0 to 2).map { i =>
         val left = i * w + cm
-        val locs = if (left < loopStart) {
+        val locs = if (left < 0) {
+          0L
+        } else if (left < loopStart) {
           m(left)
         } else {
           val mod = (left % loopStart) % 2
           loop(mod.toInt)._2
         }
-        val incompl = locs * (cc + 1 - i)
-        val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
+        val incompl = locs * mincompleteRegions
+        val compl = loop((cm % 2).toInt)._2 * mcompleteRegions
         incompl + compl
       }
     }
@@ -108,9 +115,12 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val centerStates = gatherState(start, map, w)
     val centerloop = centerStates.toSeq.sortBy(_._1).takeRight(2)
     val centerloopStart = centerloop.head._1
-    val compl = centerloop(((stepGoal % centerloopStart) % 2).toInt)._2 * 1
-    compl
+    val compl = if (stepGoal < centerStates.size) {centerStates(stepGoal)} else {centerloop(((stepGoal % centerloopStart) % 2).toInt)._2 * 1}
 
+
+    // 3662092424185928 is too high
+    // 1846521620165984
+    // same implementation gave 130577 for 64 steps
     compl + midLocs.map(_.sum).sum + cornerLocs.map(_.sum).sum
   }
 
@@ -121,14 +131,17 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val out = mutable.HashMap[Long, Long]()
     var curr = Set(start)
     val allStates = mutable.HashSet[Set[(Long, Long)]]()
+    val distances = mutable.HashMap[(Long, Long), Long]()
     while (!allStates.contains(curr)) {
       out.put(it, curr.size)
       allStates.add(curr)
+      curr.foreach(p => if(!distances.contains(p)) distances.put(p, it))
       val next = curr.flatMap(neighbors(_, map).map(_._1))
       it += 1
       curr = next
     }
     out.put(it, curr.size)
+    val ds = distances.filter(kv => kv._1._1 == 0 || kv._1._2 == 0 || kv._1._1 == w - 1 || kv._1._2 == w - 1).toSeq.sortBy(_._2)
     out.toMap
   }
 
