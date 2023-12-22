@@ -26,7 +26,7 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
     }
 
     def yOverLap(other: Brick): Boolean = {
-      overlap(from._2, (other.from._2, other.to._2)) || overlap(to._2, (other.from._2, other.to._2))  ||
+      overlap(from._2, (other.from._2, other.to._2)) || overlap(to._2, (other.from._2, other.to._2)) ||
         overlap(other.from._2, (from._2, to._2)) || overlap(other.to._2, (from._2, to._2))
     }
   }
@@ -45,6 +45,36 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part1(strings: Seq[String]): Long = {
+    val supports: mutable.HashMap[Day22.Brick, Seq[Day22.Brick]] = parse(strings)
+
+    supports.count { case (b, bs) =>
+      bs.forall(v => supports.exists(o => o._1 != b && o._2.contains(v)))
+    }
+  }
+
+
+  override def part2(strings: Seq[String]): Long = {
+    val supports: mutable.HashMap[Day22.Brick, Seq[Day22.Brick]] = parse(strings)
+    val topples = supports.map { case (b, bs) =>
+      val supportCopy= supports.clone()
+
+      val frontier = mutable.Queue[Brick]()
+      frontier.addOne(b)
+      val toppled = mutable.HashSet[Brick]()
+      while (frontier.nonEmpty) {
+        val pop = frontier.dequeue()
+        toppled.addOne(pop)
+        val holds = supportCopy(pop)
+        supportCopy.remove(pop)
+        val possible = holds.filterNot(v => supportCopy.exists(o => o._2.contains(v)))
+        frontier.addAll(possible)
+      }
+      toppled.size - 1
+    }
+    topples.sum
+  }
+
+  private def parse(strings: Seq[String]) = {
     val bs = strings.map(Brick(_))
     val closestToGround = bs.sortBy(b => math.min(b.from._3, b.to._3))
     val landed = closestToGround.foldLeft(Seq[Brick]()) { case (land, b) =>
@@ -66,46 +96,14 @@ object Day22 extends App with AoCPart1Test with AoCPart2Test {
     }
     val supports = mutable.HashMap[Brick, Seq[Brick]]()
     val byMyinY = landed.groupBy(b => math.min(b.from._3, b.to._3))
-
-    byMyinY.foreach{ case (minY, bs) =>
-      bs.map{b =>
+    byMyinY.foreach { case (minY, bs) =>
+      bs.map { b =>
         val maxY = math.max(b.from._3, b.to._3)
         val possible = byMyinY.getOrElse(maxY + 1, Seq())
         supports.put(b, possible.filter(_.xyOverlaps(b)))
       }
     }
-
-
-    /*
-    val frontier = mutable.Queue[Brick]()
-    frontier.addAll(supports.filter(_._2.isEmpty).keys)
-    val disintigrated = mutable.ListBuffer[Brick]()
-    while (frontier.nonEmpty) {
-      val pop = frontier.dequeue()
-      disintigrated.addOne(pop)
-      supports.filter(_._2.contains(pop))
-        .foreach{ case (b, s) =>
-          val value = s.filterNot(_ == pop)
-          supports.put(b, value)
-          if (value.isEmpty) {
-            frontier.addOne(b)
-          }
-        }
-    }
-    disintigrated.size
-
-
-     */
-
-
-    -1
-
-    supports.count{ case (b, bs) =>
-      bs.forall(v => supports.exists(o => o._1 != b && o._2.contains(v)))
-    }
+    supports
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
-  }
 }
