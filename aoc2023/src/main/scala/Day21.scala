@@ -7,7 +7,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   //printResultPart1Test
   //printResultPart2Test
-  printResultPart1
+  //printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
@@ -68,6 +68,9 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val stepGoal = 26501365
+
+
+
     /*
 
     n = 0
@@ -102,6 +105,20 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val (w, h) = (strings.head.length, strings.length)
     val (dEdgeX, dEdgeY) = (sx + 1, sy + 1)
     val dCorner = dEdgeX + dEdgeY
+
+    val mod = 65
+    val mul = 131
+
+    var locs = Seq(start)
+    (0 to 800).foreach{it =>
+      if (it % mul == mod) {
+        println(s"x=${it / mul}.\t y=${locs.size}")
+      }
+      val next = locs.flatMap(p => neighbors(p, map).map(_._1))
+      val distinct = next.distinct
+      locs = distinct
+
+    }
 
     // after that, it is always w or h. for now: assume w == h
 
@@ -251,7 +268,13 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   def neighbors(p: (Long, Long), map: Map[(Long, Long), String]): Seq[((Long, Long), Long)] = {
-    DIRECTIONS.map(_ + p).filter(map.get(_).exists(v => v == "." || v == "S")).map((_, 1))
+    val (w, h) = (131L, 131L)
+    DIRECTIONS.map(_ + p).filter{case p@(x, y) =>
+      val puX = (x + 100*w) % w
+      val puY = (y + 100*h) % h
+      val puP = (puX, puY)
+      map.get(puP).exists(v => v == "." || v == "S")
+    }.map((_, 1))
   }
 
   def parse(strings: Seq[String]) = {

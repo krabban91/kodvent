@@ -44,6 +44,7 @@ object Graph {
   }
 
   def stepAround[Point](starts: Seq[Point], neighbors: Point => Seq[(Point, Long)], steps: Long): Seq[Point] = {
+
     val queue = mutable.PriorityQueue[(Point, Long)]()(Ordering.by(-_._2))
     queue.addAll(starts.map((_, 0L)))
     val visited = mutable.HashSet[(Point, Long)]()
