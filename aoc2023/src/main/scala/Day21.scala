@@ -5,14 +5,19 @@ import scala.collection.mutable
 
 object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
+  //printResultPart1Test
   //printResultPart2Test
-  printResultPart1
+  //printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
     val (map, start) = parse(strings)
     val value = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors(p, map), 64)
+    (0 to 10).foreach(n => {
+      val x = 65 + n * 131
+      val value1 = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors(p, map), x)
+      println(s"f($x) = ${value1.size}")
+    })
     value.size
 
   }
@@ -31,6 +36,24 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
 
   override def part2(strings: Seq[String]): Long = {
+    val stepGoal = 26501365
+    // 26501365 = 65 + 131 * 20230
+    // at iter 65, the edge centers have been reached
+    // at iter 65 + 131, the edge   blocks have experienced 131 - (0     ) steps [same as center]
+    // at iter 65 + 131, the corner blocks have experienced 131 - (65 + 2) steps [it 64]
+
+    // calculate 65 + n * 131 iterations n=[0,1,2,3]
+    // - center: 65,196,327,458
+    // - corner: 0 ,64 ,195,326,457
+
+    // number of corner pieces ((20230 - 1 - 3)*(20230 - 1 - 3 + 1)/2) * 4 completed + 4 * ((20230 - 1) * gX(64) + (20230 - 1 - 1) * gX(195) + (20230 - 1 - 2) * gX(326)
+    // - gX is possibly unique per corner.
+    // number of center pieces = 1 + (20230 - 3) * 4 * f(458) completed, 4 * (f(65) + f(196) + f(327))
+
+
+
+
+
     val (map, start@(sx, sy)) = parse(strings)
     val (w, h) = (strings.head.length, strings.length)
     val (dEdgeX, dEdgeY) = (sx + 1, sy + 1)
@@ -38,7 +61,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
     // after that, it is always w or h. for now: assume w == h
 
-    val stepGoal = 26501365
+
     // val stepGoal = dEdgeX + w*4
     val cornerLocs: Seq[Long] = cornerLocations(map, w, h, dCorner, stepGoal)
     val midLocs: Seq[Long] = middleLocations(map, sx, sy, w, h, dEdgeX, stepGoal)
@@ -53,6 +76,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // 615519377087821 is too high
     // 615513342882862 not the right answer
     // 615513291903955 not the right answer
+    // 612941109307621
     val sum = midLocs.sum
     val sum1 = cornerLocs.sum
     center + sum + sum1
@@ -90,10 +114,11 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val incomplete = if (cc > 0) math.min(3, cc) else 0
 
     val completeI = cc - incomplete
-    val complete = (0L until completeI).map(_ + 1).sum
-    val cincompleteRegions = cregions - complete
+    val complete1 = (0L until completeI by 2).map(_ + 1).sum
+    val complete2 = (0L until completeI + 1 by 2).sum
+    val cincompleteRegions = cregions - complete1 - complete2
     // the c
-    val ccompleteRegions = complete
+
     val cornerLocs = cornerStates.map { case (p, m) =>
       val loop = cloop
       val loopStart = cloopStart
@@ -111,7 +136,9 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
         locs * incompleteMul
         // todo, fix this
       }
-      val compl = loop((cm % 2).toInt)._2 * ccompleteRegions
+      val l1 = loop(((cm + 1) % 2).toInt)._2 * complete1
+      val l2 = loop(((cm) % 2).toInt)._2 * complete2
+      val compl = l1 + l2
       incompl.sum + compl
     }
     cornerLocs
@@ -134,6 +161,8 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val mincompleteRegions = if (mc > 0) math.min(3, mc) else 0
     // the m
     val mcompleteRegions = mregions - mincompleteRegions
+    val complete1 = mcompleteRegions / 2 + mcompleteRegions % 2
+    val complete2 = mcompleteRegions / 2
     val midLocs = midStates.map { case (p, m) =>
       val loop = mloop
       val loopStart = mloopStart
@@ -149,7 +178,9 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
         }
         locs
       }
-      val compl = loop((mm % 2).toInt)._2 * mcompleteRegions
+      val l1 = loop(((mm + 1) % 2).toInt)._2 * complete1
+      val l2 = loop(((mm) % 2).toInt)._2 * complete2
+      val compl = l1 + l2
       incompl.sum + compl
     }
     midLocs
