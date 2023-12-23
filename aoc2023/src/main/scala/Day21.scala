@@ -76,7 +76,8 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // 615519377087821 is too high
     // 615513342882862 not the right answer
     // 615513291903955 not the right answer
-    // 612941109307621
+    // 612941109307621 not the right answer
+    // 612941134797169 ???
     val sum = midLocs.sum
     val sum1 = cornerLocs.sum
     center + sum + sum1
@@ -136,8 +137,8 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
         locs * incompleteMul
         // todo, fix this
       }
-      val l1 = loop(((cm + 1) % 2).toInt)._2 * complete1
-      val l2 = loop(((cm) % 2).toInt)._2 * complete2
+      val l1 = loop(((cm) % 2).toInt)._2 * complete1
+      val l2 = loop(((cm + 1) % 2).toInt)._2 * complete2
       val compl = l1 + l2
       incompl.sum + compl
     }
