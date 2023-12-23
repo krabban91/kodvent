@@ -28,9 +28,9 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val (map, start, end) = parse(strings)
-    val tuple = Graph.longestPath[(Long, Long)](Seq(start), p => p == end, _ manhattan end, p => {
+    val tuple = Graph.longestPath2[(Long, Long)](Seq(start), p => p == end, _ manhattan end, p => {
       val neighbors = map(p) match {
-        case "." | ">" | ">" | "<" | "v" | "^" => DIRECTIONS.map(_ + p)
+        case "." | ">" | "<" | "v" | "^" => DIRECTIONS.map(_ + p)
         case _ => Seq()
       }
       val value = neighbors.filter(n => map.get(n).exists(s => s != "#"))
