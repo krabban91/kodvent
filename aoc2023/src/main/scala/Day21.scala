@@ -7,17 +7,48 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   //printResultPart1Test
   //printResultPart2Test
-  //printResultPart1
+  printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
     val (map, start) = parse(strings)
     val value = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors(p, map), 64)
-    (0 to 10).foreach(n => {
+    val w = strings.head.length
+    val h = strings.size
+    val corners = Seq((0L, 0L), (w - 1L, 0L), (0L, h - 1L), (w - 1L, h - 1L))
+    val sums = mutable.HashMap[Long, Long]()
+
+    val maxSteps = 4
+    (0 to maxSteps).foreach(n => {sums.put(n, 0)})
+    (0 to maxSteps).foreach(n => {
       val x = 65 + n * 131
+      val j = 1
       val value1 = Graph.stepAround[(Long, Long)](Seq(start), p => neighbors(p, map), x)
-      println(s"f($x) = ${value1.size}")
+      val size = value1.size
+      if (n == 0) {
+        sums.put(n, sums(n) + size)
+      }
+      ((maxSteps-n+1) to maxSteps).foreach(j => {
+        sums.put(j, sums(j) + 4 * size)
+      })
+
+      //println(s"$n: \t f($x) = ${size}")
+
+      corners.foreach(d => {
+        if (n >= 1) {
+          val m = n - 1
+          val x = 64 + m * 131
+          val value1 = Graph.stepAround[(Long, Long)](Seq(d), p => neighbors(p, map), x)
+          val size1 = value1.size
+          //println(s"$n ($m)\t g[$d]($x) = $size1")
+          (((maxSteps - 1) - m + 1) to (maxSteps - 1)).foreach(j => {
+            val count = j
+            sums.put(j, sums(j) + count * size)
+          })
+        }
+      })
     })
+    println(sums)
     value.size
 
   }
@@ -37,6 +68,22 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part2(strings: Seq[String]): Long = {
     val stepGoal = 26501365
+    /*
+
+    n = 0
+    (1*f(65) + 0*f(196) + 0*f(327) + 0*gx(64) + 0*gx(195) + 0*gx(326) + 0*gx(457)
+    3832
+
+    n = 1
+    (4*f(65) + 1*f(196) + 0*f(327) + (
+      1*g0(64) + 0*g0(195) + 0*g0(326) + 0*g0(457) +
+      1*g1(64) + 0*g1(195) + 0*g1(326) + 0*g1(457) +
+      1*g2(64) + 0*g2(195) + 0*g2(326) + 0*g2(457) +
+      1*g3(64) + 0*g3(195) + 0*g3(326) + 0*g3(457)
+    )
+    4*3832 + 1*7457 + (909 + 963)
+
+     */
     // 26501365 = 65 + 131 * 20230
     // at iter 65, the edge centers have been reached
     // at iter 65 + 131, the edge   blocks have experienced 131 - (0     ) steps [same as center]
@@ -49,9 +96,6 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     // number of corner pieces ((20230 - 1 - 3)*(20230 - 1 - 3 + 1)/2) * 4 completed + 4 * ((20230 - 1) * gX(64) + (20230 - 1 - 1) * gX(195) + (20230 - 1 - 2) * gX(326)
     // - gX is possibly unique per corner.
     // number of center pieces = 1 + (20230 - 3) * 4 * f(458) completed, 4 * (f(65) + f(196) + f(327))
-
-
-
 
 
     val (map, start@(sx, sy)) = parse(strings)
@@ -68,7 +112,6 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val center: Long = centerLocations(map, start, w, stepGoal)
 
     println(s"node count: ${map.count(kv => kv._2 == "." || kv._2 == "S")}")
-
 
 
     // 3662092424185928 is too high
@@ -108,7 +151,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
       return Seq(0L)
     }
     val cm = cs % w
-    val cc = cs / w + 1// plus 1 for the incomplete ones?
+    val cc = cs / w + 1 // plus 1 for the incomplete ones?
     val cregions = (0L until cc).map(_ + 1L).sum
     val cloop = cornerStates.head._2.toSeq.sortBy(_._1).takeRight(3)
     val cloopStart = cloop.head._1
@@ -157,7 +200,7 @@ object Day21 extends App with AoCPart1Test with AoCPart2Test {
     val ms = (stepGoal - dEdgeX)
     if (ms < 0) return Seq(0)
     val mm = ms % w
-    val mc = ms / w + 1// plus 1 for the incomplete ones?
+    val mc = ms / w + 1 // plus 1 for the incomplete ones?
     val mregions = mc
     val mincompleteRegions = if (mc > 0) math.min(3, mc) else 0
     // the m
