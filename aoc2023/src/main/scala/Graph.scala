@@ -27,6 +27,26 @@ object Graph {
     (Long.MaxValue, Seq())
   }
 
+  def longestPath[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): (Long, Seq[Point]) = {
+    val queue = mutable.PriorityQueue[(Point, Long, Long, Seq[Point])]()(Ordering.by(v => (v._2 + v._3)))
+    val allHikes = mutable.ListBuffer[(Long,Seq[Point])]()
+    queue.addAll(starts.map(p => (p, 0L, heuristic(p), Seq())))
+    while (queue.nonEmpty) {
+      val (pos, cost, _, path) = queue.dequeue()
+      if (end.apply(pos)) {
+        allHikes.addOne ((cost, path :+ pos))
+      }
+      if (!path.contains(pos)) {
+        neighbors(pos)
+          .filterNot(t => path.contains(t._1))
+          .foreach { p =>
+            queue.enqueue((p._1, cost + p._2, heuristic(p._1), path :+ pos))
+          }
+      }
+    }
+    allHikes.maxBy(_._1)
+  }
+
   def flood[Point](starts: Seq[Point], neighbors: Point => Seq[(Point, Long)]): Map[Point, Long] = {
     val queue = mutable.PriorityQueue[(Point, Long)]()(Ordering.by(-_._2))
     queue.addAll(starts.map((_, 0L)))
