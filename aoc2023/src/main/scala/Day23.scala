@@ -12,8 +12,31 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (map, start, end) = parse(strings)
-    val tuple = Graph.longestPath[(Long, Long)](Seq(start), p => p == end, _ manhattan end, p => {
-      val neighbors = map(p) match {
+    val ds = distances(map, start, end, neighborFunction(map, part2 = false))
+    Graph.longestPath[(Long, Long)](Seq(start), _ == end, _ manhattan end, ds.getOrElse(_, Seq()))._1
+  }
+
+  override def part2(strings: Seq[String]): Long = {
+    val (map, start, end) = parse(strings)
+    val ds = distances(map, start, end, neighborFunction(map, part2 = true))
+    Graph.longestPath[(Long, Long)](Seq(start), _ == end, _ manhattan end, ds.getOrElse(_, Seq()))._1
+  }
+
+  def parse(strings: Seq[String]): (Map[(Long, Long), String], (Long, Long), (Long, Long)) = {
+    val map = strings.zipWithIndex.flatMap { case (str, y) => str.zipWithIndex.map { case (c, x) => ((x.toLong, y.toLong), s"$c") } }.toMap
+    val start = (strings.head.indexOf(".").toLong, 0L)
+    val end = (strings.last.indexOf(".").toLong, strings.size.toLong - 1)
+    (map, start, end)
+  }
+
+  def neighborFunction(map: Map[(Long, Long), String], part2: Boolean = false): ((Long, Long)) => Seq[((Long, Long), Long)] = p => {
+    val n = if (part2) {
+      map(p) match {
+        case "." | ">" | "<" | "v" | "^" => DIRECTIONS.map(_ + p)
+        case _ => Seq()
+      }
+    } else {
+      map(p) match {
         case "." => DIRECTIONS.map(_ + p)
         case ">" => Seq(EAST + p)
         case "<" => Seq(WEST + p)
@@ -21,23 +44,20 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
         case "^" => Seq(NORTH + p)
         case _ => Seq()
       }
-      val value = neighbors.filter(n => map.get(n).exists(s => s != "#"))
-      value.map((_, 1L))
-    })
-    tuple
-
+    }
+    n.filter(n => map.get(n).exists(s => s != "#")).map((_, 1L))
   }
 
-  def distances(map: Map[(Long, Long), String], start: (Long, Long), end: (Long, Long)): Map[(Long, Long), Seq[((Long, Long), Long)]] = {
-    // type Point = (Long, Long)
+  def getCrossings(map: Map[(Long, Long), String], start: (Long, Long)) = map
+    .filterNot(_._2 == "#")
+    .filter { case (p, _) => DIRECTIONS.map(_ + p).count(n => map.get(n).exists(_ != "#")) >= 3 } ++ Map(start -> ".")
 
+
+  def distances(map: Map[(Long, Long), String], start: (Long, Long), end: (Long, Long), neighbors: ((Long, Long)) => Seq[((Long, Long), Long)]): Map[(Long, Long), Seq[((Long, Long), Long)]] = {
     val crossings: Map[(Long, Long), String] = getCrossings(map, start)
 
-
-    val neighbors = (p: (Long, Long)) => DIRECTIONS.map(d => d + p).filter(n => map.get(n).exists(s => s != "#")).map((_, 1))
-
     val toExplore = mutable.Queue[((Long, Long), (Long, Long))]()
-    val distances = mutable.HashMap[Set[(Long, Long)], Long]()
+    val distances = mutable.HashMap[Seq[(Long, Long)], Long]()
     toExplore.addOne((start, SOUTH))
     while (toExplore.nonEmpty) {
       val (loc, dir) = toExplore.dequeue()
@@ -48,78 +68,27 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       while (queue.nonEmpty) {
         val (pos, cost) = queue.dequeue()
         if (pos == end) {
-          val path = Set(loc, pos)
+          val path = Seq(loc, pos)
           distances.put(path, cost)
-        } else if (been.add(pos)) {
+        } else if (crossings.contains(pos)) {
+          val path = Seq(loc, pos)
+          if (!distances.contains(path) || distances(path) < cost) {
+            distances.put(path, cost)
+            neighbors(pos).map(_._1).map(n => (pos, n - pos)).foreach(n => toExplore.addOne(n))
+          }
+        }
+        else if (been.add(pos)) {
           neighbors(pos)
             .filterNot(t => been.contains(t._1))
-            .foreach { p =>
-              val path = Set(loc, p._1)
-              if (crossings.contains(p._1)) {
-                if (!distances.contains(path) || distances(path) < cost) {
-                  distances.put(path, cost + p._2)
-                  neighbors(p._1).map(_._1).filter(_ != pos).map(n => (p._1, n - p._1)).foreach(n => toExplore.addOne(n))
-                }
-                // 3, 4 n
-                // 3, 5 p._1
-                // n - p._1 = 0, -1 (NORTH)
-
-              } else {
-                queue.enqueue((p._1, cost + p._2))
-              }
-            }
+            .foreach { p => queue.enqueue((p._1, cost + p._2)) }
         }
       }
     }
-    val value1 = distances.toSeq.flatMap(v => v._1)
-    val value: Map[(Long, Long), Seq[((Long, Long), Seq[((Long, Long), Long)])]] = value1.map { p =>
-      val value3 = distances
-        .filter(v => v._1.contains(p))
-        .toSeq.map(kv => (kv._1.find(v => v != p), kv._2))
-      val value2 = value3.filter(_._1.isDefined).map(kv => (kv._1.get, kv._2))
-      (p, value2)
-    }
+
+    distances.toSeq.map(v => (v._1.head, (v._1.last, v._2)))
+      .filterNot(v => v._1 == v._2._1)
       .groupBy(_._1)
-    val value2 = value
-      .map(kv => (kv._1, kv._2.flatMap(_._2).distinct))
-    value2
-  }
-
-  def getCrossings(map: Map[(Long, Long), String], start: (Long, Long)) = {
-    map
-      .filterNot(_._2 == "#")
-      .filter { case (p, _) => DIRECTIONS.map(_ + p).count(n => map.get(n).exists(_ != "#")) >= 3 } ++ Map(start -> ".")
-  }
-
-  override def part2(strings: Seq[String]): Long = {
-    val (map, start, end) = parse(strings)
-
-    val ds = distances(map, start, end)
-    val tuple = Graph.longestPath[(Long, Long)](Seq(start), p => p == end, _ manhattan end, p => {
-      ds(p)
-    })
-
-  /*
-    val tuple = Graph.longestPath[(Long, Long)](Seq(start), p => p == end, _ manhattan end, p => {
-      val neighbors = map(p) match {
-        case "." | ">" | "<" | "v" | "^" => DIRECTIONS.map(_ + p)
-        case _ => Seq()
-      }
-      val value = neighbors.filter(n => map.get(n).exists(s => s != "#"))
-      value.map((_, 1L))
-    })
-    */
-    // 5966 is too low
-    // 6058 is not the right answer
-    tuple
-  }
-
-  def parse(strings: Seq[String]): (Map[(Long, Long), String], (Long, Long), (Long, Long)) = {
-    val map = strings.zipWithIndex.flatMap { case (str, y) => str.zipWithIndex.map { case (c, x) => ((x.toLong, y.toLong), s"$c") } }.toMap
-    val start = (strings.head.indexOf(".").toLong, 0L)
-    val end = (strings.last.indexOf(".").toLong, strings.size.toLong - 1)
-
-    (map, start, end)
+      .map(kv => (kv._1, kv._2.map(_._2)))
   }
 
 }
