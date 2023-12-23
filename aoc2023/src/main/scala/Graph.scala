@@ -27,14 +27,22 @@ object Graph {
     (Long.MaxValue, Seq())
   }
 
-  def longestPath[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): (Long, Seq[Point]) = {
+  def longestPath[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): Long = {
     val queue = mutable.PriorityQueue[(Point, Long, Long, Seq[Point])]()(Ordering.by(v => (v._2 + v._3)))
-    val allHikes = mutable.ListBuffer[(Long,Seq[Point])]()
+    //val allHikes = mutable.ListBuffer[(Long, Seq[Point])]()
+    var bestHike = 0L
     queue.addAll(starts.map(p => (p, 0L, heuristic(p), Seq())))
     while (queue.nonEmpty) {
       val (pos, cost, _, path) = queue.dequeue()
       if (end.apply(pos)) {
-        allHikes.addOne ((cost, path :+ pos))
+
+        val tuple = (cost, path.tail :+ pos)
+        //val bestSoFar =  Some(allHikes.map(_._1)).filter(_.nonEmpty).map(_.max).getOrElse(0L)
+        if (cost > bestHike) {
+          bestHike = cost
+          println(s"Best path yet: ${cost}")
+        }
+        //allHikes.addOne(tuple)
       }
       if (!path.contains(pos)) {
         neighbors(pos)
@@ -44,7 +52,39 @@ object Graph {
           }
       }
     }
-    allHikes.maxBy(_._1)
+    //allHikes.maxBy(_._1)
+    bestHike
+  }
+
+  def longestPath2[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): Long = {
+    val queue = mutable.PriorityQueue[(Point, Long, Long, Seq[Point])]()(Ordering.by(v => -(v._2 + v._3)))
+    val allHikes = mutable.ListBuffer[(Long, Seq[Point])]()
+    var bestHike: Long = 0L
+    val visitedFrom = mutable.HashMap[(Point, Point), Long]()
+    queue.addAll(starts.map(p => (p, 0L, heuristic(p), Seq())))
+    while (queue.nonEmpty) {
+      val (pos, cost, _, path) = queue.dequeue()
+
+      if (end.apply(pos)) {
+
+        val tuple = (cost, path.tail :+ pos)
+
+        if (cost > bestHike) {
+          println(s"Best path yet: ${cost}")
+          bestHike = cost
+        }
+        //allHikes.addOne(tuple)
+      }
+      if (path.isEmpty || !path.contains(pos) || !visitedFrom.contains((pos, path.last)) || visitedFrom((pos, path.last)) <= cost) {
+        visitedFrom.put((path.lastOption.map((pos, _))).getOrElse((pos, pos)), cost)
+        neighbors(pos)
+          .filterNot(t => path.contains(t._1))
+          .foreach { p =>
+            queue.enqueue((p._1, cost + p._2, heuristic(p._1), path :+ pos))
+          }
+      }
+    }
+    bestHike
   }
 
   def flood[Point](starts: Seq[Point], neighbors: Point => Seq[(Point, Long)]): Map[Point, Long] = {
