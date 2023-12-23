@@ -3,16 +3,16 @@ import org.scalatest.matchers.should.Matchers
 
 class Day23Spec extends AnyFlatSpec with Matchers {
   "Part1 Test" should "be correct" in {
-    Day23.part1TestResult shouldEqual -1
+    Day23.part1TestResult shouldEqual 94
   }
   "Part1" should "be correct" in {
-    Day23.part1Result shouldEqual -1
+    Day23.part1Result shouldEqual 2238
   }
   "Part2 Test" should "be correct" in {
-    Day23.part2TestResult shouldEqual -1
+    Day23.part2TestResult shouldEqual 154
   }
   "Part2" should "be correct" in {
-    Day23.part2Result shouldEqual -1
+    Day23.part2Result shouldEqual 6398
   }
 
   "Crossings" should "be valid for test" in {
@@ -27,7 +27,7 @@ class Day23Spec extends AnyFlatSpec with Matchers {
   "Distances" should "be calculated for first edge" in {
     val input = Day23.getInputTest
     val (map, start, end) = Day23.parse(input)
-    val ds = Day23.distances(map, start, end)
+    val ds = Day23.distances(map, start, end, neighbors = Day23.neighborFunction(map, part2 = true))
     val targets = ds(start)
     targets.size shouldEqual 1
     targets.head shouldEqual ((3L, 5L), 15L)
