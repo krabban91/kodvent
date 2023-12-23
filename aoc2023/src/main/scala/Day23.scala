@@ -36,6 +36,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       val value = neighbors.filter(n => map.get(n).exists(s => s != "#"))
       value.map((_, 1L))
     })
+    // 5966 is too low
     tuple._1
   }
 

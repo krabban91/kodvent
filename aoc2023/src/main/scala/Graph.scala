@@ -48,7 +48,7 @@ object Graph {
   }
 
   def longestPath2[Point](starts: Seq[Point], end: Point => Boolean, heuristic: Point => Long, neighbors: Point => Seq[(Point, Long)]): (Long, Seq[Point]) = {
-    val queue = mutable.PriorityQueue[(Point, Long, Long, Seq[Point])]()(Ordering.by(v => (v._2 + v._3)))
+    val queue = mutable.PriorityQueue[(Point, Long, Long, Seq[Point])]()(Ordering.by(v => (v._2 + v._3 * 0)))
     val allHikes = mutable.ListBuffer[(Long, Seq[Point])]()
     val visitedFrom = mutable.HashMap[(Point, Point), Long]()
     queue.addAll(starts.map(p => (p, 0L, heuristic(p), Seq())))
