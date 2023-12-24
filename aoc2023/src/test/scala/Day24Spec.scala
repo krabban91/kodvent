@@ -71,4 +71,15 @@ class Day24Spec extends AnyFlatSpec with Matchers {
     val b = Day24.Hailstorm("5, 24, 21 @ -2, -4, -2")
     a.intersection2d(b, (7, 27)) shouldEqual true
   }
+
+  "derive Vector" should "find first pair in test" in {
+    val a = Day24.Hailstorm("20, 19, 15 @ 1, -5, -3")
+    val b = Day24.Hailstorm("18, 19, 22 @ -1, -1, -2")
+    val start = (24L, 13L, 10L)
+    val velocity = (-3L, 1L, 2L)
+    val secondHitTime = 3L
+    val firstHitTime = 1L
+    val expected = (start, velocity, secondHitTime)
+    b.deriveCollisionVelocities(a).contains(expected) shouldEqual true
+  }
 }
