@@ -12,7 +12,8 @@ lazy val root = (project in file("."))
       scalaTest % Test,
       combinators % Compile,
       kodventCommon % Compile,
-      kodventScalaCommon % Compile
+      kodventScalaCommon % Compile,
+      z3 % Compile,
     )
   )
 
