@@ -66,4 +66,9 @@ class Day24Spec extends AnyFlatSpec with Matchers {
     val b = Day24.Hailstorm("20, 19, 15 @ 1, -5, -3")
     a.intersection2d(b, (7, 27)) shouldEqual false
   }
+  "Intersections" should "be found in parallell byt different velocity" in {
+    val a = Day24.Hailstorm("12, 31, 28 @ -1, -2, -1")
+    val b = Day24.Hailstorm("5, 24, 21 @ -2, -4, -2")
+    a.intersection2d(b, (7, 27)) shouldEqual true
+  }
 }

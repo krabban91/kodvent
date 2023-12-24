@@ -9,9 +9,14 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val v = strings.map(Hailstorm(_))
-    //val testArea = (7L, 27L)
-    val testArea = (200000000000000L, 400000000000000L)
-    v.zipWithIndex.flatMap { case (a, i) => v.drop(i + 1).filter(b => a.intersection2d(b, testArea)) }.size
+    val testArea = if (strings.size > 10) (200000000000000L, 400000000000000L) else (7L, 27L)
+
+    val size = v.zipWithIndex.flatMap { case (a, i) => v.drop(i + 1).filter{b =>
+      //println(s"Hailstorm A: $a")
+      //println(s"Hailstorm B: $b")
+      a.intersection2d(b, testArea)
+    } }.size
+    size
   }
 
   override def part2(strings: Seq[String]): Long = {
@@ -31,16 +36,44 @@ object Day24 extends App with AoCPart1Test with AoCPart2Test {
     }
 
     def intersection2d(b: Hailstorm, test: (Long, Long)): Boolean = {
-      val hit = intersection(b)
-      val within = hit.filter { case (x, y) => x >= test._1 && x <= test._2 && y >= test._1 && y <= test._2 }
-      val inFuture = within
+      //val hit = intersection(b)
+      val hit = intersection2(b)
+      val inFuture = hit
         .filterNot { case (x, y) =>
           math.signum(x - this.pos._1) != math.signum(this.velocity._1) ||
             math.signum(x - b.pos._1) != math.signum(b.velocity._1) ||
             math.signum(y - this.pos._2) != math.signum(this.velocity._2) ||
             math.signum(y - b.pos._2) != math.signum(b.velocity._2)
         }
-      inFuture.isDefined
+      val within = inFuture.filter { case (x, y) => x >= test._1 && x <= test._2 && y >= test._1 && y <= test._2 }
+      if (hit.isEmpty) {
+        //println(s"Hailstones' paths are parallel; they never intersect.")
+      } else if (inFuture.isEmpty) {
+        //println(s"Hailstones' paths crossed in the past for ???")
+      } else if (within.isEmpty) {
+        val (x, y) = hit.get
+        //println(s"Hailstones' paths will cross outside the test area (at x=$x, y=$y)")
+      } else {
+        val (x, y) = within.get
+        //println(s"Hailstones' paths will cross inside the test area (at x=$x, y=$y)")
+      }
+      within.isDefined
+    }
+
+    private def intersection2(other: Hailstorm): Option[(Double, Double)] = {
+      val (x1, y1) = (this.pos._1, this.pos._2)
+      val (x2, y2) = (this.pos._1 + this.velocity._1, this.pos._2 + this.velocity._2)
+      val (x3, y3) = (other.pos._1, other.pos._2)
+      val (x4, y4) = (other.pos._1 + other.velocity._1, other.pos._2 + other.velocity._2)
+      val denom = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)).toDouble
+      if (denom == 0) { None } else {
+        val ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
+        val ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+        val x = x1 + ua * (x2 - x1)
+        val y = y1 + ua * (y2 - y1)
+        Some((x, y))
+      }
+
     }
 
     private def intersection(other: Hailstorm): Option[(Double, Double)] = {
