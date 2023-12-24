@@ -13,10 +13,10 @@ object Tuples {
   implicit class RichTuples2Longs(val l: (Long, Long)) extends AnyVal {
 
 
-    def to(r: (Long, Long)): Seq[(Long,Long)] = (0L to r._1)
+    def to(r: (Long, Long)): Seq[(Long, Long)] = (0L to r._1)
       .flatMap(x => (0L to r._2).map(y => (x, y)))
 
-    def until(r: (Long, Long)): Seq[(Long, Long)] = (0L until  r._1)
+    def until(r: (Long, Long)): Seq[(Long, Long)] = (0L until r._1)
       .flatMap(x => (0L until r._2).map(y => (x, y)))
 
     def add(r: (Long, Long)): (Long, Long) = (l._1 + r._1, l._2 + r._2)
@@ -81,5 +81,7 @@ object Tuples {
     def %(r: (Long, Long, Long)): (Long, Long, Long) = l mod r
 
     def square: (Long, Long, Long) = l mul l
+
+    def sign: (Long, Long, Long) = (math.signum(l._1), math.signum(l._2), math.signum(l._3))
   }
 }
