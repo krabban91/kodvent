@@ -56,8 +56,9 @@ object Graph {
       val (pos, cost) = queue.dequeue()
       if (!visited.contains(pos)) {
         visited.put(pos, cost)
-        neighbors(pos)
+        val value = neighbors(pos)
           .filterNot(t => visited.contains(t._1))
+        value
           .foreach { p => queue.enqueue((p._1, cost + p._2)) }
       }
     }
