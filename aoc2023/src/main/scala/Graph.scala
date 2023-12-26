@@ -16,8 +16,9 @@ object Graph {
         return (cost, path)
       }
       if (visited.add(pos)) {
-        neighbors(pos)
+        val value = neighbors(pos)
           .filterNot(t => visited.contains(t._1))
+        value
           .foreach { p =>
             queue.enqueue((p._1, cost + p._2, heuristic(p._1)))
             cameFrom.put((p._1, cost + p._2), (pos, cost))
