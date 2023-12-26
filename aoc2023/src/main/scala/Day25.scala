@@ -10,16 +10,18 @@ object Day25 extends App with AoCPart1Test {
 
   override def part1(strings: Seq[String]): Long = {
     val graph = parse(strings)
-    val t0 = System.nanoTime()
-    val b@(l, r) = kargerSteinSolve(graph)
-    val t1 = System.nanoTime()
+    //val t0 = System.nanoTime()
+    //val b@(l0, r0) = kargerSteinSolve(graph)
+    //val t1 = System.nanoTime()
 
-    val a@(l0, r0) = monteCarloSolve(graph)
+    val a@(l, r) = monteCarloSolve(graph)
     val t2 = System.nanoTime()
-    val ksTime = (t1 - t0).toDouble / 1e9
-    val mcTime = (t2 - t1).toDouble / 1e9
-    println("Solved with Karger-Stein after %.2f seconds".format(ksTime))
-    println("Solved with Monte-Carlo after %.2f seconds".format(mcTime))
+    //val ksTime = (t1 - t0).toDouble / 1e9
+    //val mcTime = (t2 - t1).toDouble / 1e9
+    //println("Solved with Karger-Stein after %.2f seconds".format(ksTime))
+    //println("Solved with Monte-Carlo after %.2f seconds".format(mcTime))
+    //Solved with Karger-Stein after 21,32 seconds
+    //Solved with Monte-Carlo after 0,08 seconds
     l.size * r.size
   }
 
