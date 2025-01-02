@@ -2,12 +2,7 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 import scala.collection.mutable
 
 object Day05 extends App with AoCPart1Test with AoCPart2Test {
-
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
+  
   case class Mapping(from: String, to: String, maps: Seq[MapList])
   case class MapList(destStart: Long, srcStart: Long, rangeLength: Long)
 
