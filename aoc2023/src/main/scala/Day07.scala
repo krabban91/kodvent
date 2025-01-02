@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day07 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   case class CamelCard(hand: String, bid: Long) {
 
     def value(rank: Int): Long = bid * rank
