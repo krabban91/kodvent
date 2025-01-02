@@ -46,3 +46,16 @@ A package setup in beginning of 2021 to learn more scala practices by solving th
 
 ### aoc2020
 This year I will try to stick to solving the whole year using Scala and running each day using sbt.
+
+
+### aoc2021
+Solving Aoc with scala.
+
+### aoc2022
+Solving Aoc with scala.
+
+### aoc2023
+Solving Aoc with scala.
+
+### aoc2024
+Solving Aoc with scala.
