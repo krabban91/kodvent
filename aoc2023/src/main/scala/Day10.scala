@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day10 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   def connectsTo(c: Char, pos: (Int, Int)): Set[(Int, Int)] = {
     val map = keys
     map(c).map(dp => (pos._1 + dp._1, pos._2 + dp._2))
