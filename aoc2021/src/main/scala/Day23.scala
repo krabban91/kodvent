@@ -15,34 +15,10 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val s = getAmphipods(strings)
-    val pq = mutable.PriorityQueue[(Seq[Amphipod], Long, Long, Seq[Amphipod])]()(Ordering.Long.reverse.on(_._3))
-    val prevMap = mutable.HashMap[Seq[Amphipod], (Seq[Amphipod], Long)]()
-    val checked = mutable.HashSet[Seq[Amphipod]]()
-    pq.addOne((s, 0, s.map(_.heuristic(s)).sum, Seq()))
-    var reachedGoal: Option[(Seq[Amphipod], Long)] = None
-    while (pq.nonEmpty && reachedGoal.isEmpty) {
-      val (pods, cost, heur, prev) = pq.dequeue()
-      //logLocs(pods, cost, heur)
-      if (!checked.contains(pods)) {
-        prevMap.put(pods, (prev, cost))
-        checked.add(pods)
-        if (isGoal(pods)) {
-          reachedGoal = Option((pods, cost))
-        } else {
-          val next = pods
-            .flatMap(_.possibleMoves(pods, part2 = false))
-            .filterNot(t => checked.contains(t._1))
-            .map(t => (t._1, cost + t._2, cost + t._2 + t._1.map(_.heuristic(t._1)).sum, pods))
-          pq.addAll(next)
-        }
-      }
-    }
-    logPath(reachedGoal.get._1, prevMap.toMap, 0, reachedGoal.get._2)
-
-    reachedGoal.get._2
+    shortestPath(s)
   }
 
-  private def logPath(pods: Seq[Amphipod], prevMap: Map[Seq[Amphipod], (Seq[Amphipod], Long)], level: Int, cost: Long): Unit = {
+  private def logPath(pods: Set[Amphipod], prevMap: Map[Set[Amphipod], (Set[Amphipod], Long)], level: Int, cost: Long): Unit = {
     val prev = prevMap.get(pods)
     if (prev.isDefined) {
       logPath(prev.get._1, prevMap, level - 1, prev.get._2)
@@ -53,7 +29,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     println(s"Path: level=$level. Cost=${cost}")
   }
 
-  private def logLocs(pods: Seq[Amphipod], cost: Long, heuristic: Long) = {
+  private def logLocs(pods: Set[Amphipod], cost: Long, heuristic: Long) = {
     println(new Date().toString)
     println(s"cost: $cost, heuristic: $heuristic, pods: ")
     val mm = pods.map(p => (new Point(p.location._1, p.location._2), p)).toMap
@@ -61,40 +37,41 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     println(logger.mapToText(mm.asJava, p => if (p == null) "." else p.name))
   }
 
-  private def getAmphipods(strings: Seq[String], part2: Boolean = false): Seq[Amphipod] = {
+  private def getAmphipods(strings: Seq[String], part2: Boolean = false): Set[Amphipod] = {
     (if (part2) (strings.take(3) ++ Seq("  #D#C#B#A#  ", "  #D#B#A#C#  ") ++ strings.takeRight(2)) else strings)
       .zipWithIndex.flatMap(ty => ty._1.zipWithIndex.filterNot(tx => Seq('#', '.', ' ').contains(tx._1)).map(tx => Amphipod(tx._1.toString, (tx._2, ty._2))))
+      .toSet
   }
 
   override def part2(strings: Seq[String]): Long = {
     val s = getAmphipods(strings, part2 = true)
-    val pq = mutable.PriorityQueue[(Seq[Amphipod], Long, Long)]()(Ordering.Long.reverse.on(_._3))
-    val checked = mutable.HashSet[Seq[Amphipod]]()
-    pq.addOne((s, 0, s.map(_.heuristic(s, part2 = true)).sum))
-    var reachedGoal: Option[(Seq[Amphipod], Long)] = None
-    while (pq.nonEmpty && reachedGoal.isEmpty) {
-      val (pods, cost, heur) = pq.dequeue()
-      //logLocs(pods, cost, heur)
-      if (!checked.contains(pods)) {
-        checked.add(pods)
-        if(checked.size %100000 == 0){
+    shortestPath(s, part2 = true)
+  }
 
-          logLocs(pods, cost, heur)
-        }
-        if (isGoal(pods, part2 = true)) {
-          reachedGoal = Option((pods, cost))
+
+  def shortestPath(s: Set[Amphipod], part2: Boolean = false): Long = {
+    val pq = mutable.PriorityQueue[(Set[Amphipod], Long, Long, Set[Amphipod])]()(Ordering.Long.reverse.on(_._3))
+    val prevMap = mutable.HashMap[Set[Amphipod], (Set[Amphipod], Long)]()
+    val checked = mutable.HashSet[Set[Amphipod]]()
+    pq.addOne((s, 0, s.map(_.heuristic(s, part2 = part2)).sum, Set()))
+    while (pq.nonEmpty) {
+      val (pods, cost, _, prev) = pq.dequeue()
+      if (!checked.contains(pods)) {
+        prevMap.put(pods, (prev, cost))
+        checked.add(pods)
+        if (isGoal(pods, part2 = part2)) {
+          logPath(pods, prevMap.toMap, 0, cost)
+          return cost
         } else {
           val next = pods
-            .flatMap(_.possibleMoves(pods, part2 = true))
+            .flatMap(_.possibleMoves(pods, part2 = part2))
             .filterNot(t => checked.contains(t._1))
-            .map(t => (t._1, cost + t._2, cost + t._2 + t._1.map(_.heuristic(t._1, part2 = true)).sum))
+            .map(t => (t._1, cost + t._2, cost + t._2 + t._1.map(_.heuristic(t._1, part2=part2)).sum, pods))
           pq.addAll(next)
         }
       }
     }
-    //logPath(reachedGoal.get._1, prevMap.toMap, 0, reachedGoal.get._2)
-
-    reachedGoal.get._2
+    -1L
   }
 
 
@@ -107,11 +84,11 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
     }
   }
 
-  def isGoal(locations: Seq[Amphipod], part2: Boolean = false): Boolean = {
-    val as = locations.filter(_.name == "A").map(_.location).sortBy(_._2)
-    val bs = locations.filter(_.name == "B").map(_.location).sortBy(_._2)
-    val cs = locations.filter(_.name == "C").map(_.location).sortBy(_._2)
-    val ds = locations.filter(_.name == "D").map(_.location).sortBy(_._2)
+  def isGoal(locations: Set[Amphipod], part2: Boolean = false): Boolean = {
+    val as = locations.filter(_.name == "A").map(_.location).toSeq.sortBy(_._2)
+    val bs = locations.filter(_.name == "B").map(_.location).toSeq.sortBy(_._2)
+    val cs = locations.filter(_.name == "C").map(_.location).toSeq.sortBy(_._2)
+    val ds = locations.filter(_.name == "D").map(_.location).toSeq.sortBy(_._2)
 
     as == wantedLocations("A", part2) &&
       bs == wantedLocations("B", part2) &&
@@ -130,7 +107,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       }
     }
 
-    def heuristic(currentLocations: Seq[Amphipod], part2: Boolean = false): Long = {
+    def heuristic(currentLocations: Set[Amphipod], part2: Boolean = false): Long = {
       val wantedX = Map("A" -> 3, "B" -> 5, "C" -> 7, "D" -> 9)
       val x = wantedX(name)
       //val missing = wantedLocations(name, part2).count(p => currentLocations.find(a => a.location == p).forall(_.name!=name))
@@ -152,7 +129,7 @@ object Day23 extends App with AoCPart1Test with AoCPart2Test {
       energyToMove * steps
     }
 
-    def possibleMoves(currentLocations: Seq[Amphipod], part2: Boolean): Seq[(Seq[Amphipod], Long)] = {
+    def possibleMoves(currentLocations: Set[Amphipod], part2: Boolean): Seq[(Set[Amphipod], Long)] = {
       val currY = this.location._2
       val currX = this.location._1
       val without = currentLocations.filterNot(_ == this)
