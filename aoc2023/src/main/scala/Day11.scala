@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day11 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val parsed = strings.zipWithIndex.flatMap {case (s, y) => s.zipWithIndex.map{case (c, x) => ((x, y), c)}}.filter(_._2 == '#').map(_._1)
     distances(parsed, 2)
