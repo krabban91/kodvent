@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day09 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = strings.map(parseInput).map(differences).map(extrapolate(_)).sum
 
   override def part2(strings: Seq[String]): Long = strings.map(parseInput).map(differences).map(extrapolate(_, part2 = true)).sum
