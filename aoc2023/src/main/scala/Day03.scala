@@ -2,11 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day03 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   private case class Part(number: Long, adjacent: String, gearLocation: Option[(Int, Int)]) {
     def hasSymbol: Boolean = adjacent.filterNot(_.isDigit).exists(_ != '.')
   }
@@ -41,7 +36,7 @@ object Day03 extends App with AoCPart1Test with AoCPart2Test {
             val adj = value
               .filterNot { case (dx, dy) => y == dy && dx >= x && dx <= x + n.size - 1 }
               .map { case (dx, dy) => ((dx, dy), strings(dy)(dx)) }
-            l ++ Seq(Part(v, adj.foldLeft("") { case (s, v) => s"$s${v._2}" }, adj.find(_._2=='*').map(_._1)))
+            l ++ Seq(Part(v, adj.foldLeft("") { case (s, v) => s"$s${v._2}" }, adj.find(_._2 == '*').map(_._1)))
           } else {
             l
           }
