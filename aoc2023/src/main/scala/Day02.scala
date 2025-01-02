@@ -4,11 +4,6 @@ import scala.util.parsing.combinator.RegexParsers
 
 object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   case class Game(id: Long, blues: Seq[Int], reds: Seq[Int], greens: Seq[Int]) {
     def stays(blue: Int, red: Int, green: Int): Boolean = {
       blues.forall(_ <= blue) && reds.forall(_ <= red) && greens.forall(_ <= green)
@@ -43,9 +38,9 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
 
       private def toss: Parser[Counts] = blue | green | red
 
-      private def round: Parser[Counts] = toss ~ rep(""", """ ~ log(toss)("round term")) ^^ { case count ~ l => combinator(count, l) }
+      private def round: Parser[Counts] = toss ~ rep(""", """ ~ toss) ^^ { case count ~ l => combinator(count, l) }
 
-      private def game: Parser[Counts] = round ~ rep("""; """ ~ log(round)("game term")) ^^ { case count ~ l => combinator(count, l) }
+      private def game: Parser[Counts] = round ~ rep("""; """ ~ round) ^^ { case count ~ l => combinator(count, l) }
 
       private def combinator(count: Counts, l: List[String ~ Counts]) = {
         count ++ l.map(_._2).foldLeft(Counts(Seq(), Seq(), Seq())) { case (l, v) => l ++ v }

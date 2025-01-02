@@ -2,12 +2,6 @@ import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
 object Day01 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
-
   override def part1(strings: Seq[String]): Long = {
     val lookup = Map("0" -> 0, "1" -> 1, "2" -> 2, "3" -> 3, "4" -> 4, "5" -> 5, "6" -> 6, "7" -> 7, "8" -> 8, "9" -> 9)
     strings.map(v => parseDigit(v, lookup)).sum
