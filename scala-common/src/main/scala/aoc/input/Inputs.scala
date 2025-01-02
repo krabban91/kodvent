@@ -1,16 +1,27 @@
 package aoc.input
 
+import java.io.FileNotFoundException
 import scala.collection.mutable
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 
 trait Inputs {
 
   def getInput: Seq[String] = read(s"${this.getClass.getName.toLowerCase}.txt")
 
   def read(path: String): Seq[String] = {
-    val source = Source.fromResource(path)
+    val source: BufferedSource = try {
+      Source.fromResource(path)
+    }
+    catch {
+      case _: FileNotFoundException =>
+        throw new RuntimeException("Input not retrieved from AOC. run './read.sh <day> first'")
+    }
     try {
-      source.getLines().toSeq
+      val lines = source.getLines().toSeq
+      if (lines.head.startsWith("====WAITING FOR INPUT====")) {
+        throw new RuntimeException("Input not retrieved from AOC. run './read.sh <day> first'")
+      }
+      lines
     } finally {
       source.close()
     }
