@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart1
-  printResultPart2Test
-  printResultPart2
-
   case class Row(pattern: String, combinations: Seq[Int]) {
 
     def notAccountedFor: Seq[Int] = {
