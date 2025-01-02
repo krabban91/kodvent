@@ -54,6 +54,7 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
       def apply(s: String) = {
         parseAll(game, s) match {
           case Success(r, _) => r
+          case e@Error(_, _) => print(e); throw new RuntimeException("bad!")
           case failure: Failure => print(failure); throw new RuntimeException("bad!")
         }
       }
