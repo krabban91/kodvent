@@ -4,11 +4,6 @@ import scala.collection.mutable
 
 object Day14 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
-  printResultPart2Test
-  printResultPart1
-  printResultPart2
-
   override def part1(strings: Seq[String]): Long = {
     val (walls: Set[(Long, Long)], rocks: Set[(Long, Long)]) = parse(strings)
     val still = rollRocks(walls, rocks, (0, -1), Ordering.by[(Long, Long), Long](-_._2))
