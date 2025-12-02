@@ -19,22 +19,11 @@ object Day02 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   def isInvalid2(num: Long): Boolean = {
-    // repeated atleast twice
+    // repeated at least twice
     val s = num.toString
     (1 to s.length / 2).exists { i =>
-      val times = s.length / i
       val key = s.take(i)
-      val tail = s.drop(i)
-      val invalid = (1 to times).foldLeft((tail, true)) { case ((t, out), _) =>
-        if (t.isEmpty || !out) {
-          ("", out)
-        } else {
-          val curr = t.take(i)
-          val next = t.drop(i)
-          (next, out && curr.length == i && curr == key)
-        }
-      }._2
-      invalid
+      s.sliding(i, i).forall(key == _)
     }
   }
 
