@@ -4,93 +4,64 @@ import scala.collection.mutable
 
 object Day08 extends App with AoCPart1Test with AoCPart2Test {
 
-  //printResultPart1Test
+  private type Point = (Long, Long, Long)
+  private type Junction = Set[Point]
+  private type Circuit = Set[Point]
+
+  printResultPart1Test
   printResultPart2Test
-  //printResultPart1
+  printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
-    val isTest = strings.length == 20
-    val count = if(isTest) 10 else 1000
-    val allPoints = strings.map{s => val l = s.split(",")
-      val p@(x,y,z) = (l.head.toLong, l.tail.head.toLong, l.last.toLong)
-      p
-    }.toSet
-    def distance(a: (Long, Long, Long), b: (Long, Long, Long)) = {
-      Math.sqrt(Math.pow(a._1 - b._1, 2) + Math.pow(a._2 - b._2, 2) + Math.pow(a._3 - b._3,2))
-    }
-    var it = 0
-    val allDistances = allPoints.flatMap(a => allPoints.filter(_ != a).map(b => (Set(b, a), distance(a,b)))).toMap
-
-    val circuits : Set[Set[(Long, Long, Long)]] = allPoints.map(Set(_))
-    val after = (0 until count).foldLeft(circuits, Set[Set[(Long, Long, Long)]]()){ case ((grids, connected), i) =>
-      val filtered = allDistances.filterNot(t => connected.contains(t._1))
-      val shortest@(nodes, distance) = filtered.minBy(_._2)
-      val selected = nodes.flatMap(s => grids.find(_.contains(s))).toSeq
-      val (from, to) = (selected.head, selected.last)
-      // in part 2: ignore all in-set matches
-      /*
-      val best@(from, (to, (nodes, distance))): (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double))) = grids.map { g =>
-        val other = grids.filter(_ != g)
-        val v: (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double)) = g.map(a => other.map(o => (o, o.map(b =>Set(a,b)).map(p => (p, allDistances(p))).minBy(_._2))).minBy(_._2._2)).minBy(_._2._2)
-        (g, v)
-      }.minBy(_._2._2._2)
-       */
-      val next = grids.filter(v  => v != from && v != to) ++ Set((from ++ to))
-      println(s"Iteration ${it}:: Distance=${distance} Selected nodes=$nodes. product=${next.toSeq.map(_.size).sorted.reverse.take(3).product},  gridSizes=${next.map(_.size)}")
-      it += 1
-      (next, connected ++ Set(nodes))
-
-    }
-    // 2050324839043956736 is too high
-
-    val value = after._1.toSeq.map(_.size.toLong).sorted.reverse
-    val threeLargest = value.take(3)
+    val allPoints: Set[Point] = parsePoints(strings)
+    val (circuits, _) = connectCircuits(allPoints, part1 = true)
+    val threeLargest = circuits.toSeq.map(_.size.toLong).sorted.takeRight(3)
     threeLargest.product
 
   }
 
   override def part2(strings: Seq[String]): Long = {
-    val isTest = strings.length == 20
-    val count = if (isTest) 10 else 1000
-    val allPoints = strings.map { s =>
+    val allPoints = parsePoints(strings)
+    val (_, last) = connectCircuits(allPoints, part1 = false)
+    last.toSeq.map(_._1).product
+  }
+
+  private def parsePoints(strings: Seq[String]): Set[Point] = {
+    strings.map { s =>
       val l = s.split(",")
-      val p@(x, y, z) = (l.head.toLong, l.tail.head.toLong, l.last.toLong)
-      p
+      (l.head.toLong, l.tail.head.toLong, l.last.toLong)
     }.toSet
+  }
 
-    def distance(a: (Long, Long, Long), b: (Long, Long, Long)) = {
-      Math.sqrt(Math.pow(a._1 - b._1, 2) + Math.pow(a._2 - b._2, 2) + Math.pow(a._3 - b._3, 2))
-    }
+  def distance(j: Junction): Double = {
+    val seq: Seq[Point] = j.toSeq;
+    val (a, b) = (seq.head, seq.last);
+    Math.sqrt(Math.pow(a._1 - b._1, 2) + Math.pow(a._2 - b._2, 2) + Math.pow(a._3 - b._3, 2))
+  }
 
-    var it = 0
-    val allDistances = allPoints.flatMap(a => allPoints.filter(_ != a).map(b => (Set(b, a), distance(a, b)))).toMap
-    val circuits = mutable.HashSet[Set[(Long, Long, Long)]]()
+  private def connectCircuits(allPoints: Set[Point], part1: Boolean): (Set[Circuit], Junction) = {
+    val earlyStop = if (allPoints.size == 20) 10 else 1000
+    val circuits = mutable.HashSet[Circuit]()
     circuits.addAll(allPoints.map(Set(_)))
-    val connected = mutable.HashSet[Set[(Long, Long, Long)]]()
-    val filteredDistances = mutable.HashMap[(Set[(Long, Long, Long)]), Double]()
-    filteredDistances.addAll(allDistances)
-    var lastjunction: Set[(Long, Long, Long)] = null
-    while (circuits.size > 1 && connected.size < count) {
-      val shortest@(nodes, distance) = filteredDistances.minBy(_._2)
-      lastjunction = nodes
-      val selected = nodes.flatMap(s => circuits.find(_.contains(s))).toSeq
+    val connected = mutable.HashSet[Junction]()
+
+    val allJunctions: Set[Junction] = allPoints.flatMap(a => allPoints.excl(a).map(b => Set(b, a)))
+    val filteredDistances = mutable.PriorityQueue[(Junction, Double)]()(Ordering.by(-_._2))
+    filteredDistances.addAll(allJunctions.toSeq.map { j => (j, distance(j)) })
+    var last: Junction = null
+    while (circuits.size > 1 && (!part1 || connected.size < earlyStop)) {
+      val (junction, _) = filteredDistances.dequeue()
+
+      last = junction
+      val selected: Seq[Circuit] = junction.flatMap(s => circuits.find(_.contains(s))).toSeq
       val (from, to) = (selected.head, selected.last)
-      val joint = from ++ to
-      /*
-      val best@(from, (to, (nodes, distance))): (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double))) = grids.map { g =>
-        val other = grids.filter(_ != g)
-        val v: (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double)) = g.map(a => other.map(o => (o, o.map(b =>Set(a,b)).map(p => (p, allDistances(p))).minBy(_._2))).minBy(_._2._2)).minBy(_._2._2)
-        (g, v)
-      }.minBy(_._2._2._2)
-       */
+
       circuits.remove(from)
       circuits.remove(to)
-      filteredDistances.remove(nodes)
-      circuits.add(joint)
-      println(s"Iteration ${it}:: Distance=${distance} Selected nodes=$nodes. product=${circuits.toSeq.map(_.size).sorted.reverse.take(3).product},  gridSizes=${circuits.map(_.size)}")
-      it += 1
+      circuits.add(from ++ to)
+      connected.add(junction)
     }
-    lastjunction.toSeq.map(_._1).product
+    circuits.toSet -> last
   }
 }
