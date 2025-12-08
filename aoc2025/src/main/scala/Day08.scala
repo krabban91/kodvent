@@ -1,10 +1,12 @@
 import aoc.numeric.{AoCPart1Test, AoCPart2Test}
 
+import scala.collection.mutable
+
 object Day08 extends App with AoCPart1Test with AoCPart2Test {
 
-  printResultPart1Test
+  //printResultPart1Test
   printResultPart2Test
-  printResultPart1
+  //printResultPart1
   printResultPart2
 
   override def part1(strings: Seq[String]): Long = {
@@ -26,7 +28,7 @@ object Day08 extends App with AoCPart1Test with AoCPart2Test {
       val shortest@(nodes, distance) = filtered.minBy(_._2)
       val selected = nodes.flatMap(s => grids.find(_.contains(s))).toSeq
       val (from, to) = (selected.head, selected.last)
-
+      // in part 2: ignore all in-set matches
       /*
       val best@(from, (to, (nodes, distance))): (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double))) = grids.map { g =>
         val other = grids.filter(_ != g)
@@ -49,6 +51,46 @@ object Day08 extends App with AoCPart1Test with AoCPart2Test {
   }
 
   override def part2(strings: Seq[String]): Long = {
-    -1
+    val isTest = strings.length == 20
+    val count = if (isTest) 10 else 1000
+    val allPoints = strings.map { s =>
+      val l = s.split(",")
+      val p@(x, y, z) = (l.head.toLong, l.tail.head.toLong, l.last.toLong)
+      p
+    }.toSet
+
+    def distance(a: (Long, Long, Long), b: (Long, Long, Long)) = {
+      Math.sqrt(Math.pow(a._1 - b._1, 2) + Math.pow(a._2 - b._2, 2) + Math.pow(a._3 - b._3, 2))
+    }
+
+    var it = 0
+    val allDistances = allPoints.flatMap(a => allPoints.filter(_ != a).map(b => (Set(b, a), distance(a, b)))).toMap
+    val circuits = mutable.HashSet[Set[(Long, Long, Long)]]()
+    circuits.addAll(allPoints.map(Set(_)))
+    val connected = mutable.HashSet[Set[(Long, Long, Long)]]()
+    val filteredDistances = mutable.HashMap[(Set[(Long, Long, Long)]), Double]()
+    filteredDistances.addAll(allDistances)
+    var lastjunction: Set[(Long, Long, Long)] = null
+    while (circuits.size > 1 && connected.size < count) {
+      val shortest@(nodes, distance) = filteredDistances.minBy(_._2)
+      lastjunction = nodes
+      val selected = nodes.flatMap(s => circuits.find(_.contains(s))).toSeq
+      val (from, to) = (selected.head, selected.last)
+      val joint = from ++ to
+      /*
+      val best@(from, (to, (nodes, distance))): (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double))) = grids.map { g =>
+        val other = grids.filter(_ != g)
+        val v: (Set[(Long, Long, Long)], (Set[(Long, Long, Long)], Double)) = g.map(a => other.map(o => (o, o.map(b =>Set(a,b)).map(p => (p, allDistances(p))).minBy(_._2))).minBy(_._2._2)).minBy(_._2._2)
+        (g, v)
+      }.minBy(_._2._2._2)
+       */
+      circuits.remove(from)
+      circuits.remove(to)
+      filteredDistances.remove(nodes)
+      circuits.add(joint)
+      println(s"Iteration ${it}:: Distance=${distance} Selected nodes=$nodes. product=${circuits.toSeq.map(_.size).sorted.reverse.take(3).product},  gridSizes=${circuits.map(_.size)}")
+      it += 1
+    }
+    lastjunction.toSeq.map(_._1).product
   }
 }
