@@ -11,7 +11,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       scalaTest % Test,
       combinators % Compile,
-      kodventCommon % Compile,
+      //kodventCommon % Compile,
       kodventScalaCommon % Compile,
     )
   )
