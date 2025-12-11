@@ -13,6 +13,7 @@ lazy val root = (project in file("."))
       combinators % Compile,
       //kodventCommon % Compile,
       kodventScalaCommon % Compile,
+      "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0",
     )
   )
 
