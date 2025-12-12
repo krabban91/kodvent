@@ -7,9 +7,18 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
   printResultPart1
   printResultPart2
 
-  case class Piece(id: Int, covers: Set[(Int, Int)])
+  case class Piece(id: Int, covers: Set[(Int, Int)]) {
+    def area: Int = covers.size
+  }
 
-  case class Puzzle(width: Int, height: Int, pieces: Map[Int, Int])
+  case class Puzzle(width: Int, height: Int, pieces: Map[Int, Int]) {
+    def area: Int = width * height
+
+    def fits(pieces: Seq[Piece]): Boolean = {
+      val estimate = this.pieces.map{ case (i, count) => pieces(i).area*count}.sum
+      estimate <= area
+    }
+  }
 
   object Piece {
     def apply(str: String): Piece = {
@@ -39,7 +48,7 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
 
   override def part1(strings: Seq[String]): Long = {
     val (pieces, puzzles) = readInput(strings)
-    -1
+    puzzles.count(_.fits(pieces)).toLong
   }
 
   override def part2(strings: Seq[String]): Long = {
