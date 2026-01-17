@@ -1,11 +1,9 @@
-import aoc.numeric.{AoCPart1Test, AoCPart2Test}
+import aoc.numeric.AoCPart1Test
 
-object Day12 extends App with AoCPart1Test with AoCPart2Test {
+object Day12 extends App with AoCPart1Test {
 
   printResultPart1Test
-  printResultPart2Test
   printResultPart1
-  printResultPart2
 
   case class Piece(id: Int, covers: Set[(Int, Int)]) {
     def area: Int = covers.size
@@ -51,7 +49,4 @@ object Day12 extends App with AoCPart1Test with AoCPart2Test {
     puzzles.count(_.fits(pieces)).toLong
   }
 
-  override def part2(strings: Seq[String]): Long = {
-    -1
-  }
 }
